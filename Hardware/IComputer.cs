@@ -43,30 +43,6 @@ public interface IComputer : IElement
     bool IsBatteryEnabled { get; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether collecting information about:
-    /// <list>
-    ///     <item>
-    ///         <see cref="LibreHardwareMonitor.Hardware.Controller.TBalancer.TBalancerGroup" />
-    ///     </item>
-    ///     <item>
-    ///         <see cref="LibreHardwareMonitor.Hardware.Controller.Heatmaster.HeatmasterGroup" />
-    ///     </item>
-    ///     <item>
-    ///         <see cref="LibreHardwareMonitor.Hardware.Controller.AquaComputer.AquaComputerGroup" />
-    ///     </item>
-    ///     <item>
-    ///         <see cref="LibreHardwareMonitor.Hardware.Controller.AeroCool.AeroCoolGroup" />
-    ///     </item>
-    ///     <item>
-    ///         <see cref="LibreHardwareMonitor.Hardware.Controller.Nzxt.NzxtGroup" />
-    ///     </item>
-    /// </list>
-    /// devices should be enabled and updated.
-    /// </summary>
-    /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
-    bool IsControllerEnabled { get; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether collecting information about <see cref="HardwareType.Cpu" /> devices should be enabled and updated.
     /// </summary>
     /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
@@ -107,10 +83,4 @@ public interface IComputer : IElement
     /// </summary>
     /// <returns><see langword="true" /> if a given category of devices is already enabled.</returns>
     bool IsStorageEnabled { get; }
-
-    /// <summary>
-    /// Generates full LibreHardwareMonitor report for devices that have been enabled.
-    /// </summary>
-    /// <returns>A formatted text string with library, OS and hardware information.</returns>
-    string GetReport();
 }

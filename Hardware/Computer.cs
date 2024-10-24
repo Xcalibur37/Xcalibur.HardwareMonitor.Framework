@@ -6,17 +6,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Reflection;
+using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Battery;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Controller.AeroCool;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Controller.AquaComputer;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Controller.Heatmaster;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Controller.Nzxt;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Controller.Razer;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Controller.TBalancer;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu;
@@ -33,12 +25,13 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 /// </summary>
 public class Computer : IComputer
 {
-    private readonly List<IGroup> _groups = new();
+    #region Fields
+
+    private readonly List<IGroup> _groups = [];
     private readonly object _lock = new();
     private readonly ISettings _settings;
-        
+
     private bool _batteryEnabled;
-    private bool _controllerEnabled;
     private bool _cpuEnabled;
     private bool _gpuEnabled;
     private bool _memoryEnabled;
@@ -49,28 +42,9 @@ public class Computer : IComputer
     private SMBios _smbios;
     private bool _storageEnabled;
 
-    /// <summary>
-    /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
-    /// </summary>
-    public Computer()
-    {
-        _settings = new Settings();
-    }
+    #endregion
 
-    /// <summary>
-    /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />.
-    /// </summary>
-    /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
-    public Computer(ISettings settings)
-    {
-        _settings = settings ?? new Settings();
-    }
-
-    /// <inheritdoc />
-    public event HardwareEventHandler HardwareAdded;
-
-    /// <inheritdoc />
-    public event HardwareEventHandler HardwareRemoved;
+    #region Properties
 
     /// <inheritdoc />
     public IList<IHardware> Hardware
@@ -79,11 +53,8 @@ public class Computer : IComputer
         {
             lock (_lock)
             {
-                List<IHardware> list = new();
-
-                foreach (IGroup group in _groups)
-                    list.AddRange(group.Hardware);
-
+                List<IHardware> list = [];
+                _groups.Apply(x => list.AddRange(x.Hardware));
                 return list;
             }
         }
@@ -92,7 +63,7 @@ public class Computer : IComputer
     /// <inheritdoc />
     public bool IsBatteryEnabled
     {
-        get { return _batteryEnabled; }
+        get => _batteryEnabled;
         set
         {
             if (_open && value != _batteryEnabled)
@@ -112,49 +83,21 @@ public class Computer : IComputer
     }
 
     /// <inheritdoc />
-    public bool IsControllerEnabled
-    {
-        get { return _controllerEnabled; }
-        set
-        {
-            if (_open && value != _controllerEnabled)
-            {
-                if (value)
-                {
-                    Add(new TBalancerGroup(_settings));
-                    Add(new HeatmasterGroup(_settings));
-                    Add(new AquaComputerGroup(_settings));
-                    Add(new AeroCoolGroup(_settings));
-                    Add(new NzxtGroup(_settings));
-                    Add(new RazerGroup(_settings));
-                }
-                else
-                {
-                    RemoveType<TBalancerGroup>();
-                    RemoveType<HeatmasterGroup>();
-                    RemoveType<AquaComputerGroup>();
-                    RemoveType<AeroCoolGroup>();
-                    RemoveType<NzxtGroup>();
-                    RemoveType<RazerGroup>();
-                }
-            }
-
-            _controllerEnabled = value;
-        }
-    }
-
-    /// <inheritdoc />
     public bool IsCpuEnabled
     {
-        get { return _cpuEnabled; }
+        get => _cpuEnabled;
         set
         {
             if (_open && value != _cpuEnabled)
             {
                 if (value)
+                {
                     Add(new CpuGroup(_settings));
+                }
                 else
+                {
                     RemoveType<CpuGroup>();
+                }
             }
 
             _cpuEnabled = value;
@@ -164,7 +107,7 @@ public class Computer : IComputer
     /// <inheritdoc />
     public bool IsGpuEnabled
     {
-        get { return _gpuEnabled; }
+        get => _gpuEnabled;
         set
         {
             if (_open && value != _gpuEnabled)
@@ -190,15 +133,19 @@ public class Computer : IComputer
     /// <inheritdoc />
     public bool IsMemoryEnabled
     {
-        get { return _memoryEnabled; }
+        get => _memoryEnabled;
         set
         {
             if (_open && value != _memoryEnabled)
             {
                 if (value)
+                {
                     Add(new MemoryGroup(_settings));
+                }
                 else
+                {
                     RemoveType<MemoryGroup>();
+                }
             }
 
             _memoryEnabled = value;
@@ -208,15 +155,19 @@ public class Computer : IComputer
     /// <inheritdoc />
     public bool IsMotherboardEnabled
     {
-        get { return _motherboardEnabled; }
+        get => _motherboardEnabled;
         set
         {
             if (_open && value != _motherboardEnabled)
             {
                 if (value)
+                {
                     Add(new MotherboardGroup(_smbios, _settings));
+                }
                 else
+                {
                     RemoveType<MotherboardGroup>();
+                }
             }
 
             _motherboardEnabled = value;
@@ -226,15 +177,19 @@ public class Computer : IComputer
     /// <inheritdoc />
     public bool IsNetworkEnabled
     {
-        get { return _networkEnabled; }
+        get => _networkEnabled;
         set
         {
             if (_open && value != _networkEnabled)
             {
                 if (value)
+                {
                     Add(new NetworkGroup(_settings));
+                }
                 else
+                {
                     RemoveType<NetworkGroup>();
+                }
             }
 
             _networkEnabled = value;
@@ -244,7 +199,7 @@ public class Computer : IComputer
     /// <inheritdoc />
     public bool IsPsuEnabled
     {
-        get { return _psuEnabled; }
+        get => _psuEnabled;
         set
         {
             if (_open && value != _psuEnabled)
@@ -266,15 +221,19 @@ public class Computer : IComputer
     /// <inheritdoc />
     public bool IsStorageEnabled
     {
-        get { return _storageEnabled; }
+        get => _storageEnabled;
         set
         {
             if (_open && value != _storageEnabled)
             {
                 if (value)
+                {
                     Add(new StorageGroup(_settings));
+                }
                 else
+                {
                     RemoveType<StorageGroup>();
+                }
             }
 
             _storageEnabled = value;
@@ -289,99 +248,107 @@ public class Computer : IComputer
         get
         {
             if (!_open)
+            {
                 throw new InvalidOperationException("SMBIOS cannot be accessed before opening.");
-
+            }
             return _smbios;
         }
     }
 
-    //// <inheritdoc />
-    public string GetReport()
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with basic initial <see cref="Settings" />.
+    /// </summary>
+    public Computer()
     {
-        lock (_lock)
-        {
-            using StringWriter w = new(CultureInfo.InvariantCulture);
-
-            w.WriteLine();
-            string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-            w.WriteLine(assemblyName + " Report");
-            w.WriteLine();
-
-            Version version = typeof(Computer).Assembly.GetName().Version;
-
-            NewSection(w);
-            w.Write("Version: ");
-            w.WriteLine(version.ToString());
-            w.WriteLine();
-
-            NewSection(w);
-            w.Write("Common Language Runtime: ");
-            w.WriteLine(Environment.Version.ToString());
-            w.Write("Operating System: ");
-            w.WriteLine(Environment.OSVersion.ToString());
-            w.Write("Process Type: ");
-            w.WriteLine(IntPtr.Size == 4 ? "32-Bit" : "64-Bit");
-            w.WriteLine();
-
-            string r = Ring0.GetReport();
-            if (r != null)
-            {
-                NewSection(w);
-                w.Write(r);
-                w.WriteLine();
-            }
-
-            NewSection(w);
-            w.WriteLine("Sensors");
-            w.WriteLine();
-
-            foreach (IGroup group in _groups)
-            {
-                foreach (IHardware hardware in group.Hardware)
-                    ReportHardwareSensorTree(hardware, w, string.Empty);
-            }
-
-            w.WriteLine();
-
-            NewSection(w);
-            w.WriteLine("Parameters");
-            w.WriteLine();
-
-            foreach (IGroup group in _groups)
-            {
-                foreach (IHardware hardware in group.Hardware)
-                    ReportHardwareParameterTree(hardware, w, string.Empty);
-            }
-
-            w.WriteLine();
-
-            foreach (IGroup group in _groups)
-            {
-                string report = group.GetReport();
-                if (!string.IsNullOrEmpty(report))
-                {
-                    NewSection(w);
-                    w.Write(report);
-                }
-
-                foreach (IHardware hardware in group.Hardware)
-                    ReportHardware(hardware, w);
-            }
-
-            return w.ToString();
-        }
+        _settings = new Settings();
     }
 
+    /// <summary>
+    /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />.
+    /// </summary>
+    /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
+    public Computer(ISettings settings)
+    {
+        _settings = settings ?? new Settings();
+    }
+
+    #endregion
+
+    #region Methods
+    
+    //// <inheritdoc />
     /// <summary>
     /// Triggers the <see cref="IVisitor.VisitComputer" /> method for the given observer.
     /// </summary>
     /// <param name="visitor">Observer who call to devices.</param>
     public void Accept(IVisitor visitor)
     {
-        if (visitor == null)
+        if (visitor != null)
+        {
+            visitor.VisitComputer(this);
+        }
+        else
+        {
             throw new ArgumentNullException(nameof(visitor));
+        }
+    }
 
-        visitor.VisitComputer(this);
+    /// <summary>
+    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="Ring0.Close" />.
+    /// </summary>
+    public void Close()
+    {
+        if (!_open) return;
+
+        lock (_lock)
+        {
+            while (_groups.Count > 0)
+            {
+                Remove(_groups[^1]);
+            }
+        }
+
+        OpCode.Close();
+        InpOut.Close();
+        Ring0.Close();
+        Mutexes.Close();
+
+        _smbios = null;
+        _open = false;
+    }
+
+    /// <summary>
+    /// If this hasn't been opened before, opens <see cref="SMBios" />, <see cref="Ring0" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
+    /// enabled.
+    /// </summary>
+    public void Open()
+    {
+        if (_open) return;
+
+        _smbios = new SMBios();
+
+        Ring0.Open();
+        Mutexes.Open();
+        OpCode.Open();
+
+        AddGroups();
+
+        _open = true;
+    }
+
+    /// <summary>
+    /// If opened before, removes all <see cref="IGroup" /> and recreates it.
+    /// </summary>
+    public void Reset()
+    {
+        if (!_open) return;
+
+        RemoveGroups();
+        AddGroups();
     }
 
     /// <summary>
@@ -396,33 +363,25 @@ public class Computer : IComputer
             for (int i = 0; i < _groups.Count; i++)
             {
                 IGroup group = _groups[i];
-
                 for (int j = 0; j < group.Hardware.Count; j++)
+                {
                     group.Hardware[j].Accept(visitor);
+                }
             }
         }
     }
 
-    private void HardwareAddedEvent(IHardware hardware)
-    {
-        HardwareAdded?.Invoke(hardware);
-    }
-
-    private void HardwareRemovedEvent(IHardware hardware)
-    {
-        HardwareRemoved?.Invoke(hardware);
-    }
-
+    /// <summary>
+    /// Adds the specified group.
+    /// </summary>
+    /// <param name="group">The group.</param>
     private void Add(IGroup group)
     {
-        if (group == null)
-            return;
+        if (group == null) return;
 
         lock (_lock)
         {
-            if (_groups.Contains(group))
-                return;
-
+            if (_groups.Contains(group)) return;
             _groups.Add(group);
 
             if (group is IHardwareChanged hardwareChanged)
@@ -432,240 +391,14 @@ public class Computer : IComputer
             }
         }
 
-        if (HardwareAdded != null)
-        {
-            foreach (IHardware hardware in group.Hardware)
-                HardwareAdded(hardware);
-        }
-    }
-
-    private void Remove(IGroup group)
-    {
-        lock (_lock)
-        {
-            if (!_groups.Contains(group))
-                return;
-
-            _groups.Remove(group);
-
-            if (group is IHardwareChanged hardwareChanged)
-            {
-                hardwareChanged.HardwareAdded -= HardwareAddedEvent;
-                hardwareChanged.HardwareRemoved -= HardwareRemovedEvent;
-            }
-        }
-
-        if (HardwareRemoved != null)
-        {
-            foreach (IHardware hardware in group.Hardware)
-                HardwareRemoved(hardware);
-        }
-
-        group.Close();
-    }
-
-    private void RemoveType<T>() where T : IGroup
-    {
-        List<T> list = new();
-
-        lock (_lock)
-        {
-            foreach (IGroup group in _groups)
-            {
-                if (group is T t)
-                    list.Add(t);
-            }
-        }
-
-        foreach (T group in list)
-            Remove(group);
+        if (HardwareAdded == null) return;
+        group.Hardware.Apply(x => HardwareAdded(x));
     }
 
     /// <summary>
-    /// If hasn't been opened before, opens <see cref="SMBios" />, <see cref="Ring0" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
-    /// enabled.
+    /// Gets the intel cpus.
     /// </summary>
-    public void Open()
-    {
-        if (_open)
-            return;
-
-        _smbios = new SMBios();
-
-        Ring0.Open();
-        Mutexes.Open();
-        OpCode.Open();
-
-        AddGroups();
-
-        _open = true;
-    }
-
-    private void AddGroups()
-    {
-        if (_motherboardEnabled)
-            Add(new MotherboardGroup(_smbios, _settings));
-
-        if (_cpuEnabled)
-            Add(new CpuGroup(_settings));
-
-        if (_memoryEnabled)
-            Add(new MemoryGroup(_settings));
-
-        if (_gpuEnabled)
-        {
-            Add(new AmdGpuGroup(_settings));
-            Add(new NvidiaGroup(_settings));
-            Add(new IntelGpuGroup(GetIntelCpus(), _settings));
-        }
-
-        if (_controllerEnabled)
-        {
-            Add(new TBalancerGroup(_settings));
-            Add(new HeatmasterGroup(_settings));
-            Add(new AquaComputerGroup(_settings));
-            Add(new AeroCoolGroup(_settings));
-            Add(new NzxtGroup(_settings));
-            Add(new RazerGroup(_settings));
-        }
-
-        if (_storageEnabled)
-            Add(new StorageGroup(_settings));
-
-        if (_networkEnabled)
-            Add(new NetworkGroup(_settings));
-
-        if (_psuEnabled)
-            Add(new CorsairPsuGroup(_settings));
-
-        if (_batteryEnabled)
-            Add(new BatteryGroup(_settings));
-    }
-
-    private static void NewSection(TextWriter writer)
-    {
-        for (int i = 0; i < 8; i++)
-            writer.Write("----------");
-
-        writer.WriteLine();
-        writer.WriteLine();
-    }
-
-    private static int CompareSensor(ISensor a, ISensor b)
-    {
-        int c = a.SensorType.CompareTo(b.SensorType);
-        if (c == 0)
-            return a.Index.CompareTo(b.Index);
-
-        return c;
-    }
-
-    private static void ReportHardwareSensorTree(IHardware hardware, TextWriter w, string space)
-    {
-        w.WriteLine("{0}|", space);
-        w.WriteLine("{0}+- {1} ({2})", space, hardware.Name, hardware.Identifier);
-
-        ISensor[] sensors = hardware.Sensors;
-        Array.Sort(sensors, CompareSensor);
-
-        foreach (ISensor sensor in sensors)
-            w.WriteLine("{0}|  +- {1,-14} : {2,8:G6} {3,8:G6} {4,8:G6} ({5})", space, sensor.Name, sensor.Value, sensor.Min, sensor.Max, sensor.Identifier);
-
-        foreach (IHardware subHardware in hardware.SubHardware)
-            ReportHardwareSensorTree(subHardware, w, "|  ");
-    }
-
-    private static void ReportHardwareParameterTree(IHardware hardware, TextWriter w, string space)
-    {
-        w.WriteLine("{0}|", space);
-        w.WriteLine("{0}+- {1} ({2})", space, hardware.Name, hardware.Identifier);
-
-        ISensor[] sensors = hardware.Sensors;
-        Array.Sort(sensors, CompareSensor);
-
-        foreach (ISensor sensor in sensors)
-        {
-            string innerSpace = space + "|  ";
-            if (sensor.Parameters.Count > 0)
-            {
-                w.WriteLine("{0}|", innerSpace);
-                w.WriteLine("{0}+- {1} ({2})", innerSpace, sensor.Name, sensor.Identifier);
-
-                foreach (IParameter parameter in sensor.Parameters)
-                {
-                    string innerInnerSpace = innerSpace + "|  ";
-                    w.WriteLine("{0}+- {1} : {2}", innerInnerSpace, parameter.Name, string.Format(CultureInfo.InvariantCulture, "{0} : {1}", parameter.DefaultValue, parameter.Value));
-                }
-            }
-        }
-
-        foreach (IHardware subHardware in hardware.SubHardware)
-            ReportHardwareParameterTree(subHardware, w, "|  ");
-    }
-
-    private static void ReportHardware(IHardware hardware, TextWriter w)
-    {
-        string hardwareReport = hardware.GetReport();
-        if (!string.IsNullOrEmpty(hardwareReport))
-        {
-            NewSection(w);
-            w.Write(hardwareReport);
-        }
-
-        foreach (IHardware subHardware in hardware.SubHardware)
-            ReportHardware(subHardware, w);
-    }
-
-    /// <summary>
-    /// If opened before, removes all <see cref="IGroup" /> and triggers <see cref="OpCode.Close" />, <see cref="InpOut.Close" /> and <see cref="Ring0.Close" />.
-    /// </summary>
-    public void Close()
-    {
-        if (!_open)
-            return;
-
-        lock (_lock)
-        {
-            while (_groups.Count > 0)
-            {
-                IGroup group = _groups[_groups.Count - 1];
-                Remove(group);
-            }
-        }
-
-        OpCode.Close();
-        InpOut.Close();
-        Ring0.Close();
-        Mutexes.Close();
-
-        _smbios = null;
-        _open = false;
-    }
-
-    /// <summary>
-    /// If opened before, removes all <see cref="IGroup" /> and recreates it.
-    /// </summary>
-    public void Reset()
-    {
-        if (!_open)
-            return;
-
-        RemoveGroups();
-        AddGroups();
-    }
-
-    private void RemoveGroups()
-    {
-        lock (_lock)
-        {
-            while (_groups.Count > 0)
-            {
-                IGroup group = _groups[_groups.Count - 1];
-                Remove(group);
-            }
-        }
-    }
-
+    /// <returns></returns>
     private List<IntelCpu> GetIntelCpus()
     {
         // Create a temporary cpu group if one has not been added.
@@ -677,24 +410,136 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// <see cref="Computer" /> specific additional settings passed to its <see cref="IHardware" />.
+    /// Removes the specified group.
     /// </summary>
-    private class Settings : ISettings
+    /// <param name="group">The group.</param>
+    private void Remove(IGroup group)
     {
-        public bool Contains(string name)
+        lock (_lock)
         {
-            return false;
+            if (!_groups.Contains(group)) return;
+            _groups.Remove(group);
+
+            if (group is IHardwareChanged hardwareChanged)
+            {
+                hardwareChanged.HardwareAdded -= HardwareAddedEvent;
+                hardwareChanged.HardwareRemoved -= HardwareRemovedEvent;
+            }
         }
 
-        public void SetValue(string name, string value)
-        { }
-
-        public string GetValue(string name, string value)
+        if (HardwareRemoved is not null)
         {
-            return value;
+            group.Hardware.Apply(x => HardwareRemoved(x));
         }
 
-        public void Remove(string name)
-        { }
+        group.Close();
     }
+
+    /// <summary>
+    /// Adds the groups.
+    /// </summary>
+    private void AddGroups()
+    {
+        if (_motherboardEnabled)
+        {
+            Add(new MotherboardGroup(_smbios, _settings));
+        }
+
+        if (_cpuEnabled)
+        {
+            Add(new CpuGroup(_settings));
+        }
+
+        if (_memoryEnabled)
+        {
+            Add(new MemoryGroup(_settings));
+        }
+
+        if (_gpuEnabled)
+        {
+            Add(new AmdGpuGroup(_settings));
+            Add(new NvidiaGroup(_settings));
+            Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+        }
+
+        if (_storageEnabled)
+        {
+            Add(new StorageGroup(_settings));
+        }
+
+        if (_networkEnabled)
+        {
+            Add(new NetworkGroup(_settings));
+        }
+
+        if (_psuEnabled)
+        {
+            Add(new CorsairPsuGroup(_settings));
+        }
+
+        if (_batteryEnabled)
+        {
+            Add(new BatteryGroup(_settings));
+        }
+    }
+
+    /// <summary>
+    /// Removes the groups.
+    /// </summary>
+    private void RemoveGroups()
+    {
+        lock (_lock)
+        {
+            while (_groups.Count > 0)
+            {
+                Remove(_groups[^1]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes the type.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    private void RemoveType<T>() where T : IGroup
+    {
+        List<T> list = [];
+        lock (_lock)
+        {
+            _groups
+                .Where(x => x is T)
+                .Apply(y => list.Add((T)y));
+        }
+        list.Apply(x => Remove(x));
+    }
+
+    #endregion
+
+    #region Events
+
+    /// <inheritdoc />
+    public event HardwareEventHandler HardwareAdded;
+
+    /// <summary>
+    /// "Hardware added" event.
+    /// </summary>
+    /// <param name="hardware">The hardware.</param>
+    private void HardwareAddedEvent(IHardware hardware)
+    {
+        HardwareAdded?.Invoke(hardware);
+    }
+
+    /// <inheritdoc />
+    public event HardwareEventHandler HardwareRemoved;
+
+    /// <summary>
+    /// "Hardware removed" event.
+    /// </summary>
+    /// <param name="hardware">The hardware.</param>
+    private void HardwareRemovedEvent(IHardware hardware)
+    {
+        HardwareRemoved?.Invoke(hardware);
+    }
+
+    #endregion
 }

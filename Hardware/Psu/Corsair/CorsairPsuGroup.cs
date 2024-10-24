@@ -35,14 +35,9 @@ public class CorsairPsuGroup : IGroup
 
     private static readonly ushort _vendorId = 0x1b1c;
     private readonly List<IHardware> _hardware;
-    private readonly StringBuilder _report;
 
     public CorsairPsuGroup(ISettings settings)
     {
-        _report = new StringBuilder();
-        _report.AppendLine("Corsair HXi/RMi series PSU Hardware");
-        _report.AppendLine();
-
         _hardware = new List<IHardware>();
         foreach (HidDevice dev in DeviceList.Local.GetHidDevices(_vendorId))
         {
@@ -50,8 +45,6 @@ public class CorsairPsuGroup : IGroup
             {
                 var device = new CorsairPsu(dev, settings, _hardware.Count);
                 _hardware.Add(device);
-                _report.AppendLine($"Device name: {device.Name}");
-                _report.AppendLine();
             }
         }
     }
@@ -65,10 +58,5 @@ public class CorsairPsuGroup : IGroup
             if (iHardware is Hardware hardware)
                 hardware.Close();
         }
-    }
-
-    public string GetReport()
-    {
-        return _report.ToString();
     }
 }

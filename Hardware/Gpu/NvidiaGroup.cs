@@ -14,35 +14,21 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu;
 internal class NvidiaGroup : IGroup
 {
     private readonly List<Hardware> _hardware = new();
-    private readonly StringBuilder _report = new();
 
     public NvidiaGroup(ISettings settings)
     {
         if (!NvApi.IsAvailable)
             return;
 
-        _report.AppendLine("NvApi");
-        _report.AppendLine();
-
-        if (NvApi.NvAPI_GetInterfaceVersionString(out string version) == NvApi.NvStatus.OK)
-        {
-            _report.Append("Version: ");
-            _report.AppendLine(version);
-        }
-
         NvApi.NvPhysicalGpuHandle[] handles = new NvApi.NvPhysicalGpuHandle[NvApi.MAX_PHYSICAL_GPUS];
         if (NvApi.NvAPI_EnumPhysicalGPUs == null)
         {
-            _report.AppendLine("Error: NvAPI_EnumPhysicalGPUs not available");
-            _report.AppendLine();
             return;
         }
 
         NvApi.NvStatus status = NvApi.NvAPI_EnumPhysicalGPUs(handles, out int count);
         if (status != NvApi.NvStatus.OK)
         {
-            _report.AppendLine("Status: " + status);
-            _report.AppendLine();
             return;
         }
 
@@ -72,24 +58,14 @@ internal class NvidiaGroup : IGroup
             }
         }
 
-        _report.Append("Number of GPUs: ");
-        _report.AppendLine(count.ToString(CultureInfo.InvariantCulture));
-
         for (int i = 0; i < count; i++)
         {
             displayHandles.TryGetValue(handles[i], out NvApi.NvDisplayHandle displayHandle);
             _hardware.Add(new NvidiaGpu(i, handles[i], displayHandle, settings));
         }
-
-        _report.AppendLine();
     }
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
-
-    public string GetReport()
-    {
-        return _report.ToString();
-    }
 
     public void Close()
     {

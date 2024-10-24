@@ -65,13 +65,7 @@ public interface IHardware : IElement
     #endregion
 
     #region Methods
-
-    /// <summary>
-    /// Report containing most of the known information about the current device.
-    /// </summary>
-    /// <returns>A formatted text string with hardware information.</returns>
-    string GetReport();
-
+    
     /// <summary>
     /// Refreshes the information stored in <see cref="Sensors"/> array.
     /// </summary>

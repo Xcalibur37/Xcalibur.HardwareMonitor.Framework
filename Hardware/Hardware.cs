@@ -100,10 +100,7 @@ public abstract class Hardware : IHardware
     #endregion
 
     #region Methods
-
-    /// <inheritdoc />
-    public virtual string GetReport() => null;
-
+    
     /// <inheritdoc />
     public abstract void Update();
 

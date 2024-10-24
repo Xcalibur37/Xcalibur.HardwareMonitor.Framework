@@ -94,68 +94,6 @@ public sealed class NVMeGeneric : AbstractStorage
             sensor.Update(health);
     }
 
-    protected override void GetReport(StringBuilder r)
-    {
-        if (_info == null)
-            return;
-
-        r.AppendLine("PCI Vendor ID: 0x" + _info.VID.ToString("x04"));
-        if (_info.VID != _info.SSVID)
-            r.AppendLine("PCI Subsystem Vendor ID: 0x" + _info.VID.ToString("x04"));
-
-        r.AppendLine("IEEE OUI Identifier: 0x" + _info.IEEE[2].ToString("x02") + _info.IEEE[1].ToString("x02") + _info.IEEE[0].ToString("x02"));
-        r.AppendLine("Total NVM Capacity: " + _info.TotalCapacity);
-        r.AppendLine("Unallocated NVM Capacity: " + _info.UnallocatedCapacity);
-        r.AppendLine("Controller ID: " + _info.ControllerId);
-        r.AppendLine("Number of Namespaces: " + _info.NumberNamespaces);
-
-        NVMeHealthInfo health = Smart.GetHealthInfo();
-        if (health == null)
-            return;
-
-        if (health.CriticalWarning == Kernel32.NVME_CRITICAL_WARNING.None)
-            r.AppendLine("Critical Warning: -");
-        else
-        {
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.AvailableSpaceLow) != 0)
-                r.AppendLine("Critical Warning: the available spare space has fallen below the threshold.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.TemperatureThreshold) != 0)
-                r.AppendLine("Critical Warning: a temperature is above an over temperature threshold or below an under temperature threshold.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.ReliabilityDegraded) != 0)
-                r.AppendLine("Critical Warning: the device reliability has been degraded due to significant media related errors or any internal error that degrades device reliability.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.ReadOnly) != 0)
-                r.AppendLine("Critical Warning: the media has been placed in read only mode.");
-
-            if ((health.CriticalWarning & Kernel32.NVME_CRITICAL_WARNING.VolatileMemoryBackupDeviceFailed) != 0)
-                r.AppendLine("Critical Warning: the volatile memory backup device has failed.");
-        }
-
-        r.AppendLine("Temperature: " + health.Temperature + " Celsius");
-        r.AppendLine("Available Spare: " + health.AvailableSpare + "%");
-        r.AppendLine("Available Spare Threshold: " + health.AvailableSpareThreshold + "%");
-        r.AppendLine("Percentage Used: " + health.PercentageUsed + "%");
-        r.AppendLine("Data Units Read: " + health.DataUnitRead);
-        r.AppendLine("Data Units Written: " + health.DataUnitWritten);
-        r.AppendLine("Host Read Commands: " + health.HostReadCommands);
-        r.AppendLine("Host Write Commands: " + health.HostWriteCommands);
-        r.AppendLine("Controller Busy Time: " + health.ControllerBusyTime);
-        r.AppendLine("Power Cycles: " + health.PowerCycle);
-        r.AppendLine("Power On Hours: " + health.PowerOnHours);
-        r.AppendLine("Unsafe Shutdowns: " + health.UnsafeShutdowns);
-        r.AppendLine("Media Errors: " + health.MediaErrors);
-        r.AppendLine("Number of Error Information Log Entries: " + health.ErrorInfoLogEntryCount);
-        r.AppendLine("Warning Composite Temperature Time: " + health.WarningCompositeTemperatureTime);
-        r.AppendLine("Critical Composite Temperature Time: " + health.CriticalCompositeTemperatureTime);
-        for (int i = 0; i < health.TemperatureSensors.Length; i++)
-        {
-            if (health.TemperatureSensors[i] > short.MinValue)
-                r.AppendLine("Temperature Sensor " + (i + 1) + ": " + health.TemperatureSensors[i] + " Celsius");
-        }
-    }
-
     public override void Close()
     {
         Smart?.Close();

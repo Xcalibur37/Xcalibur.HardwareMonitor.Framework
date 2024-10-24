@@ -25,9 +25,4 @@ internal class MotherboardGroup : IGroup
         foreach (Motherboard mainboard in _motherboards)
             mainboard.Close();
     }
-
-    public string GetReport()
-    {
-        return null;
-    }
 }

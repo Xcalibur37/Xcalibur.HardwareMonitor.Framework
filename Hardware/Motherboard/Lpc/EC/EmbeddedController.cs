@@ -467,51 +467,6 @@ public abstract class EmbeddedController : Hardware
             _sensors[si].Value = val != _sources[si].Blank ? val * _sources[si].Factor : null;
         }
     }
-
-    public override string GetReport()
-    {
-        StringBuilder r = new();
-
-        r.AppendLine("EC " + GetType().Name);
-        r.AppendLine("Embedded Controller Registers");
-        r.AppendLine();
-        r.AppendLine("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
-        r.AppendLine();
-
-        try
-        {
-            using IEmbeddedControllerIO embeddedControllerIO = AcquireIOInterface();
-            ushort[] src = new ushort[0x100];
-            byte[] data = new byte[0x100];
-            for (ushort i = 0; i < src.Length; ++i)
-            {
-                src[i] = i;
-            }
-
-            embeddedControllerIO.Read(src, data);
-            for (int i = 0; i <= 0xF; ++i)
-            {
-                r.Append(" ");
-                r.Append((i << 4).ToString("X2", CultureInfo.InvariantCulture));
-                r.Append("  ");
-                for (int j = 0; j <= 0xF; ++j)
-                {
-                    byte address = (byte)(i << 4 | j);
-                    r.Append(" ");
-                    r.Append(data[address].ToString("X2", CultureInfo.InvariantCulture));
-                }
-
-                r.AppendLine();
-            }
-        }
-        catch (IOException e)
-        {
-            r.AppendLine(e.Message);
-        }
-
-        return r.ToString();
-    }
-
     protected abstract IEmbeddedControllerIO AcquireIOInterface();
 
     private bool TryUpdateData()

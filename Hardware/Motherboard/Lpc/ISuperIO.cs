@@ -26,8 +26,5 @@ internal interface ISuperIO
     byte? ReadGpio(int index);
 
     void WriteGpio(int index, byte value);
-
-    string GetReport();
-
     void Update();
 }

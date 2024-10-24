@@ -89,23 +89,6 @@ internal sealed class IntelCpu : GenericCpu
     #region Methods
 
     /// <summary>
-    /// Prints the data to a report.
-    /// </summary>
-    /// <returns></returns>
-    /// <inheritdoc />
-    public override string GetReport()
-    {
-        StringBuilder r = new();
-        r.Append(base.GetReport());
-        r.Append("MicroArchitecture: ");
-        r.AppendLine(_microArchitecture.ToString());
-        r.Append("Time Stamp Counter Multiplier: ");
-        r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
-        r.AppendLine();
-        return r.ToString();
-    }
-
-    /// <summary>
     /// Updates all sensors.
     /// </summary>
     /// <inheritdoc />

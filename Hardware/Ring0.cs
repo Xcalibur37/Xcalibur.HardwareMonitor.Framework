@@ -19,8 +19,6 @@ internal static class Ring0
     private static KernelDriver _driver;
     private static string _filePath;
 
-    private static readonly StringBuilder _report = new();
-
     public static bool IsOpen => _driver != null;
 
     public static void Open()
@@ -31,10 +29,7 @@ internal static class Ring0
 
         if (_driver != null)
             return;
-
-        // clear the current report
-        _report.Length = 0;
-
+        
         _driver = new KernelDriver(GetServiceName(), "WinRing0_1_2_0");
         _driver.Open();
 
@@ -47,9 +42,6 @@ internal static class Ring0
                 if (_driver.Install(_filePath, out string installError))
                 {
                     _driver.Open();
-
-                    if (!_driver.IsOpen)
-                        _report.AppendLine("Status: Opening driver failed after install");
                 }
                 else
                 {
@@ -62,15 +54,6 @@ internal static class Ring0
                     if (_driver.Install(_filePath, out string secondError))
                     {
                         _driver.Open();
-
-                        if (!_driver.IsOpen)
-                            _report.AppendLine("Status: Opening driver failed after reinstall");
-                    }
-                    else
-                    {
-                        _report.Append($"Status: Installing driver \"{_filePath}\" failed").AppendLine(File.Exists(_filePath) ? " and file exists" : string.Empty);
-                        _report.Append("First Exception: ").AppendLine(installError);
-                        _report.Append("Second Exception: ").AppendLine(secondError);
                     }
                 }
 
@@ -79,10 +62,6 @@ internal static class Ring0
                     _driver.Delete();
                     Delete();
                 }
-            }
-            else
-            {
-                _report.AppendLine("Status: Extracting driver failed");
             }
         }
 
@@ -296,21 +275,6 @@ internal static class Ring0
 
         // try to delete temporary driver file again if failed during open
         Delete();
-    }
-
-    public static string GetReport()
-    {
-        if (_report.Length > 0)
-        {
-            StringBuilder r = new();
-            r.AppendLine("Ring0");
-            r.AppendLine();
-            r.Append(_report);
-            r.AppendLine();
-            return r.ToString();
-        }
-
-        return null;
     }
 
     public static bool ReadMsr(uint index, out uint eax, out uint edx)

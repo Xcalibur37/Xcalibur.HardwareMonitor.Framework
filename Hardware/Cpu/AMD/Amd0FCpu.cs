@@ -11,7 +11,7 @@ using System.Threading;
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD;
 
 /// <summary>
-/// AMD 0F CPU
+/// AMD 0F-series CPU
 /// </summary>
 /// <seealso cref="AmdCpuBase" />
 internal sealed class Amd0FCpu : AmdCpuBase
@@ -64,21 +64,6 @@ internal sealed class Amd0FCpu : AmdCpuBase
 
     #region Methods
     
-    /// <summary>
-    /// Prints the data to a report.
-    /// </summary>
-    /// <returns></returns>
-    /// <inheritdoc />
-    public override string GetReport()
-    {
-        StringBuilder r = new();
-        r.Append(base.GetReport());
-        r.Append("Miscellaneous Control Address: 0x");
-        r.AppendLine(_miscellaneousControlAddress.ToString("X", CultureInfo.InvariantCulture));
-        r.AppendLine();
-        return r.ToString();
-    }
-
     /// <summary>
     /// Updates all sensors.
     /// </summary>

@@ -48,7 +48,7 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         // TODO: Intel
         return _vendor switch
         {
-            CpuVendor.AMD => AmdEnable(enabled),
+            CpuVendor.Amd => AmdEnable(enabled),
             _ => false
         };
     }

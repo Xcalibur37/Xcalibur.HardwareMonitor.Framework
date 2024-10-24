@@ -5,7 +5,7 @@ using System.Linq;
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
 {
     /// <summary>
-    /// AMD 17 Core
+    /// AMD 17-Series Core
     /// </summary>
     internal class Amd17Core
     {
@@ -66,6 +66,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         }
 
         #endregion
+
+        #region Methods
 
         /// <summary>
         /// Updates the sensors.
@@ -157,5 +159,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                 _power.Value = (float)energy;
             }
         }
+
+        #endregion
     }
 }

@@ -24,6 +24,4 @@ internal sealed class StorageGeneric : AbstractStorage
     }
 
     protected override void UpdateSensors() { }
-
-    protected override void GetReport(StringBuilder r) { }
 }

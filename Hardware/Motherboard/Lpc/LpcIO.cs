@@ -15,7 +15,6 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
 internal class LpcIO
 {
-    private readonly StringBuilder _report = new();
     private readonly List<ISuperIO> _superIOs = new();
 
     public LpcIO(Motherboard motherboard)
@@ -33,19 +32,6 @@ internal class LpcIO
 
     public ISuperIO[] SuperIO => _superIOs.ToArray();
 
-    private void ReportUnknownChip(LpcPort port, string type, int chip)
-    {
-        _report.Append("Chip ID: Unknown ");
-        _report.Append(type);
-        _report.Append(" with ID 0x");
-        _report.Append(chip.ToString("X", CultureInfo.InvariantCulture));
-        _report.Append(" at 0x");
-        _report.Append(port.RegisterPort.ToString("X", CultureInfo.InvariantCulture));
-        _report.Append("/0x");
-        _report.AppendLine(port.ValuePort.ToString("X", CultureInfo.InvariantCulture));
-        _report.AppendLine();
-    }
-
     private bool DetectSmsc(LpcPort port)
     {
         port.SmscEnter();
@@ -55,7 +41,6 @@ internal class LpcIO
         if (chipId is not 0 and not 0xffff)
         {
             port.SmscExit();
-            ReportUnknownChip(port, "SMSC", chipId);
         }
 
         return false;
@@ -74,17 +59,7 @@ internal class LpcIO
             if (DetectSmsc(port)) continue;
         }
     }
-
-    public string GetReport()
-    {
-        if (_report.Length > 0)
-        {
-            return "LpcIO" + Environment.NewLine + Environment.NewLine + _report;
-        }
-
-        return null;
-    }
-
+    
     private bool DetectWinbondFintek(LpcPort port)
     {
         port.WinbondNuvotonFintekEnter();
@@ -413,7 +388,6 @@ internal class LpcIO
             if (id is not 0 and not 0xff)
             {
                 port.WinbondNuvotonFintekExit();
-                ReportUnknownChip(port, "Winbond / Nuvoton / Fintek", (id << 8) | revision);
             }
         }
         else
@@ -436,13 +410,6 @@ internal class LpcIO
 
             if (address != verify)
             {
-                _report.Append("Chip ID: 0x");
-                _report.AppendLine(chip.ToString("X"));
-                _report.Append("Chip revision: 0x");
-                _report.AppendLine(revision.ToString("X", CultureInfo.InvariantCulture));
-                _report.AppendLine("Error: Address verification failed");
-                _report.AppendLine();
-
                 return false;
             }
 
@@ -452,14 +419,6 @@ internal class LpcIO
 
             if (address < 0x100 || (address & 0xF007) != 0)
             {
-                _report.Append("Chip ID: 0x");
-                _report.AppendLine(chip.ToString("X"));
-                _report.Append("Chip revision: 0x");
-                _report.AppendLine(revision.ToString("X", CultureInfo.InvariantCulture));
-                _report.Append("Error: Invalid address 0x");
-                _report.AppendLine(address.ToString("X", CultureInfo.InvariantCulture));
-                _report.AppendLine();
-
                 return false;
             }
 
@@ -508,14 +467,6 @@ internal class LpcIO
                 case Chip.F71808E:
                     if (vendorId != FINTEK_VENDOR_ID)
                     {
-                        _report.Append("Chip ID: 0x");
-                        _report.AppendLine(chip.ToString("X"));
-                        _report.Append("Chip revision: 0x");
-                        _report.AppendLine(revision.ToString("X", CultureInfo.InvariantCulture));
-                        _report.Append("Error: Invalid vendor ID 0x");
-                        _report.AppendLine(vendorId.ToString("X", CultureInfo.InvariantCulture));
-                        _report.AppendLine();
-
                         return false;
                     }
 
@@ -578,8 +529,6 @@ internal class LpcIO
             if (chipId is not 0 and not 0xffff)
             {
                 port.IT87Exit();
-
-                ReportUnknownChip(port, "ITE", chipId);
             }
         }
         else
@@ -616,23 +565,11 @@ internal class LpcIO
 
             if (address != verify || address < 0x100 || (address & 0xF007) != 0)
             {
-                _report.Append("Chip ID: 0x");
-                _report.AppendLine(chip.ToString("X"));
-                _report.Append("Error: Invalid address 0x");
-                _report.AppendLine(address.ToString("X", CultureInfo.InvariantCulture));
-                _report.AppendLine();
-
                 return false;
             }
 
             if (gpioAddress != gpioVerify || gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0)
             {
-                _report.Append("Chip ID: 0x");
-                _report.AppendLine(chip.ToString("X"));
-                _report.Append("Error: Invalid GPIO address 0x");
-                _report.AppendLine(gpioAddress.ToString("X", CultureInfo.InvariantCulture));
-                _report.AppendLine();
-
                 return false;
             }
 
@@ -658,7 +595,7 @@ internal class LpcIO
             return gigabyteController;
 
         // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
-        if (chip == Chip.IT8792E && vendor == CpuVendor.AMD)
+        if (chip == Chip.IT8792E && vendor == CpuVendor.Amd)
         {
             gigabyteController = EcioPortGigabyteController.TryCreate();
             if (gigabyteController != null)
@@ -674,7 +611,7 @@ internal class LpcIO
                 return CpuVendor.Intel;
 
             if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
-                return CpuVendor.AMD;
+                return CpuVendor.Amd;
 
             return CpuVendor.Unknown;
         }

@@ -226,40 +226,6 @@ public abstract class AbstractStorage : Hardware
         _lastTime = currentTime;
     }
 
-    protected abstract void GetReport(StringBuilder r);
-
-    public override string GetReport()
-    {
-        var r = new StringBuilder();
-        r.AppendLine("Storage");
-        r.AppendLine();
-        r.AppendLine("Drive Name: " + OriginalName);
-        r.AppendLine("Firmware Version: " + FirmwareRevision);
-        r.AppendLine();
-        GetReport(r);
-
-        foreach (DriveInfo di in DriveInfos)
-        {
-            if (!di.IsReady)
-                continue;
-
-            try
-            {
-                r.AppendLine("Logical Drive Name: " + di.Name);
-                r.AppendLine("Format: " + di.DriveFormat);
-                r.AppendLine("Total Size: " + di.TotalSize);
-                r.AppendLine("Total Free Space: " + di.TotalFreeSpace);
-                r.AppendLine();
-            }
-            catch (IOException)
-            { }
-            catch (UnauthorizedAccessException)
-            { }
-        }
-
-        return r.ToString();
-    }
-
     public override void Traverse(IVisitor visitor)
     {
         foreach (ISensor sensor in Sensors)

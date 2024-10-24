@@ -32,27 +32,6 @@ internal class NetworkGroup : IGroup, IHardwareChanged
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
-    public string GetReport()
-    {
-        var report = new StringBuilder();
-
-        foreach (Network network in _hardware)
-        {
-            report.AppendLine(network.NetworkInterface.Description);
-            report.AppendLine(network.NetworkInterface.OperationalStatus.ToString());
-            report.AppendLine();
-
-            foreach (ISensor sensor in network.Sensors)
-            {
-                report.AppendLine(sensor.Name);
-                report.AppendLine(sensor.Value.ToString());
-                report.AppendLine();
-            }
-        }
-
-        return report.ToString();
-    }
-
     public void Close()
     {
         NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;

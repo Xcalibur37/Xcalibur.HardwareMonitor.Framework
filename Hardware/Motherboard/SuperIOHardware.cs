@@ -4876,11 +4876,6 @@ internal sealed class SuperIOHardware : Hardware
         }
     }
 
-    public override string GetReport()
-    {
-        return _superIO.GetReport();
-    }
-
     public override void Update()
     {
         _superIO.Update();

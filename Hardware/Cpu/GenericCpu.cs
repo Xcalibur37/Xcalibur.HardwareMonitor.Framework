@@ -184,57 +184,6 @@ public class GenericCpu : Hardware
     #endregion
 
     #region Methods
-    
-    /// <summary>
-    /// Prints the data to a report.
-    /// </summary>
-    /// <returns></returns>
-    /// <inheritdoc />
-    public override string GetReport()
-    {
-        StringBuilder r = new();
-        switch (_vendor)
-        {
-            case CpuVendor.AMD:
-                r.AppendLine("AMD CPU");
-                break;
-            case CpuVendor.Intel:
-                r.AppendLine("Intel CPU");
-                break;
-            default:
-                r.AppendLine("Generic CPU");
-                break;
-        }
-
-        r.AppendLine();
-        r.AppendFormat("Name: {0}{1}", OriginalName, Environment.NewLine);
-        r.AppendFormat("Number of Cores: {0}{1}", CoreCount, Environment.NewLine);
-        r.AppendFormat("Threads per Core: {0}{1}", CpuId[0].Length, Environment.NewLine);
-        r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Timer Frequency: {0} MHz", Stopwatch.Frequency * 1e-6));
-        r.AppendLine("Time Stamp Counter: " + (HasTimeStampCounter ? _isInvariantTimeStampCounter ? "Invariant" : "Not Invariant" : "None"));
-        r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Estimated Time Stamp Counter Frequency: {0} MHz", Math.Round(_estimatedTimeStampCounterFrequency * 100) * 0.01));
-        r.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                                   "Estimated Time Stamp Counter Frequency Error: {0} Mhz",
-                                   Math.Round(_estimatedTimeStampCounterFrequency * _estimatedTimeStampCounterFrequencyError * 1e5) * 1e-5));
-
-        r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Time Stamp Counter Frequency: {0} MHz", Math.Round(TimeStampCounterFrequency * 100) * 0.01));
-        r.AppendLine();
-
-        uint[] msrArray = GetMsrs();
-        if (msrArray is not { Length: > 0 }) return r.ToString();
-        for (int i = 0; i < CpuId.Length; i++)
-        {
-            r.AppendLine("MSR Core #" + (i + 1));
-            r.AppendLine();
-            r.AppendLine(" MSR       EDX       EAX");
-            foreach (uint msr in msrArray)
-            {
-                GetMsrReportData(r, msr, CpuId[i][0].Affinity);
-            }
-            r.AppendLine();
-        }
-        return r.ToString();
-    }
 
     /// <summary>
     /// Updates all sensors.
@@ -337,7 +286,7 @@ public class GenericCpu : Hardware
     {
         string s = vendor switch
         {
-            CpuVendor.AMD => "amdcpu",
+            CpuVendor.Amd => "amdcpu",
             CpuVendor.Intel => "intelcpu",
             _ => "genericcpu"
         };
@@ -459,26 +408,6 @@ public class GenericCpu : Hardware
         double beginError = (afterBegin - timeBegin) / delta;
         double endError = (afterEnd - timeEnd) / delta;
         error = beginError + endError;
-    }
-
-    /// <summary>
-    /// Appends the MSR data.
-    /// </summary>
-    /// <param name="r">The r.</param>
-    /// <param name="msr">The MSR.</param>
-    /// <param name="affinity">The affinity.</param>
-    /// <returns></returns>
-    private static void GetMsrReportData(StringBuilder r, uint msr, GroupAffinity affinity)
-    {
-        if (!Ring0.ReadMsr(msr, out uint eax, out uint edx, affinity)) return;
-
-        r.Append(" ");
-        r.Append(msr.ToString("X8", CultureInfo.InvariantCulture));
-        r.Append("  ");
-        r.Append(edx.ToString("X8", CultureInfo.InvariantCulture));
-        r.Append("  ");
-        r.Append(eax.ToString("X8", CultureInfo.InvariantCulture));
-        r.AppendLine();
     }
 
     #endregion

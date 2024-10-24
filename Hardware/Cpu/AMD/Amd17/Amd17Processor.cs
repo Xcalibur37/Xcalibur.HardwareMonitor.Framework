@@ -5,10 +5,12 @@ using System.Linq;
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
 {
     /// <summary>
-    /// AMD 17 Processor
+    /// AMD 17-series Processor
     /// </summary>
     internal class Amd17Processor
     {
+        #region Fields
+
         private readonly Amd17Cpu _cpu;
         private readonly Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> _smuSensors = [];
 
@@ -26,13 +28,21 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         private DateTime _lastPwrTime = new(0);
         private uint _lastPwrValue;
 
+        #endregion
+
+        #region Properties
+
         /// <summary>
         /// Gets the nodes.
         /// </summary>
         /// <value>
         /// The nodes.
         /// </value>
-        public List<Amd17NumaNode> Nodes { get; } = new();
+        public List<Amd17NumaNode> Nodes { get; } = [];
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Amd17Processor"/> class.
@@ -49,6 +59,10 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             CreatePowerSensors();
             CreateSmuSensors();
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Appends the thread.
@@ -88,6 +102,18 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             UpdateVoltageSensors();
             UpdatePowerSensors();
             UpdateSmuSensors();
+        }
+
+        /// <summary>
+        /// Gets the time stamp counter multiplier.
+        /// </summary>
+        /// <returns></returns>
+        private double GetTimeStampCounterMultiplier()
+        {
+            Ring0.ReadMsr(Amd17Constants.MSR_PSTATE_0, out uint eax, out _);
+            uint cpuDfsId = eax >> 8 & 0x3f;
+            uint cpuFid = eax & 0xff;
+            return 2.0 * cpuFid / cpuDfsId;
         }
 
         /// <summary>
@@ -374,8 +400,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                 // Release
                 Mutexes.ReleasePciBus();
             }
-
-
+            
             // Readout not working for Ryzen 7000/9000.
             if (cpuId.Model is 0x61 or 0x44)
             {
@@ -512,16 +537,6 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             }
         }
 
-        /// <summary>
-        /// Gets the time stamp counter multiplier.
-        /// </summary>
-        /// <returns></returns>
-        private double GetTimeStampCounterMultiplier()
-        {
-            Ring0.ReadMsr(Amd17Constants.MSR_PSTATE_0, out uint eax, out _);
-            uint cpuDfsId = eax >> 8 & 0x3f;
-            uint cpuFid = eax & 0xff;
-            return 2.0 * cpuFid / cpuDfsId;
-        }
+        #endregion
     }
 }

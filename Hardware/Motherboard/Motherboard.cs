@@ -154,21 +154,6 @@ public class Motherboard : IHardware
     /// <inheritdoc />
     public IHardware[] SubHardware { get; }
 
-    /// <inheritdoc />
-    public string GetReport()
-    {
-        StringBuilder r = new();
-
-        r.AppendLine("Motherboard");
-        r.AppendLine();
-        r.Append(SMBios.GetReport());
-
-        if (_lpcIO != null)
-            r.Append(_lpcIO.GetReport());
-
-        return r.ToString();
-    }
-
     /// <summary>
     /// Motherboard itself cannot be updated. Update <see cref="SubHardware" /> instead.
     /// </summary>

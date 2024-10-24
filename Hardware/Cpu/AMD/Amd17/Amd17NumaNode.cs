@@ -1,17 +1,38 @@
 ﻿using System.Collections.Generic;
+using Xcalibur.Extensions.V2;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
 {
     /// <summary>
-    /// AMD 17 Numa Node
+    /// AMD 17-series Numa Node
     /// </summary>
     internal class Amd17NumaNode
     {
+        #region Fields
+
         private readonly Amd17Cpu _cpu;
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the cores.
+        /// </summary>
+        /// <value>
+        /// The cores.
+        /// </value>
         public List<Amd17Core> Cores { get; }
 
+        /// <summary>
+        /// Gets the node identifier.
+        /// </summary>
+        /// <value>
+        /// The node identifier.
+        /// </value>
         public int NodeId { get; }
+
+        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Amd17NumaNode"/> class.
@@ -52,6 +73,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <summary>
         /// Updates the sensors.
         /// </summary>
-        public static void UpdateSensors() { }
+        public void UpdateSensors()
+        {
+            Cores.Apply(c => c.UpdateSensors());
+        }
     }
 }

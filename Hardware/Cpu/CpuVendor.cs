@@ -5,8 +5,19 @@
     /// </summary>
     public enum CpuVendor
     {
+        /// <summary>
+        /// Unknown
+        /// </summary>
         Unknown,
+
+        /// <summary>
+        /// Intel
+        /// </summary>
         Intel,
-        AMD
+
+        /// <summary>
+        /// AMD
+        /// </summary>
+        Amd
     }
 }

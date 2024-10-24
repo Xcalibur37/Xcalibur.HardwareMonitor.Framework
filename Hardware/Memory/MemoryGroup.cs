@@ -17,11 +17,6 @@ internal class MemoryGroup : IGroup
         _hardware = new Hardware[] { Software.OperatingSystem.IsUnix ? new GenericLinuxMemory("Generic Memory", settings) : new GenericWindowsMemory("Generic Memory", settings) };
     }
 
-    public string GetReport()
-    {
-        return null;
-    }
-
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
     public void Close()

@@ -6,12 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17;
 
 /// <summary>
-/// AMD 17 CPU
+/// AMD 17-series CPU
 /// </summary>
 /// <seealso cref="AmdCpuBase" />
 internal sealed class Amd17Cpu : AmdCpuBase
@@ -62,6 +61,7 @@ internal sealed class Amd17Cpu : AmdCpuBase
 
         SensorTypeIndex[SensorType.Load] = Active.Count(x => x.SensorType == SensorType.Load);
 
+        // Get SMU
         SMU = new RyzenSMU(Family, Model, PackageType);
 
         // Add all numa nodes.
@@ -87,13 +87,14 @@ internal sealed class Amd17Cpu : AmdCpuBase
             // NodesPerProcessor =  CPUID_Fn8000001E_ECX[10:8]
             // nodeID =  CPUID_Fn8000001E_ECX[7:0]
             int nodeId = (int)(thread.ExtData[0x1e, 2] & 0xff);
-
+            
             if (coreIdRead != lastCoreId)
             {
                 coreId++;
             }
             lastCoreId = coreIdRead;
 
+            // Append thread
             Processor.AppendThread(thread, nodeId, coreId);
         }
 
@@ -120,19 +121,6 @@ internal sealed class Amd17Cpu : AmdCpuBase
     ];
 
     /// <summary>
-    /// Prints the data to a report.
-    /// </summary>
-    /// <returns></returns>
-    /// <inheritdoc />
-    public override string GetReport()
-    {
-        StringBuilder r = new();
-        r.Append(base.GetReport());
-        r.Append(SMU.GetReport());
-        return r.ToString();
-    }
-
-    /// <summary>
     /// Updates all sensors.
     /// </summary>
     /// <inheritdoc />
@@ -147,11 +135,7 @@ internal sealed class Amd17Cpu : AmdCpuBase
         foreach (Amd17NumaNode node in Processor.Nodes)
         {
             // Update Numa Node
-            Amd17NumaNode.UpdateSensors();
-            foreach (Amd17Core c in node.Cores)
-            {
-                c.UpdateSensors();
-            }
+            node.UpdateSensors();
         }
     }
 

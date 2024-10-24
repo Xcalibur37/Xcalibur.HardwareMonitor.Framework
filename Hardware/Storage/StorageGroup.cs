@@ -153,11 +153,6 @@ internal class StorageGroup : IGroup
         return @$"ASSOCIATORS OF {{{source}.ObjectId=""{objectId.Replace(@"\", @"\\").Replace(@"""", @"\""")}""}} WHERE AssocClass = {associationClass}";
     }
 
-    public string GetReport()
-    {
-        return null;
-    }
-
     public void Close()
     {
         foreach (AbstractStorage storage in _hardware)

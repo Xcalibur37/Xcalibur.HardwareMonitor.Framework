@@ -1,5 +1,8 @@
 ﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel
 {
+    /// <summary>
+    /// Intel Constants
+    /// </summary>
     internal class IntelConstants
     {
         internal const uint IA32_PACKAGE_THERM_STATUS = 0x1B1;

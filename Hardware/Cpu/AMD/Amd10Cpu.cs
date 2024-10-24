@@ -14,6 +14,10 @@ using System.Threading;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD;
 
+/// <summary>
+/// AMD 10-series CPU
+/// </summary>
+/// <seealso cref="AmdCpuBase" />
 internal sealed class Amd10Cpu : AmdCpuBase
 {
     #region Fields
@@ -124,30 +128,6 @@ internal sealed class Amd10Cpu : AmdCpuBase
         UpdateClockSensors();
         UpdateVoltageSensors();
         UpdatePowerSavingModeSensors();
-    }
-
-    /// <summary>
-    /// Prints the data to a report.
-    /// </summary>
-    /// <returns></returns>
-    /// <inheritdoc />
-    public override string GetReport()
-    {
-        StringBuilder r = new();
-        r.Append(base.GetReport());
-        r.Append("Miscellaneous Control Address: 0x");
-        r.AppendLine(_miscellaneousControlAddress.ToString("X", CultureInfo.InvariantCulture));
-        r.Append("Time Stamp Counter Multiplier: ");
-        r.AppendLine(_timeStampCounterMultiplier.ToString(CultureInfo.InvariantCulture));
-        if (Family == 0x14)
-        {
-            Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
-            r.Append("PCI Register D18F3xD4: ");
-            r.AppendLine(value.ToString("X8", CultureInfo.InvariantCulture));
-        }
-
-        r.AppendLine();
-        return r.ToString();
     }
 
     /// <summary>

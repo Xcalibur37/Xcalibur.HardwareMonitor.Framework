@@ -215,11 +215,6 @@ internal class LMSensors
         public void WriteGpio(int index, byte value)
         { }
 
-        public string GetReport()
-        {
-            return null;
-        }
-
         public void SetControl(int index, byte? value)
         { }
 

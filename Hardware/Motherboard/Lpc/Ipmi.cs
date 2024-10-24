@@ -83,13 +83,6 @@ internal class Ipmi : ISuperIO
 
     public float?[] Voltages { get; }
 
-    public string GetReport()
-    {
-        StringBuilder sb = new();
-        Update(sb);
-        return sb.ToString();
-    }
-
     public void SetControl(int index, byte? value)
     {
         if (_manufacturer == Manufacturer.Supermicro)
