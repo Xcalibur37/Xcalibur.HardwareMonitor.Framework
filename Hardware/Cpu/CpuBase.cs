@@ -16,7 +16,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 /// 
 /// </summary>
 /// <seealso cref="Hardware" />
-public class GenericCpu : Hardware
+public class CpuBase : Hardware
 {
     #region Fields
 
@@ -144,12 +144,12 @@ public class GenericCpu : Hardware
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GenericCpu"/> class.
+    /// Initializes a new instance of the <see cref="CpuBase"/> class.
     /// </summary>
     /// <param name="processorIndex">Index of the processor.</param>
     /// <param name="cpuId">The cpu identifier.</param>
     /// <param name="settings">The settings.</param>
-    public GenericCpu(int processorIndex, CpuId[][] cpuId, ISettings settings)
+    public CpuBase(int processorIndex, CpuId[][] cpuId, ISettings settings)
         : base(cpuId[0][0].Name, CreateIdentifier(cpuId[0][0].Vendor, processorIndex), settings)
     {
         CpuId = cpuId;

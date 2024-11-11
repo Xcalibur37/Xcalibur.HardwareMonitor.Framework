@@ -8,6 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
 
+/// <summary>
+/// Manufacturer
+/// </summary>
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

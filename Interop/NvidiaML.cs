@@ -9,6 +9,16 @@ using System.Runtime.InteropServices;
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
 
+/// <summary>
+/// Nvidia Management Library
+/// A C-based API for monitoring and managing various states of the NVIDIA GPU devices.
+/// It provides a direct-access to the queries and commands exposed via nvidia-smi.
+/// The runtime version of NVML ships with the NVIDIA display driver, and the SDK provides
+/// the appropriate header, stub libraries and sample applications.
+/// 
+/// Each new version of NVML is backwards compatible and is intended to be a platform for
+/// building 3rd party applications.
+/// </summary>
 internal static class NvidiaML
 {
     private const string LinuxDllName = "nvidia-ml";

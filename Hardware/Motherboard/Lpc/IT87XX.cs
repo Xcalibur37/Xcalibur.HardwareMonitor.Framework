@@ -8,12 +8,14 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 // ReSharper disable once InconsistentNaming
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
-internal class IT87XX : ISuperIO
+internal class IT87XX : ISuperIo
 {
     private const int MaxFanHeaders = 6;
     private readonly ushort _address;

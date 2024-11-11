@@ -10,6 +10,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
 
+/// <summary>
+/// Model
+/// </summary>
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
 public enum Model

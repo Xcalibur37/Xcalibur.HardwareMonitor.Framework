@@ -9,8 +9,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD;
 /// <summary>
 /// AMD CPU Base
 /// </summary>
-/// <seealso cref="GenericCpu" />
-internal abstract class AmdCpuBase : GenericCpu
+/// <seealso cref="CpuBase" />
+internal abstract class AmdCpuBase : CpuBase
 {
     // ReSharper disable InconsistentNaming
     private const ushort AMD_VENDOR_ID = 0x1022;

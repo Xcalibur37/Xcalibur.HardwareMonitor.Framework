@@ -3,38 +3,83 @@
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Diagnostics;
 using System.Threading;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC.Exceptions;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 
 /// <summary>
 /// An unsafe but universal implementation for the ACPI Embedded Controller IO interface for Windows
 /// </summary>
+/// <seealso cref="IEmbeddedControllerIo" />
 /// <remarks>
 /// It is unsafe because of possible race condition between this application and the PC firmware when
 /// writing to the EC registers. For a safe approach ACPI/WMI methods have to be used, but those are
 /// different for each motherboard model.
 /// </remarks>
-public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
+public class WindowsEmbeddedControllerIo : IEmbeddedControllerIo
 {
+    #region Fields
+
     private const int FailuresBeforeSkip = 20;
     private const int MaxRetries = 5;
-
-    // implementation 
     private const int WaitSpins = 50;
     private bool _disposed;
+    private static int _waitReadFailures;
 
-    private int _waitReadFailures;
+    /// <summary>
+    /// Read operation
+    /// </summary>
+    /// <typeparam name="TParam">The type of the parameter.</typeparam>
+    /// <param name="register">The register.</param>
+    /// <param name="p">The p.</param>
+    /// <returns></returns>
+    private delegate bool ReadOp<TParam>(byte register, out TParam p);
 
-    public WindowsEmbeddedControllerIO()
+    /// <summary>
+    /// Write operation
+    /// </summary>
+    /// <typeparam name="TParam">The type of the parameter.</typeparam>
+    /// <param name="register">The register.</param>
+    /// <param name="p">The p.</param>
+    /// <returns></returns>
+    private delegate bool WriteOp<in TParam>(byte register, TParam p);
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WindowsEmbeddedControllerIo"/> class.
+    /// </summary>
+    /// <exception cref="BusMutexLockingFailedException"></exception>
+    public WindowsEmbeddedControllerIo()
     {
-        if (!Mutexes.WaitEc(10))
-        {
-            throw new BusMutexLockingFailedException();
-        }
+        if (Mutexes.WaitEc(10)) return;
+        throw new BusMutexLockingFailedException();
     }
 
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        Mutexes.ReleaseEc();
+    }
+
+    /// <summary>
+    /// Reads the specified registers.
+    /// </summary>
+    /// <param name="registers">The registers.</param>
+    /// <param name="data">The data.</param>
     public void Read(ushort[] registers, byte[] data)
     {
         Trace.Assert(registers.Length <= data.Length, 
@@ -62,36 +107,42 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         SwitchBank(prevBank);
     }
 
-    private byte ReadByte(byte register)
-    {
-        return ReadLoop<byte>(register, ReadByteOp);
-    }
+    /// <summary>
+    /// Reads a byte.
+    /// </summary>
+    /// <param name="register">The register.</param>
+    /// <returns></returns>
+    private static byte ReadByte(byte register) => ReadLoop<byte>(register, ReadByteOp);
 
-    private void WriteByte(byte register, byte value)
-    {
-        WriteLoop(register, value, WriteByteOp);
-    }
+    /// <summary>
+    /// Writes a byte.
+    /// </summary>
+    /// <param name="register">The register.</param>
+    /// <param name="value">The value.</param>
+    private static void WriteByte(byte register, byte value) => WriteLoop(register, value, WriteByteOp);
 
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            _disposed = true;
-            Mutexes.ReleaseEc();
-        }
-    }
-
-    private byte SwitchBank(byte bank)
+    /// <summary>
+    /// Switches the bank.
+    /// </summary>
+    /// <param name="bank">The bank.</param>
+    /// <returns></returns>
+    private static byte SwitchBank(byte bank)
     {
         byte previous = ReadByte(0xFF);
         WriteByte(0xFF, bank);
         return previous;
     }
 
-    private TResult ReadLoop<TResult>(byte register, ReadOp<TResult> op) where TResult : new()
+    /// <summary>
+    /// Reads the loop.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="register">The register.</param>
+    /// <param name="op">The op.</param>
+    /// <returns></returns>
+    private static TResult ReadLoop<TResult>(byte register, ReadOp<TResult> op) where TResult : new()
     {
         TResult result = new();
-
         for (int i = 0; i < MaxRetries; i++)
         {
             if (op(register, out result))
@@ -99,26 +150,35 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
                 return result;
             }
         }
-
         return result;
     }
 
-    private void WriteLoop<TValue>(byte register, TValue value, WriteOp<TValue> op)
+    /// <summary>
+    /// Writes the loop.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="register">The register.</param>
+    /// <param name="value">The value.</param>
+    /// <param name="op">The op.</param>
+    private static void WriteLoop<TValue>(byte register, TValue value, WriteOp<TValue> op)
     {
         for (int i = 0; i < MaxRetries; i++)
         {
-            if (op(register, value))
-            {
-                return;
-            }
+            if (op(register, value)) return;
         }
     }
 
-    private bool WaitForStatus(Status status, bool isSet)
+    /// <summary>
+    /// Waits for status.
+    /// </summary>
+    /// <param name="status">The status.</param>
+    /// <param name="isSet">if set to <c>true</c> [is set].</param>
+    /// <returns></returns>
+    private static bool WaitForStatus(Status status, bool isSet)
     {
         for (int i = 0; i < WaitSpins; i++)
         {
-            byte value = ReadIOPort(Port.Command);
+            byte value = ReadIoPort(Port.Command);
 
             if (((byte)status & (!isSet ? value : (byte)~value)) == 0)
             {
@@ -131,7 +191,11 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         return false;
     }
 
-    private bool WaitRead()
+    /// <summary>
+    /// Waits the read.
+    /// </summary>
+    /// <returns></returns>
+    private static bool WaitRead()
     {
         if (_waitReadFailures > FailuresBeforeSkip)
         {
@@ -148,73 +212,47 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         return false;
     }
 
-    private bool WaitWrite()
-    {
-        return WaitForStatus(Status.InputBufferFull, false);
-    }
+    /// <summary>
+    /// Waits for write status
+    /// </summary>
+    /// <returns></returns>
+    private static bool WaitWrite() => WaitForStatus(Status.InputBufferFull, false);
 
-    private byte ReadIOPort(Port port)
-    {
-        return Ring0.ReadIoPort((uint)port);
-    }
+    /// <summary>
+    /// Reads the io port.
+    /// </summary>
+    /// <param name="port">The port.</param>
+    /// <returns></returns>
+    private static byte ReadIoPort(Port port) => Ring0.ReadIoPort((uint)port);
 
-    private void WriteIOPort(Port port, byte datum)
-    {
-        Ring0.WriteIoPort((uint)port, datum);
-    }
-
-    public class BusMutexLockingFailedException : EmbeddedController.IOException
-    {
-        public BusMutexLockingFailedException()
-            : base("could not lock ISA bus mutex")
-        { }
-    }
-
-    private delegate bool ReadOp<TParam>(byte register, out TParam p);
-
-    private delegate bool WriteOp<in TParam>(byte register, TParam p);
-
-    // see the ACPI specification chapter 12
-    private enum Port : byte
-    {
-        Command = 0x66,
-        Data = 0x62
-    }
-
-    private enum Command : byte
-    {
-        Read = 0x80, // RD_EC
-        Write = 0x81, // WR_EC
-        BurstEnable = 0x82, // BE_EC
-        BurstDisable = 0x83, // BD_EC
-        Query = 0x84 // QR_EC
-    }
-
-    private enum Status : byte
-    {
-        OutputBufferFull = 0x01, // EC_OBF
-        InputBufferFull = 0x02, // EC_IBF
-        Command = 0x08, // CMD
-        BurstMode = 0x10, // BURST
-        SciEventPending = 0x20, // SCI_EVT
-        SmiEventPending = 0x40 // SMI_EVT
-    }
-
+    /// <summary>
+    /// Writes the io port.
+    /// </summary>
+    /// <param name="port">The port.</param>
+    /// <param name="datum">The datum.</param>
+    private static void WriteIoPort(Port port, byte datum) => Ring0.WriteIoPort((uint)port, datum);
+    
     #region Read/Write ops
 
-    protected bool ReadByteOp(byte register, out byte value)
+    /// <summary>
+    /// Reads the byte op.
+    /// </summary>
+    /// <param name="register">The register.</param>
+    /// <param name="value">The value.</param>
+    /// <returns></returns>
+    protected static bool ReadByteOp(byte register, out byte value)
     {
         if (WaitWrite())
         {
-            WriteIOPort(Port.Command, (byte)Command.Read);
+            WriteIoPort(Port.Command, (byte)Command.Read);
 
             if (WaitWrite())
             {
-                WriteIOPort(Port.Data, register);
+                WriteIoPort(Port.Data, register);
 
                 if (WaitWrite() && WaitRead())
                 {
-                    value = ReadIOPort(Port.Data);
+                    value = ReadIoPort(Port.Data);
                     return true;
                 }
             }
@@ -224,24 +262,27 @@ public class WindowsEmbeddedControllerIO : IEmbeddedControllerIO
         return false;
     }
 
-    protected bool WriteByteOp(byte register, byte value)
+    /// <summary>
+    /// Writes the byte op.
+    /// </summary>
+    /// <param name="register">The register.</param>
+    /// <param name="value">The value.</param>
+    /// <returns></returns>
+    protected static bool WriteByteOp(byte register, byte value)
     {
-        if (WaitWrite())
-        {
-            WriteIOPort(Port.Command, (byte)Command.Write);
-            if (WaitWrite())
-            {
-                WriteIOPort(Port.Data, register);
-                if (WaitWrite())
-                {
-                    WriteIOPort(Port.Data, value);
-                    return true;
-                }
-            }
-        }
+        if (!WaitWrite()) return false;
 
-        return false;
+        WriteIoPort(Port.Command, (byte)Command.Write);
+        if (!WaitWrite()) return false;
+        
+        WriteIoPort(Port.Data, register);
+        if (!WaitWrite()) return false;
+        
+        WriteIoPort(Port.Data, value);
+        return true;
     }
+
+    #endregion
 
     #endregion
 }

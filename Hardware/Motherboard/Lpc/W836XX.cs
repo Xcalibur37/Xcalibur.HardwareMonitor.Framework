@@ -7,12 +7,13 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 // ReSharper disable once InconsistentNaming
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
-internal class W836XX : ISuperIO
+internal class W836XX : ISuperIo
 {
     private readonly ushort _address;
     private readonly byte _revision;

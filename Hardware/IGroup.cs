@@ -19,7 +19,7 @@ internal interface IGroup
     IReadOnlyList<IHardware> Hardware { get; }
     
     /// <summary>
-    /// Stop updating this group in the future.
+    /// Close open devices.
     /// </summary>
     void Close();
 }

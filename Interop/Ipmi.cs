@@ -2,9 +2,15 @@
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
 
+/// <summary>
+/// Intelligent Platform Management Interface (IPMI)
+/// </summary>
 internal static class Ipmi
 {
-    // Ported from ipmiutil
+    /// <summary>
+    /// Sensory Data Repository (SDR)
+    /// Ported from ipmiutil
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
     internal struct Sdr
     {

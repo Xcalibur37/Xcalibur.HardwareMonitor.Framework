@@ -5,4 +5,10 @@
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 
-public delegate float EmbeddedControllerReader(IEmbeddedControllerIO ecIO, ushort register);
+/// <summary>
+/// Embedded Controller Reader
+/// </summary>
+/// <param name="ecIO">The ec io.</param>
+/// <param name="register">The register.</param>
+/// <returns></returns>
+public delegate float EmbeddedControllerReader(IEmbeddedControllerIo ecIo, ushort register);

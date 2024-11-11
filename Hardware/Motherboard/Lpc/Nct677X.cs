@@ -10,10 +10,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
-internal class Nct677X : ISuperIO
+internal class Nct677X : ISuperIo
 {
     private readonly struct TemperatureSourceData
     {

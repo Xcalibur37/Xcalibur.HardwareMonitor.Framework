@@ -23,7 +23,7 @@ internal class CpuGroup : IGroup
 {
     #region Fields
 
-    private readonly List<GenericCpu> _hardware = [];
+    private readonly List<CpuBase> _hardware = [];
     private CpuId[][][] _threads;
 
     #endregion
@@ -196,14 +196,14 @@ internal class CpuGroup : IGroup
                         _hardware.Add(new Amd17Cpu(index, coreThreads, settings));
                         break;
                     default:
-                        _hardware.Add(new GenericCpu(index, coreThreads, settings));
+                        _hardware.Add(new CpuBase(index, coreThreads, settings));
                         break;
                 }
 
                 break;
             case CpuVendor.Unknown:
             default:
-                _hardware.Add(new GenericCpu(index, coreThreads, settings));
+                _hardware.Add(new CpuBase(index, coreThreads, settings));
                 break;
         }
     }

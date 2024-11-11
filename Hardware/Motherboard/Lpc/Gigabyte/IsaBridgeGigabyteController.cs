@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
 
 /// <summary>
 /// This is a controller present on some Gigabyte motherboards for both Intel and AMD, that is in custom firmware
@@ -19,6 +19,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 /// </summary>
 internal class IsaBridgeGigabyteController : IGigabyteController
 {
+    #region Fields
+
     private const uint ControllerAddressRange = 0xFF;
     private const int ControllerEnableRegister = 0x47;
     private const uint ControllerFanControlArea = 0x900;
@@ -27,16 +29,27 @@ internal class IsaBridgeGigabyteController : IGigabyteController
     /// Base address in PCI RAM that maps to the EC's RAM
     /// </summary>
     private readonly uint _controllerBaseAddress;
-
     private readonly CpuVendor _vendor;
-
     private bool? _initialState;
 
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IsaBridgeGigabyteController"/> class.
+    /// </summary>
+    /// <param name="address">The address.</param>
+    /// <param name="vendor">The vendor.</param>
     public IsaBridgeGigabyteController(uint address, CpuVendor vendor)
     {
         _controllerBaseAddress = address;
         _vendor = vendor;
     }
+
+    #endregion
+
+    #region Methods
 
     /// <summary>
     /// Enable/Disable Fan Control
@@ -53,10 +66,23 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         };
     }
 
+    /// <summary>
+    /// Restore settings back to initial values
+    /// </summary>
+    public void Restore()
+    {
+        if (!_initialState.HasValue) return;
+        Enable(_initialState.Value);
+    }
+
+    /// <summary>
+    /// Enables AMD-related device
+    /// </summary>
+    /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+    /// <returns></returns>
     private bool AmdEnable(bool enabled)
     {
-        if (!Mutexes.WaitPciBus(10))
-            return false;
+        if (!Mutexes.WaitPciBus(10)) return false;
 
         // see D14F3x https://www.amd.com/system/files/TechDocs/55072_AMD_Family_15h_Models_70h-7Fh_BKDG.pdf
         uint amdIsaBridgeAddress = Ring0.GetPciAddress(0x0, 0x14, 0x3);
@@ -104,19 +130,21 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         return result;
     }
 
+    /// <summary>
+    /// Enables a device as the specified address.
+    /// </summary>
+    /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+    /// <param name="pciMmIoBaseAddress">The pci mm io base address.</param>
+    /// <returns></returns>
     private bool Enable(bool enabled, IntPtr pciMmIoBaseAddress)
     {
         // Map PCI memory to this process memory
-        if (!InpOut.Open())
-            return false;
+        if (!InpOut.Open()) return false;
 
         IntPtr mapped = InpOut.MapMemory(pciMmIoBaseAddress, ControllerAddressRange, out IntPtr handle);
-
-        if (mapped == IntPtr.Zero)
-            return false;
+        if (mapped == IntPtr.Zero) return false;
 
         bool current = Convert.ToBoolean(Marshal.ReadByte(mapped, ControllerEnableRegister));
-
         _initialState ??= current;
 
         // Update Controller State
@@ -131,12 +159,5 @@ internal class IsaBridgeGigabyteController : IGigabyteController
         return true;
     }
 
-    /// <summary>
-    /// Restore settings back to initial values
-    /// </summary>
-    public void Restore()
-    {
-        if (_initialState.HasValue)
-            Enable(_initialState.Value);
-    }
+    #endregion
 }

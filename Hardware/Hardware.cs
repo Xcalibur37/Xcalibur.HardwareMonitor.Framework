@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Xcalibur.Extensions.V2;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 
@@ -116,21 +117,29 @@ public abstract class Hardware : IHardware
         Active.Apply(x => x.Accept(visitor));
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Activates the sensor.
+    /// </summary>
+    /// <param name="sensor">The sensor.</param>
     protected internal virtual void ActivateSensor(ISensor sensor)
     {
         if (!Active.Add(sensor)) return;
         SensorAdded?.Invoke(sensor);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Deactivates the sensor.
+    /// </summary>
+    /// <param name="sensor">The sensor.</param>
     protected virtual void DeactivateSensor(ISensor sensor)
     {
         if (!Active.Remove(sensor)) return;
         SensorRemoved?.Invoke(sensor);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Closes this instance.
+    /// </summary>
     public virtual void Close()
     {
         Closing?.Invoke(this);

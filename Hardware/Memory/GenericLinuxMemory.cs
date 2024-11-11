@@ -9,6 +9,10 @@ using System.Linq;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Memory;
 
+/// <summary>
+/// Generic Linux Memory
+/// </summary>
+/// <seealso cref="Hardware" />
 internal sealed class GenericLinuxMemory : Hardware
 {
     private readonly Sensor _physicalMemoryAvailable;
@@ -20,6 +24,11 @@ internal sealed class GenericLinuxMemory : Hardware
 
     public override HardwareType HardwareType => HardwareType.Memory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GenericLinuxMemory"/> class.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="settings">The settings.</param>
     public GenericLinuxMemory(string name, ISettings settings) : base(name, new Identifier("ram"), settings)
     {
         _physicalMemoryUsed = new Sensor("Memory Used", 0, SensorType.Data, this, settings);
@@ -41,6 +50,9 @@ internal sealed class GenericLinuxMemory : Hardware
         ActivateSensor(_virtualMemoryLoad);
     }
 
+    /// <summary>
+    /// </summary>
+    /// <inheritdoc />
     public override void Update()
     {
         try
@@ -48,24 +60,24 @@ internal sealed class GenericLinuxMemory : Hardware
             string[] memoryInfo = File.ReadAllLines("/proc/meminfo");
 
             {
-                float totalMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
-                float freeMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
-                float cachedMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("Cached:"))) / 1024.0f / 1024.0f;
+                float totalMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
+                float freeMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
+                float cachedMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("Cached:"))) / 1024.0f / 1024.0f;
 
-                float usedMemory_GB = totalMemory_GB - freeMemory_GB - cachedMemory_GB;
+                float usedMemoryGb = totalMemoryGb - freeMemoryGb - cachedMemoryGb;
 
-                _physicalMemoryUsed.Value = usedMemory_GB;
-                _physicalMemoryAvailable.Value = totalMemory_GB;
-                _physicalMemoryLoad.Value = 100.0f * (usedMemory_GB / totalMemory_GB);
+                _physicalMemoryUsed.Value = usedMemoryGb;
+                _physicalMemoryAvailable.Value = totalMemoryGb;
+                _physicalMemoryLoad.Value = 100.0f * (usedMemoryGb / totalMemoryGb);
             }
             {
-                float totalSwapMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
-                float freeSwapMemory_GB = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
-                float usedSwapMemory_GB = totalSwapMemory_GB - freeSwapMemory_GB;
+                float totalSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
+                float freeSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
+                float usedSwapMemoryGb = totalSwapMemoryGb - freeSwapMemoryGb;
 
-                _virtualMemoryUsed.Value = usedSwapMemory_GB;
-                _virtualMemoryAvailable.Value = totalSwapMemory_GB;
-                _virtualMemoryLoad.Value = 100.0f * (usedSwapMemory_GB / totalSwapMemory_GB);
+                _virtualMemoryUsed.Value = usedSwapMemoryGb;
+                _virtualMemoryAvailable.Value = totalSwapMemoryGb;
+                _virtualMemoryLoad.Value = 100.0f * (usedSwapMemoryGb / totalSwapMemoryGb);
             }
         }
         catch
@@ -80,6 +92,11 @@ internal sealed class GenericLinuxMemory : Hardware
         }
     }
 
+    /// <summary>
+    /// Gets the memory information value.
+    /// </summary>
+    /// <param name="line">The line.</param>
+    /// <returns></returns>
     private static long GetMemInfoValue(string line)
     {
         // Example: "MemTotal:       32849676 kB"

@@ -398,9 +398,24 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NvPhysicalGpuHandle
+    internal struct NvPhysicalGpuHandle : IEquatable<NvPhysicalGpuHandle>
     {
         private readonly IntPtr ptr;
+
+        public bool Equals(NvPhysicalGpuHandle other)
+        {
+            return ptr == other.ptr;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is NvPhysicalGpuHandle other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return ptr.GetHashCode();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
@@ -481,7 +496,7 @@ internal static class NvApi
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    internal struct NvFanCoolersStatusItem
+    internal struct NvFanCoolersStatusItem : IEquatable<NvFanCoolersStatusItem>
     {
         public uint CoolerId;
         public uint CurrentRpm;
@@ -491,6 +506,21 @@ internal static class NvApi
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8, ArraySubType = UnmanagedType.U4)]
         private readonly uint[] _reserved;
+
+        public bool Equals(NvFanCoolersStatusItem other)
+        {
+            return CoolerId == other.CoolerId && CurrentRpm == other.CurrentRpm && CurrentMinLevel == other.CurrentMinLevel && CurrentMaxLevel == other.CurrentMaxLevel && CurrentLevel == other.CurrentLevel && Equals(_reserved, other._reserved);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is NvFanCoolersStatusItem other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(CoolerId, CurrentRpm, CurrentMinLevel, CurrentMaxLevel, CurrentLevel, _reserved);
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 8)]

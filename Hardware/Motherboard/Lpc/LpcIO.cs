@@ -6,46 +6,89 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using System.Threading;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
-internal class LpcIO
+/// <summary>
+/// LPC I/O
+/// </summary>
+internal class LpcIo
 {
-    private readonly List<ISuperIO> _superIOs = new();
+    #region Fields
 
-    public LpcIO(Motherboard motherboard)
+    // ReSharper disable InconsistentNaming
+    private const byte BASE_ADDRESS_REGISTER = 0x60;
+    private const byte CHIP_ID_REGISTER = 0x20;
+    private const byte CHIP_REVISION_REGISTER = 0x21;
+
+    private const byte F71858_HARDWARE_MONITOR_LDN = 0x02;
+    private const byte FINTEK_HARDWARE_MONITOR_LDN = 0x04;
+    private const byte IT87_ENVIRONMENT_CONTROLLER_LDN = 0x04;
+    private const byte IT8705_GPIO_LDN = 0x05;
+    private const byte IT87XX_GPIO_LDN = 0x07;
+
+    // Shared Memory/Flash Interface
+    private const byte IT87XX_SMFI_LDN = 0x0F;
+    private const byte WINBOND_NUVOTON_HARDWARE_MONITOR_LDN = 0x0B;
+
+    private const ushort FINTEK_VENDOR_ID = 0x1934;
+
+    private const byte FINTEK_VENDOR_ID_REGISTER = 0x23;
+    private const byte IT87_CHIP_VERSION_REGISTER = 0x22;
+    private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER = 0xF5;
+    private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH = 0xFC;
+    private const byte IT87_LD_ACTIVE_REGISTER = 0x30;
+
+    private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };
+    private readonly ushort[] VALUE_PORTS = { 0x2F, 0x4F };
+    // ReSharper restore InconsistentNaming
+
+    private readonly List<ISuperIo> _superIOs = [];
+
+    #endregion
+
+    #region Properties
+
+    /// <summary>
+    /// Gets the Super I/O devices.
+    /// </summary>
+    /// <value>
+    /// The super io.
+    /// </value>
+    public ISuperIo[] SuperIo => _superIOs.ToArray();
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LpcIo"/> class.
+    /// </summary>
+    /// <param name="motherboard">The motherboard.</param>
+    public LpcIo(Motherboard motherboard)
     {
-        if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100))
-            return;
+        if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100)) return;
 
         Detect(motherboard);
 
         Mutexes.ReleaseIsaBus();
 
-        if (Ipmi.IsBmcPresent())
-            _superIOs.Add(new Ipmi(motherboard.Manufacturer));
+        if (!Ipmi.IsBmcPresent()) return;
+        _superIOs.Add(new Ipmi(motherboard.Manufacturer));
     }
 
-    public ISuperIO[] SuperIO => _superIOs.ToArray();
+    #endregion
 
-    private bool DetectSmsc(LpcPort port)
-    {
-        port.SmscEnter();
+    #region Methods
 
-        ushort chipId = port.ReadWord(CHIP_ID_REGISTER);
-
-        if (chipId is not 0 and not 0xffff)
-        {
-            port.SmscExit();
-        }
-
-        return false;
-    }
-
+    /// <summary>
+    /// Detects the specified motherboard.
+    /// </summary>
+    /// <param name="motherboard">The motherboard.</param>
     private void Detect(Motherboard motherboard)
     {
         for (int i = 0; i < REGISTER_PORTS.Length; i++)
@@ -54,12 +97,33 @@ internal class LpcIO
 
             if (DetectWinbondFintek(port)) continue;
 
-            if (DetectIT87(port, motherboard)) continue;
+            if (DetectIt87(port, motherboard)) continue;
 
             if (DetectSmsc(port)) continue;
         }
     }
-    
+
+    /// <summary>
+    /// Detects the vendor.
+    /// </summary>
+    /// <param name="motherboard">The motherboard.</param>
+    /// <returns></returns>
+    private CpuVendor DetectVendor(Motherboard motherboard)
+    {
+        string manufacturer = motherboard.SmBios.Processors[0].ManufacturerName;
+        if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1) return CpuVendor.Intel;
+        if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 ||
+            manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
+            return CpuVendor.Amd;
+
+        return CpuVendor.Unknown;
+    }
+
+    /// <summary>
+    /// Detects a Winbond Fintek chip.
+    /// </summary>
+    /// <param name="port">The port.</param>
+    /// <returns></returns>
     private bool DetectWinbondFintek(LpcPort port)
     {
         port.WinbondNuvotonFintekEnter();
@@ -67,7 +131,7 @@ internal class LpcIO
         byte logicalDeviceNumber = 0;
         byte id = port.ReadByte(CHIP_ID_REGISTER);
         byte revision = port.ReadByte(CHIP_REVISION_REGISTER);
-        Chip chip = Chip.Unknown;
+        var chip = Chip.Unknown;
 
         switch (id)
         {
@@ -385,10 +449,8 @@ internal class LpcIO
 
         if (chip == Chip.Unknown)
         {
-            if (id is not 0 and not 0xff)
-            {
-                port.WinbondNuvotonFintekExit();
-            }
+            if (id is 0 or 0xff) return false;
+            port.WinbondNuvotonFintekExit();
         }
         else
         {
@@ -408,19 +470,15 @@ internal class LpcIO
 
             port.WinbondNuvotonFintekExit();
 
-            if (address != verify)
-            {
-                return false;
-            }
+            if (address != verify) return false;
 
             // some Fintek chips have address register offset 0x05 added already
             if ((address & 0x07) == 0x05)
-                address &= 0xFFF8;
-
-            if (address < 0x100 || (address & 0xF007) != 0)
             {
-                return false;
+                address &= 0xFFF8;
             }
+
+            if (address < 0x100 || (address & 0xF007) != 0) return false;
 
             switch (chip)
             {
@@ -480,12 +538,17 @@ internal class LpcIO
         return false;
     }
 
-    private bool DetectIT87(LpcPort port, Motherboard motherboard)
+    /// <summary>
+    /// Detects an IT87 chip.
+    /// </summary>
+    /// <param name="port">The port.</param>
+    /// <param name="motherboard">The motherboard.</param>
+    /// <returns></returns>
+    private bool DetectIt87(LpcPort port, Motherboard motherboard)
     {
         // IT87XX can enter only on port 0x2E
         // IT8792 using 0x4E
-        if (port.RegisterPort is not 0x2E and not 0x4E)
-            return false;
+        if (port.RegisterPort is not 0x2E and not 0x4E) return false;
 
         // Read the chip ID before entering.
         // If already entered (not 0xFFFF) and the register port is 0x4E, it is most likely bugged and should be left alone.
@@ -496,7 +559,7 @@ internal class LpcIO
             chipId = port.ReadWord(CHIP_ID_REGISTER);
         }
         
-        Chip chip = chipId switch
+        var chip = chipId switch
         {
             0x8613 => Chip.IT8613E,
             0x8620 => Chip.IT8620E,
@@ -526,10 +589,8 @@ internal class LpcIO
 
         if (chip == Chip.Unknown)
         {
-            if (chipId is not 0 and not 0xffff)
-            {
-                port.IT87Exit();
-            }
+            if (chipId is 0 or 0xffff) return false;
+            port.IT87Exit();
         }
         else
         {
@@ -559,65 +620,75 @@ internal class LpcIO
                 gpioVerify = port.ReadWord(BASE_ADDRESS_REGISTER + 2);
             }
 
-            IGigabyteController gigabyteController = FindGigabyteEC(port, chip, motherboard);
+            IGigabyteController gigabyteController = Find(port, chip, motherboard);
 
             port.IT87Exit();
 
-            if (address != verify || address < 0x100 || (address & 0xF007) != 0)
-            {
-                return false;
-            }
-
-            if (gpioAddress != gpioVerify || gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0)
-            {
-                return false;
-            }
-
+            if (address != verify || address < 0x100 || (address & 0xF007) != 0) return false;
+            if (gpioAddress != gpioVerify || gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0) return false;
             _superIOs.Add(new IT87XX(chip, address, gpioAddress, version, motherboard, gigabyteController));
+            
             return true;
         }
 
         return false;
     }
 
-    private IGigabyteController FindGigabyteEC(LpcPort port, Chip chip, Motherboard motherboard)
+
+    /// <summary>
+    /// Detects an SMSC chip.
+    /// </summary>
+    /// <param name="port">The port.</param>
+    /// <returns></returns>
+    private bool DetectSmsc(LpcPort port)
+    {
+        port.SmscEnter();
+
+        ushort chipId = port.ReadWord(CHIP_ID_REGISTER);
+
+        if (chipId is not 0 and not 0xffff)
+        {
+            port.SmscExit();
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Finds the EC.
+    /// </summary>
+    /// <param name="port">The port.</param>
+    /// <param name="chip">The chip.</param>
+    /// <param name="motherboard">The motherboard.</param>
+    /// <returns></returns>
+    private IGigabyteController Find(LpcPort port, Chip chip, Motherboard motherboard)
     {
         // The controller only affects the 2nd ITE chip if present, and only a few
         // models are known to use this controller.
         // IT8795E likely to need this too, but may use different registers.
-        if (motherboard.Manufacturer != Manufacturer.Gigabyte || port.RegisterPort != 0x4E || chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
+        if (motherboard.Manufacturer != Manufacturer.Gigabyte || 
+            port.RegisterPort != 0x4E || 
+            chip is not (Chip.IT8790E or Chip.IT8792E or Chip.IT87952E))
             return null;
 
-        CpuVendor vendor = DetectVendor();
+        var vendor = DetectVendor(motherboard);
+        IGigabyteController gigabyteController = FindUsingSmfi(port, chip, vendor);
+        if (gigabyteController != null) return gigabyteController;
 
-        IGigabyteController gigabyteController = FindGigabyteECUsingSmfi(port, chip, vendor);
-        if (gigabyteController != null)
-            return gigabyteController;
-
-        // ECIO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
-        if (chip == Chip.IT8792E && vendor == CpuVendor.Amd)
-        {
-            gigabyteController = EcioPortGigabyteController.TryCreate();
-            if (gigabyteController != null)
-                return gigabyteController;
-        }
-
-        return null;
-
-        CpuVendor DetectVendor()
-        {
-            string manufacturer = motherboard.SMBios.Processors[0].ManufacturerName;
-            if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1)
-                return CpuVendor.Intel;
-
-            if (manufacturer.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) != -1 || manufacturer.StartsWith("AMD", StringComparison.OrdinalIgnoreCase))
-                return CpuVendor.Amd;
-
-            return CpuVendor.Unknown;
-        }
+        // EC IO is only available on AMD motherboards with IT8791E/IT8792E/IT8795E.
+        if (chip != Chip.IT8792E || vendor != CpuVendor.Amd) return null;
+        gigabyteController = EcIoPortGigabyteController.TryCreate();
+        return gigabyteController;
     }
 
-    private IGigabyteController FindGigabyteECUsingSmfi(LpcPort port, Chip chip, CpuVendor vendor)
+    /// <summary>
+    /// Finds the EC. using SMFI.
+    /// </summary>
+    /// <param name="port">The port.</param>
+    /// <param name="chip">The chip.</param>
+    /// <param name="vendor">The vendor.</param>
+    /// <returns></returns>
+    private IGigabyteController FindUsingSmfi(LpcPort port, Chip chip, CpuVendor vendor)
     {
         port.Select(IT87XX_SMFI_LDN);
 
@@ -627,61 +698,33 @@ internal class LpcIO
         byte enabledVerify = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
 
         // The EC has no SMFI or it's RAM access is not enabled, assume the controller is not present
-        if (enabled != enabledVerify || enabled == 0)
-            return null;
+        if (enabled != enabledVerify || enabled == 0) return null;
 
         // Read the host RAM address that maps to the Embedded Controller's RAM (two registers).
         uint addressHi = 0;
         uint addressHiVerify = 0;
         uint address = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
+        {
             addressHi = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
+        }
 
         Thread.Sleep(1);
         uint addressVerify = port.ReadWord(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER);
         if (chip == Chip.IT87952E)
+        {
             addressHiVerify = port.ReadByte(IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH);
+        }
 
-        if ((address != addressVerify) || (addressHi != addressHiVerify))
-            return null;
+        if ((address != addressVerify) || (addressHi != addressHiVerify)) return null;
 
         // Address is xryy, Host Address is FFyyx000
         // For IT87952E, Address is rzxryy, Host Address is (0xFC000000 | 0x0zyyx000)
-        uint hostAddress;
-        if (chip == Chip.IT87952E)
-            hostAddress = 0xFC000000;
-        else
-            hostAddress = 0xFF000000;
-
+        var hostAddress = chip == Chip.IT87952E ? 0xFC000000 : 0xFF000000;
         hostAddress |= (address & 0xF000) | ((address & 0xFF) << 16) | ((addressHi & 0xF) << 24);
 
         return new IsaBridgeGigabyteController(hostAddress, vendor);
     }
 
-    // ReSharper disable InconsistentNaming
-    private const byte BASE_ADDRESS_REGISTER = 0x60;
-    private const byte CHIP_ID_REGISTER = 0x20;
-    private const byte CHIP_REVISION_REGISTER = 0x21;
-
-    private const byte F71858_HARDWARE_MONITOR_LDN = 0x02;
-    private const byte FINTEK_HARDWARE_MONITOR_LDN = 0x04;
-    private const byte IT87_ENVIRONMENT_CONTROLLER_LDN = 0x04;
-    private const byte IT8705_GPIO_LDN = 0x05;
-    private const byte IT87XX_GPIO_LDN = 0x07;
-
-    // Shared Memory/Flash Interface
-    private const byte IT87XX_SMFI_LDN = 0x0F;
-    private const byte WINBOND_NUVOTON_HARDWARE_MONITOR_LDN = 0x0B;
-
-    private const ushort FINTEK_VENDOR_ID = 0x1934;
-
-    private const byte FINTEK_VENDOR_ID_REGISTER = 0x23;
-    private const byte IT87_CHIP_VERSION_REGISTER = 0x22;
-    private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER = 0xF5;
-    private const byte IT87_SMFI_HLPC_RAM_BASE_ADDRESS_REGISTER_HIGH = 0xFC;
-    private const byte IT87_LD_ACTIVE_REGISTER = 0x30;
-
-    private readonly ushort[] REGISTER_PORTS = { 0x2E, 0x4E };
-    private readonly ushort[] VALUE_PORTS = { 0x2F, 0x4F };
-    // ReSharper restore InconsistentNaming
+    #endregion
 }

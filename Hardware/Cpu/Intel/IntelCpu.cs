@@ -13,8 +13,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
 /// <summary>
 /// Intel CPU
 /// </summary>
-/// <seealso cref="GenericCpu" />
-internal sealed class IntelCpu : GenericCpu
+/// <seealso cref="CpuBase" />
+internal sealed class IntelCpu : CpuBase
 {
     #region Fields
 

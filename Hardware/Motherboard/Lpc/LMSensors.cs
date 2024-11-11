@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 // ReSharper disable once InconsistentNaming
 
@@ -17,7 +18,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 internal class LMSensors
 {
     private const string HwMonPath = "/sys/class/hwmon/";
-    private readonly List<ISuperIO> _superIOs = [];
+    private readonly List<ISuperIo> _superIOs = [];
 
     public LMSensors()
     {
@@ -149,21 +150,21 @@ internal class LMSensors
         }
     }
 
-    public IReadOnlyList<ISuperIO> SuperIO
+    public IReadOnlyList<ISuperIo> SuperIO
     {
         get { return _superIOs; }
     }
 
     public void Close()
     {
-        foreach (ISuperIO superIO in _superIOs)
+        foreach (ISuperIo superIO in _superIOs)
         {
             if (superIO is LMChip lmChip)
                 lmChip.Close();
         }
     }
 
-    private class LMChip : ISuperIO
+    private class LMChip : ISuperIo
     {
         private readonly FileStream[] _fanStreams;
         private readonly FileStream[] _temperatureStreams;

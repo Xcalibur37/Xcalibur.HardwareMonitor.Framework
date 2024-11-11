@@ -5,16 +5,9 @@
 // All Rights Reserved.
 
 using System.Collections.Generic;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
-
-/// <summary>
-/// Handler that will trigger the actions assigned to it when the event occurs.
-/// </summary>
-/// <param name="sensor">Component returned to the assigned action(s).</param>
-public delegate void SensorEventHandler(ISensor sensor);
 
 /// <summary>
 /// Abstract object that stores information about a device. All sensors are available as an array of <see cref="Sensors"/>.
@@ -58,7 +51,7 @@ public interface IHardware : IElement
     ISensor[] Sensors { get; }
 
     /// <summary>
-    /// Gets child devices, e.g. <see cref="LpcIO"/> of the <see cref="Motherboard"/>.
+    /// Gets child devices, e.g. <see cref="LpcIo"/> of the <see cref="Motherboard"/>.
     /// </summary>
     IHardware[] SubHardware { get; }
 

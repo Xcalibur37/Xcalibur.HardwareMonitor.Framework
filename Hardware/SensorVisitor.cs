@@ -5,6 +5,7 @@
 // All Rights Reserved.
 
 using System;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 
@@ -30,10 +31,14 @@ public class SensorVisitor : IVisitor
     /// <param name="computer">Computer class instance that is derived from the <see cref="IComputer"/> interface.</param>
     public void VisitComputer(IComputer computer)
     {
-        if (computer == null)
+        if (computer != null)
+        {
+            computer.Traverse(this);
+        }
+        else
+        {
             throw new ArgumentNullException(nameof(computer));
-
-        computer.Traverse(this);
+        }
     }
 
     /// <summary>
@@ -42,10 +47,14 @@ public class SensorVisitor : IVisitor
     /// <param name="hardware">Hardware class instance that is derived from the <see cref="IHardware"/> interface.</param>
     public void VisitHardware(IHardware hardware)
     {
-        if (hardware == null)
+        if (hardware != null)
+        {
+            hardware.Traverse(this);
+        }
+        else
+        {
             throw new ArgumentNullException(nameof(hardware));
-
-        hardware.Traverse(this);
+        }
     }
 
     /// <summary>
@@ -64,6 +73,5 @@ public class SensorVisitor : IVisitor
     /// </para>
     /// </summary>
     /// <param name="parameter">Parameter class instance that is derived from the <see cref="IParameter"/> interface.</param>
-    public void VisitParameter(IParameter parameter)
-    { }
+    public void VisitParameter(IParameter parameter) { }
 }

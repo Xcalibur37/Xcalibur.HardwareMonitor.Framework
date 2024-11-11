@@ -9,6 +9,10 @@ using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Memory;
 
+/// <summary>
+/// Generic Windows Memory
+/// </summary>
+/// <seealso cref="Xcalibur.HardwareMonitor.Framework.Hardware.Hardware" />
 internal sealed class GenericWindowsMemory : Hardware
 {
     private readonly Sensor _physicalMemoryAvailable;
@@ -18,6 +22,14 @@ internal sealed class GenericWindowsMemory : Hardware
     private readonly Sensor _virtualMemoryLoad;
     private readonly Sensor _virtualMemoryUsed;
 
+    /// <inheritdoc />
+    public override HardwareType HardwareType => HardwareType.Memory;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GenericWindowsMemory"/> class.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="settings">The settings.</param>
     public GenericWindowsMemory(string name, ISettings settings) : base(name, new Identifier("ram"), settings)
     {
         _physicalMemoryUsed = new Sensor("Memory Used", 0, SensorType.Data, this, settings);
@@ -39,17 +51,14 @@ internal sealed class GenericWindowsMemory : Hardware
         ActivateSensor(_virtualMemoryLoad);
     }
 
-    public override HardwareType HardwareType
-    {
-        get { return HardwareType.Memory; }
-    }
-
+    /// <summary>
+    /// </summary>
+    /// <inheritdoc />
     public override void Update()
     {
         Kernel32.MEMORYSTATUSEX status = new() { dwLength = (uint)Marshal.SizeOf<Kernel32.MEMORYSTATUSEX>() };
 
-        if (!Kernel32.GlobalMemoryStatusEx(ref status))
-            return;
+        if (!Kernel32.GlobalMemoryStatusEx(ref status)) return;
 
         _physicalMemoryUsed.Value = (float)(status.ullTotalPhys - status.ullAvailPhys) / (1024 * 1024 * 1024);
         _physicalMemoryAvailable.Value = (float)status.ullAvailPhys / (1024 * 1024 * 1024);
