@@ -1,15 +1,14 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+﻿
+
+
+
+
 
 using System;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 // ReSharper disable once InconsistentNaming
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fintek;
 
 /// <summary>
 /// Fintek Integrated Circuits: F718xx
@@ -100,7 +99,7 @@ internal class F718XX : ISuperIo
         Voltages = new float?[chip == Chip.F71858 ? 3 : 9];
         Temperatures = new float?[chip == Chip.F71808E ? 2 : 3];
         Fans = new float?[chip is Chip.F71882 or Chip.F71858 ? 4 : 3];
-        Controls = new float?[chip == Chip.F71878AD || chip == Chip.F71889AD ? 3 : (chip == Chip.F71882 ? 4 : 0)];
+        Controls = new float?[chip == Chip.F71878AD || chip == Chip.F71889AD ? 3 : chip == Chip.F71882 ? 4 : 0];
     }
 
     #endregion
@@ -126,7 +125,7 @@ internal class F718XX : ISuperIo
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="value">The value.</param>
-    /// <exception cref="System.ArgumentOutOfRangeException">index</exception>
+    /// <exception cref="ArgumentOutOfRangeException">index</exception>
     public void SetControl(int index, byte? value)
     {
         if (index < 0 || index >= Controls.Length)
@@ -176,8 +175,8 @@ internal class F718XX : ISuperIo
                 case Chip.F71858:
                     {
                         int tableMode = 0x3 & ReadByte(TEMPERATURE_CONFIG_REG);
-                        int high = ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * i)));
-                        int low = ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * i) + 1));
+                        int high = ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * i));
+                        int low = ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * i + 1));
                         if (high is not 0xbb and not 0xcc)
                         {
                             int bits = 0;
@@ -210,7 +209,7 @@ internal class F718XX : ISuperIo
                     break;
                 default:
                     {
-                        sbyte value = (sbyte)ReadByte((byte)(TEMPERATURE_BASE_REG + (2 * (i + 1))));
+                        sbyte value = (sbyte)ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * (i + 1)));
                         Temperatures[i] = value is < sbyte.MaxValue and > 0 ? value : null;
                     }
                     break;
@@ -227,7 +226,7 @@ internal class F718XX : ISuperIo
         for (int i = 0; i < Controls.Length; i++)
         {
             Controls[i] = Chip == Chip.F71882 || Chip == Chip.F71889AD
-                ? ReadByte((byte)(FAN_PWM_REG[i])) * 100.0f / 0xFF
+                ? ReadByte(FAN_PWM_REG[i]) * 100.0f / 0xFF
                 : ReadByte((byte)(PWM_VALUES_OFFSET + i)) * 100.0f / 0xFF;
         }
 

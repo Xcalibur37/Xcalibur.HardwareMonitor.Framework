@@ -1,8 +1,8 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+
+
+
+
+
 
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,11 @@ using System.Threading;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fintek;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Ite;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nuvoton;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Winbond;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
@@ -47,6 +52,7 @@ internal class LpcIo
     private readonly ushort[] VALUE_PORTS = { 0x2F, 0x4F };
     // ReSharper restore InconsistentNaming
 
+    private readonly Motherboard _motherboard;
     private readonly List<ISuperIo> _superIOs = [];
 
     #endregion
@@ -73,6 +79,7 @@ internal class LpcIo
     {
         if (!Ring0.IsOpen || !Mutexes.WaitIsaBus(100)) return;
 
+        _motherboard = motherboard;
         Detect(motherboard);
 
         Mutexes.ReleaseIsaBus();
@@ -490,7 +497,7 @@ internal class LpcIo
                 case Chip.W83667HG:
                 case Chip.W83667HGB:
                 case Chip.W83687THF:
-                    _superIOs.Add(new W836XX(chip, revision, address));
+                    _superIOs.Add(new W836XX(chip, address));
                     break;
 
                 case Chip.NCT610XD:
@@ -510,7 +517,7 @@ internal class LpcIo
                 case Chip.NCT6686D:
                 case Chip.NCT6687D:
                 case Chip.NCT6683D:
-                    _superIOs.Add(new Nct677X(chip, revision, address, port));
+                    _superIOs.Add(new Nct677X(chip, _motherboard.Manufacturer, _motherboard.Model, address, port));
                     break;
 
                 case Chip.F71858:
@@ -523,11 +530,7 @@ internal class LpcIo
                 case Chip.F71889ED:
                 case Chip.F71889F:
                 case Chip.F71808E:
-                    if (vendorId != FINTEK_VENDOR_ID)
-                    {
-                        return false;
-                    }
-
+                    if (vendorId != FINTEK_VENDOR_ID) return false;
                     _superIOs.Add(new F718XX(chip, address));
                     break;
             }
@@ -626,7 +629,7 @@ internal class LpcIo
 
             if (address != verify || address < 0x100 || (address & 0xF007) != 0) return false;
             if (gpioAddress != gpioVerify || gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0) return false;
-            _superIOs.Add(new IT87XX(chip, address, gpioAddress, version, motherboard, gigabyteController));
+            _superIOs.Add(new IT87XX(chip, address, gpioAddress, version, gigabyteController));
             
             return true;
         }

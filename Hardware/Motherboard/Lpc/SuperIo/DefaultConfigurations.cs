@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
 {
@@ -51,11 +52,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
         /// </summary>
         /// <param name="superIo">The super io.</param>
         /// <param name="controls">The controls.</param>
-        internal static void GetControls(ISuperIo superIo, ICollection<Control> controls)
+        internal static void GetControls(ISuperIo superIo, ICollection<Models.Control> controls)
         {
             for (int i = 0; i < superIo.Controls.Length; i++)
             {
-                controls.Add(new Control(string.Format(SuperIoConstants.FanControlNumber,  i + 1), i));
+                controls.Add(new Models.Control(string.Format(SuperIoConstants.FanControlNumber,  i + 1), i));
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Winbond
 {
     internal class WinbondConfigurations
     {
@@ -15,17 +16,17 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
         /// <param name="controls">The controls.</param>
         internal static void GetConfigurationEhf(
             Manufacturer manufacturer,
-            Model model,
+            MotherboardModel model,
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Control> controls)
+            ICollection<Models.Control> controls)
         {
             // Vcore
             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
 
             // ASRock and W83627EHF
-            if (manufacturer == Manufacturer.ASRock && model == Model.AOD790GX_128M)
+            if (manufacturer == Manufacturer.ASRock && model == MotherboardModel.AOD790GX_128M)
             {
                 // Voltages
                 voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 34, 34));
@@ -70,9 +71,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
             }
 
             // Controls
-            controls.Add(new Control(SuperIoConstants.SystemFan, 0));
-            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
-            controls.Add(new Control(SuperIoConstants.AuxiliaryFan, 2));
+            controls.Add(new Models.Control(SuperIoConstants.SystemFan, 0));
+            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+            controls.Add(new Models.Control(SuperIoConstants.AuxiliaryFan, 2));
         }
 
         /// <summary>
@@ -117,11 +118,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
         /// <param name="controls">The controls.</param>
         internal static void GetConfigurationHg(
             Manufacturer manufacturer,
-            Model model,
+            MotherboardModel model,
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Control> controls)
+            ICollection<Models.Control> controls)
         {
             switch (manufacturer)
             {
@@ -129,18 +130,18 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
                     voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                     switch (model)
                     {
-                        case Model._880GMH_USB3: // W83627DHG-P
+                        case MotherboardModel._880GMH_USB3: // W83627DHG-P
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V33Volts, 3, 34, 34));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 5, 15, 7.5f));
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 6, 56, 10));
                             voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 34, 34));
                             voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 34, 34));
-                            
+
                             // Temps
                             temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
                             temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 2));
-                            
+
                             // Fans
                             fans.Add(new Fan(SuperIoConstants.ChassisFan, 0));
                             fans.Add(new Fan(SuperIoConstants.CpuFan, 1));
@@ -157,12 +158,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
                             voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "7"), 6, true));
                             voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 34, 34));
                             voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 34, 34));
-                            
+
                             // Temps
                             temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
                             temps.Add(new Temperature(SuperIoConstants.AuxiliaryTemp, 1));
                             temps.Add(new Temperature(SuperIoConstants.SystemTemp, 2));
-                            
+
                             // Fans
                             fans.Add(new Fan(SuperIoConstants.SystemFan, 0));
                             fans.Add(new Fan(SuperIoConstants.CpuFan, 1));
@@ -173,17 +174,17 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
                     }
 
                     // Controls
-                    controls.Add(new Control(SuperIoConstants.SystemFan, 0));
-                    controls.Add(new Control(SuperIoConstants.CpuFan, 1));
-                    controls.Add(new Control(SuperIoConstants.AuxiliaryFan, 2));
+                    controls.Add(new Models.Control(SuperIoConstants.SystemFan, 0));
+                    controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+                    controls.Add(new Models.Control(SuperIoConstants.AuxiliaryFan, 2));
                     break;
 
                 case Manufacturer.ASUS:
                     switch (model)
                     {
-                        case Model.P6T: // W83667HG
-                        case Model.P6X58D_E: // W83667HG
-                        case Model.RAMPAGE_II_GENE: // W83667HG
+                        case MotherboardModel.P6T: // W83667HG
+                        case MotherboardModel.P6X58D_E: // W83667HG
+                        case MotherboardModel.RAMPAGE_II_GENE: // W83667HG
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 1, 11.5f, 1.91f));
@@ -205,12 +206,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 4));
 
                             // Controls
-                            controls.Add(new Control(SuperIoConstants.SystemFan, 0));
-                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
-                            controls.Add(new Control(SuperIoConstants.AuxiliaryFan, 2));
+                            controls.Add(new Models.Control(SuperIoConstants.SystemFan, 0));
+                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Models.Control(SuperIoConstants.AuxiliaryFan, 2));
                             break;
 
-                        case Model.RAMPAGE_EXTREME: // W83667HG
+                        case MotherboardModel.RAMPAGE_EXTREME: // W83667HG
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 1, 12, 2));
@@ -219,11 +220,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 4, 15, 7.5f));
                             voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 34, 34));
                             voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 34, 34));
-                            
+
                             // Temps
                             temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
                             temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 2));
-                            
+
                             // Fans
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 0));
                             fans.Add(new Fan(SuperIoConstants.CpuFan, 1));
@@ -232,9 +233,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 4));
 
                             // Controls
-                            controls.Add(new Control(SuperIoConstants.SystemFan, 0));
-                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
-                            controls.Add(new Control(SuperIoConstants.AuxiliaryFan, 2));
+                            controls.Add(new Models.Control(SuperIoConstants.SystemFan, 0));
+                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Models.Control(SuperIoConstants.AuxiliaryFan, 2));
                             break;
 
                         default:
@@ -260,7 +261,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Control> controls)
+            ICollection<Models.Control> controls)
         {
             // Voltages
             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
@@ -286,9 +287,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo
             fans.Add(new Fan(string.Format(SuperIoConstants.AuxiliaryFanNumber, "2"), 4));
 
             // Controls
-            controls.Add(new Control(SuperIoConstants.SystemFan, 0));
-            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
-            controls.Add(new Control(SuperIoConstants.AuxiliaryFan, 2));
+            controls.Add(new Models.Control(SuperIoConstants.SystemFan, 0));
+            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+            controls.Add(new Models.Control(SuperIoConstants.AuxiliaryFan, 2));
         }
     }
 }

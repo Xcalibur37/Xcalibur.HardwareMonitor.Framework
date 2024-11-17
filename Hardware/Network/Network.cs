@@ -1,16 +1,17 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// All Rights Reserved.
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Network;
 
-internal sealed class Network : Hardware
+/// <summary>
+/// Network hardware
+/// </summary>
+/// <seealso cref="Hardware" />
+public sealed class Network : Hardware
 {
+    #region Fields
+
     private readonly Sensor _dataDownloaded;
     private readonly Sensor _dataUploaded;
     private readonly Sensor _downloadSpeed;
@@ -20,42 +21,77 @@ internal sealed class Network : Hardware
     private long _bytesUploaded;
     private long _lastTick;
 
+    #endregion
+
+    #region Properties
+
+    /// <inheritdoc />
+    public override HardwareType HardwareType => HardwareType.Network;
+
+    /// <summary>
+    /// Gets the network interface.
+    /// </summary>
+    /// <value>
+    /// The network interface.
+    /// </value>
+    public NetworkInterface NetworkInterface { get; private set; }
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Network"/> class.
+    /// </summary>
+    /// <param name="networkInterface">The network interface.</param>
+    /// <param name="settings">The settings.</param>
     public Network(NetworkInterface networkInterface, ISettings settings)
         : base(networkInterface.Name, new Identifier("nic", networkInterface.Id), settings)
     {
         NetworkInterface = networkInterface;
+        
+        // Data Uploaded
         _dataUploaded = new Sensor("Data Uploaded", 2, SensorType.Data, this, settings);
         ActivateSensor(_dataUploaded);
+
+        // Data Downloaded
         _dataDownloaded = new Sensor("Data Downloaded", 3, SensorType.Data, this, settings);
         ActivateSensor(_dataDownloaded);
+
+        // Upload Speed
         _uploadSpeed = new Sensor("Upload Speed", 7, SensorType.Throughput, this, settings);
         ActivateSensor(_uploadSpeed);
+
+        // Download Speed
         _downloadSpeed = new Sensor("Download Speed", 8, SensorType.Throughput, this, settings);
         ActivateSensor(_downloadSpeed);
+
+        // Network Utilization
         _networkUtilization = new Sensor("Network Utilization", 1, SensorType.Load, this, settings);
         ActivateSensor(_networkUtilization);
-        _bytesUploaded = NetworkInterface.GetIPStatistics().BytesSent;
-        _bytesDownloaded = NetworkInterface.GetIPStatistics().BytesReceived;
+
+        // Stats
+        var stats = NetworkInterface.GetIPStatistics();
+        _bytesUploaded = stats.BytesSent;
+        _bytesDownloaded = stats.BytesReceived;
+        
+        // Timestamp
         _lastTick = Stopwatch.GetTimestamp();
     }
 
-    public override HardwareType HardwareType
-    {
-        get { return HardwareType.Network; }
-    }
+    #endregion
 
-    internal NetworkInterface NetworkInterface { get; private set; }
+    #region Methods
 
+    /// <inheritdoc />
     public override void Update()
     {
         try
         {
-            if (NetworkInterface == null)
-                return;
+            if (NetworkInterface == null) return;
 
             long newTick = Stopwatch.GetTimestamp();
             double dt = new TimeSpan(newTick - _lastTick).TotalSeconds;
-
             IPv4InterfaceStatistics interfaceStats = NetworkInterface.GetIPv4Statistics();
 
             // Report out the number of GB (2^30 Bytes) that this interface has up/downloaded. Note
@@ -72,20 +108,20 @@ internal sealed class Network : Hardware
                 _bytesDownloaded = 0;
             }
 
-            long dBytesUploaded = interfaceStats.BytesSent - _bytesUploaded;
-            long dBytesDownloaded = interfaceStats.BytesReceived - _bytesDownloaded;
+            long bytesUploaded = interfaceStats.BytesSent - _bytesUploaded;
+            long bytesDownloaded = interfaceStats.BytesReceived - _bytesDownloaded;
 
-            // Upload and download speeds are reported as the number of bytes transfered over the
+            // Upload and download speeds are reported as the number of bytes transferred over the
             // time difference since the last report. In this way, the values represent the average
             // number of bytes up/downloaded in a second.
-            _uploadSpeed.Value = (float)(dBytesUploaded / dt);
-            _downloadSpeed.Value = (float)(dBytesDownloaded / dt);
+            _uploadSpeed.Value = (float)(bytesUploaded / dt);
+            _downloadSpeed.Value = (float)(bytesDownloaded / dt);
 
             // Network speed is in bits per second, so when calculating the load on the NIC we first
             // grab the total number of bits up/downloaded
-            long dbits = (dBytesUploaded + dBytesDownloaded) * 8;
+            long dbits = (bytesUploaded + bytesDownloaded) * 8;
 
-            // Converts the ratio of total bits transferred over time over theoretical max bits
+            // Converts the ratio of total bits transferred over time, over theoretical max bits
             // transfer rate into a percentage load
             double load = (dbits / dt / NetworkInterface.Speed) * 100;
 
@@ -99,14 +135,14 @@ internal sealed class Network : Hardware
         }
         catch (NetworkInformationException networkInformationException) when (unchecked(networkInformationException.HResult == (int)0x80004005))
         {
-            foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (networkInterface.Id.Equals(NetworkInterface?.Id))
-                {
-                    NetworkInterface = networkInterface;
-                    break;
-                }
+                if (!networkInterface.Id.Equals(NetworkInterface?.Id)) continue;
+                NetworkInterface = networkInterface;
+                break;
             }
         }
     }
+
+    #endregion
 }

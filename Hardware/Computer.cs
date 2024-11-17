@@ -1,17 +1,10 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Battery;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.AMD;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Intel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Nvidia;
@@ -246,7 +239,7 @@ public class Computer : IComputer
     /// <summary>
     /// Contains computer information table read in accordance with <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
     /// </summary>
-    public SMBios SMBios
+    public SMBios SmBios
     {
         get
         {
@@ -325,7 +318,7 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If this hasn't been opened before, opens <see cref="SMBios" />, <see cref="Ring0" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
+    /// If this hasn't been opened before, opens <see cref="SmBios" />, <see cref="Ring0" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
     /// enabled.
     /// </summary>
     public void Open()
@@ -363,12 +356,11 @@ public class Computer : IComputer
         lock (_lock)
         {
             // Use a for-loop instead of foreach to avoid a collection modified exception after sleep, even though everything is under a lock.
-            for (int i = 0; i < _groups.Count; i++)
+            foreach (var group in _groups)
             {
-                IGroup group = _groups[i];
-                for (int j = 0; j < group.Hardware.Count; j++)
+                foreach (var t in group.Hardware)
                 {
-                    group.Hardware[j].Accept(visitor);
+                    t.Accept(visitor);
                 }
             }
         }

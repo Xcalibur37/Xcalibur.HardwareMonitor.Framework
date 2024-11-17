@@ -1,5 +1,8 @@
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
+/// <summary>
+/// Temperature
+/// </summary>
 internal class Temperature
 {
     /// <summary>
@@ -8,7 +11,7 @@ internal class Temperature
     /// <value>
     /// The index.
     /// </value>
-    public int Index  { get; }
+    public int Index { get; }
 
     /// <summary>
     /// Gets the name.

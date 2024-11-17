@@ -1,21 +1,17 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 using OperatingSystem = Xcalibur.HardwareMonitor.Framework.Software.OperatingSystem;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
 
 /// <summary>
-/// Represents the motherboard of a computer with its <see cref="LpcIo" /> and <see cref="EmbeddedControllerBase" /> as <see cref="SubHardware" />.
+/// Represents the motherboard of a computer with its <see cref="LpcIo" /> and
+/// <see cref="EmbeddedControllerBase" /> as <see cref="SubHardware" />.
 /// </summary>
 public class Motherboard : IHardware
 {
@@ -37,17 +33,17 @@ public class Motherboard : IHardware
     public Identifier Identifier => new("motherboard");
 
     /// <summary>
-    /// Gets the <see cref="Framework.Hardware.Motherboard.Manufacturer" />.
+    /// Gets the <see cref="Models.Manufacturer" />.
     /// </summary>
     public Manufacturer Manufacturer { get; }
 
     /// <summary>
-    /// Gets the <see cref="Framework.Hardware.Motherboard.Model" />.
+    /// Gets the <see cref="MotherboardModel" />.
     /// </summary>
-    public Model Model { get; }
+    public MotherboardModel Model { get; }
 
     /// <summary>
-    /// Gets the name obtained from <see cref="Framework.Hardware.SMBios" />.
+    /// Gets the name obtained from <see cref="SMBios" />.
     /// </summary>
     public string Name
     {
@@ -71,7 +67,7 @@ public class Motherboard : IHardware
     public ISensor[] Sensors => Array.Empty<ISensor>();
 
     /// <summary>
-    /// Gets the <see cref="Framework.Hardware.SMBios" /> information.
+    /// Gets the <see cref="SMBios" /> information.
     /// </summary>
     public SMBios SmBios { get; }
 
@@ -83,10 +79,10 @@ public class Motherboard : IHardware
     #region Constructors
 
     /// <summary>
-    /// Creates motherboard instance by retrieving information from <see cref="Framework.Hardware.SMBios" /> and creates a new <see cref="SubHardware" /> based on data from <see cref="LpcIo" />
+    /// Creates motherboard instance by retrieving information from <see cref="SMBios" /> and creates a new <see cref="SubHardware" /> based on data from <see cref="LpcIo" />
     /// and <see cref="EmbeddedControllerBase" />.
     /// </summary>
-    /// <param name="smBios"><see cref="Framework.Hardware.SMBios" /> table containing motherboard data.</param>
+    /// <param name="smBios"><see cref="SMBios" /> table containing motherboard data.</param>
     /// <param name="settings">Additional settings passed by <see cref="IComputer" />.</param>
     public Motherboard(SMBios smBios, ISettings settings)
     {
@@ -94,8 +90,8 @@ public class Motherboard : IHardware
 
         SmBios = smBios;
         var board = smBios.Board;
-        Manufacturer = board == null ? Manufacturer.Unknown : Identification.GetManufacturer(board.ManufacturerName);
-        Model = board == null ? Model.Unknown : Identification.GetModel(board.ProductName);
+        Manufacturer = board == null ? Manufacturer.Unknown : IdentificationHelper.GetManufacturer(board.ManufacturerName);
+        Model = board == null ? MotherboardModel.Unknown : IdentificationHelper.GetModel(board.ProductName);
 
         // Get motherboard name
         if (board != null)
@@ -118,14 +114,14 @@ public class Motherboard : IHardware
         if (OperatingSystem.IsUnix)
         {
             _lmSensors = new LMSensors();
-            superIo = _lmSensors.SuperIO;
+            superIo = _lmSensors.SuperIo;
         }
         else
         {
             var lpcIo = new LpcIo(this);
             superIo = lpcIo.SuperIo;
         }
-        
+
         // Sub hardware
         List<IHardware> subHardwareList = [];
 

@@ -1,21 +1,21 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+﻿
+
+
+
+
 
 // ReSharper disable InconsistentNaming
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
 /// <summary>
-/// Model
+/// Motherboard Model
 /// </summary>
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
-public enum Model
+public enum MotherboardModel
 {
     // ASRock
     _880GMH_USB3,

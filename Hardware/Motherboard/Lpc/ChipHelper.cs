@@ -3,7 +3,7 @@
     /// <summary>
     /// Chip name
     /// </summary>
-    internal class ChipName
+    internal static class ChipHelper
     {
         /// <summary>
         /// Gets the name.

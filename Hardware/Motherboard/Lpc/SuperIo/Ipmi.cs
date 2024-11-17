@@ -1,19 +1,20 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// All Rights Reserved.
+
+
+
+
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 /// <summary>
-/// 
+/// Intelligent Platform Management Interface
 /// </summary>
 /// <seealso cref="ISuperIo" />
 internal class Ipmi : ISuperIo
@@ -165,7 +166,7 @@ internal class Ipmi : ISuperIo
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="value">The value.</param>
-    /// <exception cref="System.NotImplementedException"></exception>
+    /// <exception cref="NotImplementedException"></exception>
     public void SetControl(int index, byte? value)
     {
         if (_manufacturer == Manufacturer.Supermicro)
@@ -217,28 +218,24 @@ internal class Ipmi : ISuperIo
             byte[] sdrInfo = RunIpmiCommand(COMMAND_GET_SDR_REPOSITORY_INFO, NETWORK_FUNCTION_STORAGE, new byte[] { });
             if (sdrInfo?[0] == 0)
             {
-                int recordCount = (sdrInfo[3] * 256) + sdrInfo[2];
+                int recordCount = sdrInfo[3] * 256 + sdrInfo[2];
 
                 byte recordLower = 0;
                 byte recordUpper = 0;
                 for (int i = 0; i < recordCount; ++i)
                 {
                     byte[] sdrRaw = RunIpmiCommand(COMMAND_GET_SDR, NETWORK_FUNCTION_STORAGE, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
-                    if (sdrRaw?.Length >= 3 && sdrRaw[0] == 0)
-                    {
-                        recordLower = sdrRaw[1];
-                        recordUpper = sdrRaw[2];
+                    if (!(sdrRaw?.Length >= 3) || sdrRaw[0] != 0) break;
+                    recordLower = sdrRaw[1];
+                    recordUpper = sdrRaw[2];
 
-                        fixed (byte* pSdr = sdrRaw)
-                        {
-                            Interop.Ipmi.Sdr sdr = (Interop.Ipmi.Sdr)Marshal.PtrToStructure((IntPtr)pSdr + 3, typeof(Interop.Ipmi.Sdr));
-                            _sdrs.Add(sdr);
-                            stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " + BitConverter.ToString(sdrRaw).Replace("-", ""));
-                        }
-                    }
-                    else
+                    fixed (byte* pSdr = sdrRaw)
                     {
-                        break;
+                        Interop.Ipmi.Sdr sdr =
+                            (Interop.Ipmi.Sdr)Marshal.PtrToStructure((nint)pSdr + 3, typeof(Interop.Ipmi.Sdr));
+                        _sdrs.Add(sdr);
+                        stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " +
+                                                  BitConverter.ToString(sdrRaw).Replace("-", ""));
                     }
                 }
             }
@@ -250,7 +247,7 @@ internal class Ipmi : ISuperIo
 
             byte[] reading = RunIpmiCommand(COMMAND_GET_SENSOR_READING, NETWORK_FUNCTION_SENSOR_EVENT, [sdr.sens_num]);
             if (!(reading?.Length > 1) || reading[0] != 0) continue;
-            
+
             switch (sdr.sens_type)
             {
                 case 1:
@@ -303,13 +300,7 @@ internal class Ipmi : ISuperIo
     /// Gets the temperatures.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Temperature> GetTemperatures()
-    {
-        for (int i = 0; i < _temperatureNames.Count; i++)
-        {
-            yield return new Temperature(_temperatureNames[i], i);
-        }
-    }
+    public IEnumerable<Temperature> GetTemperatures() => _temperatureNames.Select((t, i) => new Temperature(t, i));
 
     /// <summary>
     /// Sets the temperatures.
@@ -327,13 +318,7 @@ internal class Ipmi : ISuperIo
     /// Gets the fans.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Fan> GetFans()
-    {
-        for (int i = 0; i < _fanNames.Count; i++)
-        {
-            yield return new Fan(_fanNames[i], i);
-        }
-    }
+    public IEnumerable<Fan> GetFans() => _fanNames.Select((t, i) => new Fan(t, i));
 
     /// <summary>
     /// Sets the fans.
@@ -351,13 +336,7 @@ internal class Ipmi : ISuperIo
     /// Gets the voltages.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Voltage> GetVoltages()
-    {
-        for (int i = 0; i < _voltageNames.Count; i++)
-        {
-            yield return new Voltage(_voltageNames[i], i);
-        }
-    }
+    public IEnumerable<Voltage> GetVoltages() => _voltageNames.Select((t, i) => new Voltage(t, i));
 
     /// <summary>
     /// Sets the voltages.
@@ -375,13 +354,7 @@ internal class Ipmi : ISuperIo
     /// Gets the controls.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Control> GetControls()
-    {
-        for (int i = 0; i < _controlNames.Count; i++)
-        {
-            yield return new Control(_controlNames[i], i);
-        }
-    }
+    public IEnumerable<Models.Control> GetControls() => _controlNames.Select((t, i) => new Models.Control(t, i));
 
     /// <summary>
     /// Sets the controls.
@@ -416,7 +389,7 @@ internal class Ipmi : ISuperIo
     /// <param name="networkFunction">The network function.</param>
     /// <param name="requestData">The request data.</param>
     /// <returns></returns>
-    private byte[]? RunIpmiCommand(byte command, byte networkFunction, byte[] requestData)
+    private byte[] RunIpmiCommand(byte command, byte networkFunction, byte[] requestData)
     {
 #pragma warning disable CA1416
         using ManagementBaseObject inParams = _ipmi.GetMethodParameters("RequestResponse");
@@ -441,7 +414,7 @@ internal class Ipmi : ISuperIo
     /// <param name="sensorReading">The sensor reading.</param>
     /// <param name="sdr">The SDR.</param>
     /// <returns></returns>
-    /// <exception cref="System.NotImplementedException"></exception>
+    /// <exception cref="NotImplementedException"></exception>
     private static float RawToFloat(byte sensorReading, Interop.Ipmi.Sdr sdr)
     {
         double reading = sensorReading;

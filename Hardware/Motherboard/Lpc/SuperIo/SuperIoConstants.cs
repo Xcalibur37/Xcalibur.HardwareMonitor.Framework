@@ -8,7 +8,7 @@
         // Voltages
         internal static string V18Volts = "+1.8V";
         internal static string V3StandbyVolts = "3V Standby";
-        internal static string V3vccVolts = "+3VCC";
+        internal static string V3VccVolts = "+3VCC";
         internal static string V33Volts = "+3.3V";
         internal static string V33StandbyVolts = "+3.3V Standby";
         internal static string V50Volts = "+5V";
@@ -43,8 +43,8 @@
         internal static string CpuVddpVolts = "CPU VDDP";
         internal static string CpuWeightedVolts = "CPU (Weighted)";
         internal static string DimmTerminationVolts = "DIMM Termination";
-        internal static string DimmABVolts = "DIMM A/B";
-        internal static string DimmCDVolts = "DIMM C/D";
+        internal static string DimmAbVolts = "DIMM A/B";
+        internal static string DimmCdVolts = "DIMM C/D";
         internal static string DimmVolts = "DIMM";
         internal static string DimmWriteVolts = "DIMM Write";
         internal static string DramVolts = "DRAM";

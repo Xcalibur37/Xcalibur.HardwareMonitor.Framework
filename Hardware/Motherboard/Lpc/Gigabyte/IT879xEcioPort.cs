@@ -1,15 +1,9 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
-// All Rights Reserved.
+﻿using System.Diagnostics;
 
-using System.Diagnostics;
-
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
 
 /// <summary>
-/// IT879x EC I/O Port
+/// ITE 879X EC I/O Port
 /// </summary>
 internal class IT879xEcIoPort
 {
@@ -89,7 +83,7 @@ internal class IT879xEcIoPort
     private bool Init(byte command, ushort offset)
     {
         if (!WriteToRegister(command)) return false;
-        if (!WriteToValue((byte)((offset >> 8) & 0xFF))) return false;
+        if (!WriteToValue((byte)(offset >> 8 & 0xFF))) return false;
         if (!WriteToValue((byte)(offset & 0xFF))) return false;
         return true;
     }

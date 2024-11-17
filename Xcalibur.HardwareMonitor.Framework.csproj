@@ -33,11 +33,11 @@
     <EmbeddedResource Include="Resources\WinRing0.gz" />
     <EmbeddedResource Include="Resources\WinRing0x64.gz" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="9.0.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="HidSharp" Version="2.1.0" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Management" Version="9.0.0" />
     <PackageReference Include="Xcalibur.Extensions.V2" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>

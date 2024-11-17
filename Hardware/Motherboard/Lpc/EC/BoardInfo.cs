@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
 {
@@ -17,7 +18,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
         /// <value>
         /// The models.
         /// </value>
-        public Model[] Models { get; }
+        public MotherboardModel[] Models { get; }
 
         /// <summary>
         /// Gets the family.
@@ -40,7 +41,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
         /// <param name="models">The models.</param>
         /// <param name="family">The family.</param>
         /// <param name="sensors">The sensors.</param>
-        public BoardInfo(Model[] models, BoardFamily family, params ECSensor[] sensors)
+        public BoardInfo(MotherboardModel[] models, BoardFamily family, params ECSensor[] sensors)
         {
             Models = models;
             Family = family;
@@ -53,7 +54,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
         /// <param name="model">The model.</param>
         /// <param name="family">The family.</param>
         /// <param name="sensors">The sensors.</param>
-        public BoardInfo(Model model, BoardFamily family, params ECSensor[] sensors)
+        public BoardInfo(MotherboardModel model, BoardFamily family, params ECSensor[] sensors)
         {
             Models = new[] { model };
             Family = family;

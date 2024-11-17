@@ -1,5 +1,8 @@
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
+/// <summary>
+/// Voltage
+/// </summary>
 internal class Voltage
 {
     /// <summary>

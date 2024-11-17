@@ -1,12 +1,17 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-// If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// Copyright (C) LibreHardwareMonitor and Contributors.
-// All Rights Reserved.
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware;
-
+/// <summary>
+/// Hardware Changed: Interface
+/// </summary>
 internal interface IHardwareChanged
 {
+    /// <summary>
+    /// Occurs when [hardware added].
+    /// </summary>
     event HardwareEventHandler HardwareAdded;
+
+    /// <summary>
+    /// Occurs when [hardware removed].
+    /// </summary>
     event HardwareEventHandler HardwareRemoved;
 }
