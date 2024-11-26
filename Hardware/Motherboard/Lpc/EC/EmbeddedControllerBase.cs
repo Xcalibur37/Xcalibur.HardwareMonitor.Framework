@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC.Exceptions;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 

@@ -18,18 +18,18 @@ public class Kernel32
 
     public const int ERROR_SERVICE_EXISTS = unchecked((int)0x80070431);
 
-    internal const uint BATTERY_UNKNOWN_TIME = 0xFFFFFFFF;
-    internal const string IntelNVMeMiniPortSignature1 = "NvmeMini";
-    internal const string IntelNVMeMiniPortSignature2 = "IntelNvm";
+    public const uint BATTERY_UNKNOWN_TIME = 0xFFFFFFFF;
+    public const string IntelNVMeMiniPortSignature1 = "NvmeMini";
+    public const string IntelNVMeMiniPortSignature2 = "IntelNvm";
 
-    internal const uint LPTR = 0x0000 | 0x0040;
+    public const uint LPTR = 0x0000 | 0x0040;
 
-    internal const int MAX_DRIVE_ATTRIBUTES = 512;
-    internal const uint NVME_PASS_THROUGH_SRB_IO_CODE = 0xe0002000;
-    internal const byte SMART_LBA_HI = 0xC2;
-    internal const byte SMART_LBA_HI_EXCEEDED = 0x2C;
-    internal const byte SMART_LBA_MID = 0x4F;
-    internal const byte SMART_LBA_MID_EXCEEDED = 0xF4;
+    public const int MAX_DRIVE_ATTRIBUTES = 512;
+    public const uint NVME_PASS_THROUGH_SRB_IO_CODE = 0xe0002000;
+    public const byte SMART_LBA_HI = 0xC2;
+    public const byte SMART_LBA_HI_EXCEEDED = 0x2C;
+    public const byte SMART_LBA_MID = 0x4F;
+    public const byte SMART_LBA_MID_EXCEEDED = 0xF4;
 
     private const string DllName = "kernel32.dll";
 
@@ -49,7 +49,7 @@ public class Kernel32
         TemperatureThreshold = 0x02,
 
         /// <summary>
-        /// If set to 1, then the device reliability has been degraded due to significant media related errors or any internal error that degrades device reliability.
+        /// If set to 1, then the device reliability has been degraded due to significant media related errors or any public error that degrades device reliability.
         /// </summary>
         ReliabilityDegraded = 0x04,
 
@@ -70,7 +70,7 @@ public class Kernel32
     /// </summary>
     /// <typeparam name="T">type of struct that is needed</typeparam>
     /// <returns></returns>
-    internal static T CreateStruct<T>()
+    public static T CreateStruct<T>()
     {
         int size = Marshal.SizeOf<T>();
         IntPtr ptr = Marshal.AllocHGlobal(size);
@@ -80,11 +80,13 @@ public class Kernel32
         return result;
     }
 
-    internal static SafeFileHandle OpenDevice(string devicePath)
+    public static SafeFileHandle OpenDevice(string devicePath)
     {
         SafeFileHandle hDevice = CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
         if (hDevice.IsInvalid || hDevice.IsClosed)
+        {
             hDevice = null;
+        }
 
         return hDevice;
     }
@@ -92,11 +94,26 @@ public class Kernel32
     [DllImport(DllName, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
+    public static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
 
+    /// <summary>
+    /// Creates or opens a file or I/O device. The most commonly used I/O devices are as follows: file, file stream,
+    /// directory, physical disk, volume, console buffer, tape drive, communications resource, mailslot, and pipe.
+    /// The function returns a handle that can be used to access the file or device for various types of I/O depending
+    /// on the file or device and the flags and attributes specified.
+    /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+    /// </summary>
+    /// <param name="lpFileName">Name of the lp file.</param>
+    /// <param name="dwDesiredAccess">The dw desired access.</param>
+    /// <param name="dwShareMode">The dw share mode.</param>
+    /// <param name="lpSecurityAttributes">The lp security attributes.</param>
+    /// <param name="dwCreationDisposition">The dw creation disposition.</param>
+    /// <param name="dwFlagsAndAttributes">The dw flags and attributes.</param>
+    /// <param name="hTemplateFile">The h template file.</param>
+    /// <returns></returns>
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern SafeFileHandle CreateFile
+    public static extern SafeFileHandle CreateFile
     (
         [MarshalAs(UnmanagedType.LPTStr)] string lpFileName,
         [MarshalAs(UnmanagedType.U4)] FileAccess dwDesiredAccess,
@@ -109,7 +126,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         DFP dwIoControlCode,
@@ -123,7 +140,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         DFP dwIoControlCode,
@@ -137,7 +154,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         DFP dwIoControlCode,
@@ -151,7 +168,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         DFP dwIoControlCode,
@@ -165,7 +182,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         DFP dwIoControlCode,
@@ -179,7 +196,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         IOCTL dwIoControlCode,
@@ -193,7 +210,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         IOCTL dwIoControlCode,
@@ -207,7 +224,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         IOCTL dwIoControlCode,
@@ -221,7 +238,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeHandle hDevice,
         IOCTL dwIoControlCode,
@@ -235,7 +252,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeFileHandle hDevice,
         IOCTL dwIoControlCode,
@@ -249,7 +266,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeFileHandle hDevice,
         IOCTL dwIoControlCode,
@@ -263,7 +280,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeFileHandle hDevice,
         IOCTL dwIoControlCode,
@@ -277,7 +294,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeFileHandle hDevice,
         IOCTL dwIoControlCode,
@@ -291,7 +308,7 @@ public class Kernel32
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeFileHandle hDevice,
         IOCTL dwIoControlCode,
@@ -304,56 +321,56 @@ public class Kernel32
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr LocalAlloc(uint uFlags, ulong uBytes);
+    public static extern IntPtr LocalAlloc(uint uFlags, ulong uBytes);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr LocalFree(IntPtr hMem);
+    public static extern IntPtr LocalFree(IntPtr hMem);
 
     [DllImport(DllName, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern void RtlZeroMemory(IntPtr Destination, int Length);
+    public static extern void RtlZeroMemory(IntPtr Destination, int Length);
 
     [DllImport(DllName, SetLastError = false)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern void RtlCopyMemory(IntPtr Destination, IntPtr Source, uint Length);
+    public static extern void RtlCopyMemory(IntPtr Destination, IntPtr Source, uint Length);
 
     [DllImport(DllName, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr LoadLibrary(string lpFileName);
+    public static extern IntPtr LoadLibrary(string lpFileName);
 
     [DllImport(DllName, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr GetProcAddress(IntPtr module, string methodName);
+    public static extern IntPtr GetProcAddress(IntPtr module, string methodName);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool FreeLibrary(IntPtr module);
+    public static extern bool FreeLibrary(IntPtr module);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr GetCurrentThread();
+    public static extern IntPtr GetCurrentThread();
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern ushort GetActiveProcessorGroupCount();
+    public static extern ushort GetActiveProcessorGroupCount();
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern bool SetThreadGroupAffinity(IntPtr thread, ref GROUP_AFFINITY groupAffinity, out GROUP_AFFINITY previousGroupAffinity);
+    public static extern bool SetThreadGroupAffinity(IntPtr thread, ref GROUP_AFFINITY groupAffinity, out GROUP_AFFINITY previousGroupAffinity);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, MEM flAllocationType, PAGE flProtect);
+    public static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, MEM flAllocationType, PAGE flProtect);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, MEM dwFreeType);
+    public static extern bool VirtualFree(IntPtr lpAddress, UIntPtr dwSize, MEM dwFreeType);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern bool DeviceIoControl
+    public static extern bool DeviceIoControl
     (
         SafeFileHandle device,
         IOControlCode ioControlCode,
@@ -366,7 +383,7 @@ public class Kernel32
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern IntPtr CreateFile
+    public static extern IntPtr CreateFile
     (
         string lpFileName,
         uint dwDesiredAccess,
@@ -378,11 +395,11 @@ public class Kernel32
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern int EnumSystemFirmwareTables(Provider firmwareTableProviderSignature, IntPtr firmwareTableBuffer, int bufferSize);
+    public static extern int EnumSystemFirmwareTables(Provider firmwareTableProviderSignature, IntPtr firmwareTableBuffer, int bufferSize);
 
     [DllImport(DllName, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
+    public static extern int GetSystemFirmwareTable(Provider firmwareTableProviderSignature, int firmwareTableID, IntPtr firmwareTableBuffer, int bufferSize);
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct GROUP_AFFINITY
@@ -396,14 +413,14 @@ public class Kernel32
         public ushort[] Reserved;
     }
 
-    internal enum DFP : uint
+    public enum DFP : uint
     {
         DFP_GET_VERSION = 0x00074080,
         DFP_SEND_DRIVE_COMMAND = 0x0007c084,
         DFP_RECEIVE_DRIVE_DATA = 0x0007c088
     }
 
-    internal enum IOCTL : uint
+    public enum IOCTL : uint
     {
         IOCTL_SCSI_PASS_THROUGH = 0x04d004,
         IOCTL_SCSI_MINIPORT = 0x04d008,
@@ -417,7 +434,7 @@ public class Kernel32
     }
 
     [Flags]
-    internal enum BatteryCapabilities : uint
+    public enum BatteryCapabilities : uint
     {
         BATTERY_CAPACITY_RELATIVE = 0x40000000,
         BATTERY_IS_SHORT_TERM = 0x20000000,
@@ -426,7 +443,7 @@ public class Kernel32
         BATTERY_SYSTEM_BATTERY = 0x80000000
     }
 
-    internal enum BATTERY_QUERY_INFORMATION_LEVEL
+    public enum BATTERY_QUERY_INFORMATION_LEVEL
     {
         BatteryInformation,
         BatteryGranularityInformation,
@@ -440,7 +457,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct BATTERY_QUERY_INFORMATION
+    public struct BATTERY_QUERY_INFORMATION
     {
         public uint BatteryTag;
         public BATTERY_QUERY_INFORMATION_LEVEL InformationLevel;
@@ -448,7 +465,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct BATTERY_INFORMATION
+    public struct BATTERY_INFORMATION
     {
         public BatteryCapabilities Capabilities;
         public byte Technology;
@@ -468,7 +485,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct BATTERY_WAIT_STATUS
+    public struct BATTERY_WAIT_STATUS
     {
         public uint BatteryTag;
         public uint Timeout;
@@ -478,7 +495,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct BATTERY_STATUS
+    public struct BATTERY_STATUS
     {
         public uint PowerState;
         public uint Capacity;
@@ -487,14 +504,14 @@ public class Kernel32
     }
 
     [Flags]
-    internal enum NVME_DIRECTION : uint
+    public enum NVME_DIRECTION : uint
     {
         NVME_FROM_HOST_TO_DEV = 1,
         NVME_FROM_DEV_TO_HOST = 2,
         NVME_BI_DIRECTION = NVME_FROM_DEV_TO_HOST | NVME_FROM_HOST_TO_DEV
     }
 
-    internal enum NVME_LOG_PAGES
+    public enum NVME_LOG_PAGES
     {
         NVME_LOG_PAGE_ERROR_INFO = 0x01,
         NVME_LOG_PAGE_HEALTH_INFO = 0x02,
@@ -508,7 +525,7 @@ public class Kernel32
         NVME_LOG_PAGE_SANITIZE_STATUS = 0x81
     }
 
-    internal enum ATA_COMMAND : byte
+    public enum ATA_COMMAND : byte
     {
         /// <summary>
         /// SMART data requested.
@@ -521,14 +538,14 @@ public class Kernel32
         ATA_IDENTIFY_DEVICE = 0xEC
     }
 
-    internal enum SCSI_IOCTL_DATA
+    public enum SCSI_IOCTL_DATA
     {
         SCSI_IOCTL_DATA_OUT = 0,
         SCSI_IOCTL_DATA_IN = 1,
         SCSI_IOCTL_DATA_UNSPECIFIED = 2
     }
 
-    internal enum SMART_FEATURES : byte
+    public enum SMART_FEATURES : byte
     {
         /// <summary>
         /// Read SMART data.
@@ -593,7 +610,7 @@ public class Kernel32
         ENABLE_DISABLE_AUTO_OFFLINE = 0xDB /* obsolete */
     }
 
-    internal enum STORAGE_BUS_TYPE
+    public enum STORAGE_BUS_TYPE
     {
         BusTypeUnknown = 0x00,
         BusTypeScsi,
@@ -618,7 +635,7 @@ public class Kernel32
         BusTypeMaxReserved = 0x7F
     }
 
-    internal enum STORAGE_PROPERTY_ID
+    public enum STORAGE_PROPERTY_ID
     {
         StorageDeviceProperty = 0,
         StorageAdapterProperty,
@@ -650,7 +667,7 @@ public class Kernel32
         StorageDeviceLocationProperty
     }
 
-    internal enum STORAGE_PROTOCOL_NVME_DATA_TYPE
+    public enum STORAGE_PROTOCOL_NVME_DATA_TYPE
     {
         NVMeDataTypeUnknown = 0,
         NVMeDataTypeIdentify,
@@ -658,14 +675,14 @@ public class Kernel32
         NVMeDataTypeFeature
     }
 
-    internal enum STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE
+    public enum STORAGE_PROTOCOL_NVME_PROTOCOL_DATA_REQUEST_VALUE
     {
         NVMeIdentifyCnsSpecificNamespace = 0,
         NVMeIdentifyCnsController = 1,
         NVMeIdentifyCnsActiveNamespaces = 2
     }
 
-    internal enum STORAGE_PROTOCOL_TYPE
+    public enum STORAGE_PROTOCOL_TYPE
     {
         ProtocolTypeUnknown = 0x00,
         ProtocolTypeScsi,
@@ -676,7 +693,7 @@ public class Kernel32
         ProtocolTypeMaxReserved = 0x7F
     }
 
-    internal enum STORAGE_QUERY_TYPE
+    public enum STORAGE_QUERY_TYPE
     {
         PropertyStandardQuery = 0,
         PropertyExistsQuery,
@@ -685,7 +702,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct MEMORYSTATUSEX
+    public struct MEMORYSTATUSEX
     {
         public uint dwLength;
         public uint dwMemoryLoad;
@@ -723,7 +740,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct SENDCMDINPARAMS
+    public struct SENDCMDINPARAMS
     {
         public uint cBufferSize;
         public IDEREGS irDriveRegs;
@@ -740,7 +757,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct IDEREGS
+    public struct IDEREGS
     {
         public SMART_FEATURES bFeaturesReg;
         public byte bSectorCountReg;
@@ -753,7 +770,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct DRIVERSTATUS
+    public struct DRIVERSTATUS
     {
         public byte bDriverError;
         public byte bIDEError;
@@ -763,7 +780,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct SENDCMDOUTPARAMS
+    public struct SENDCMDOUTPARAMS
     {
         public uint cBufferSize;
         public DRIVERSTATUS DriverStatus;
@@ -773,7 +790,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct ATTRIBUTECMDOUTPARAMS
+    public struct ATTRIBUTECMDOUTPARAMS
     {
         public uint cBufferSize;
         public DRIVERSTATUS DriverStatus;
@@ -785,7 +802,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct THRESHOLDCMDOUTPARAMS
+    public struct THRESHOLDCMDOUTPARAMS
     {
         public uint cBufferSize;
         public DRIVERSTATUS DriverStatus;
@@ -797,7 +814,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct STATUSCMDOUTPARAMS
+    public struct STATUSCMDOUTPARAMS
     {
         public uint cBufferSize;
         public DRIVERSTATUS DriverStatus;
@@ -805,7 +822,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct IDENTIFY_DATA
+    public struct IDENTIFY_DATA
     {
         public ushort GeneralConfiguration;
         public ushort NumberOfCylinders;
@@ -851,7 +868,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct IDENTIFYCMDOUTPARAMS
+    public struct IDENTIFYCMDOUTPARAMS
     {
         public uint cBufferSize;
         public DRIVERSTATUS DriverStatus;
@@ -859,7 +876,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct STORAGE_PROPERTY_QUERY
+    public struct STORAGE_PROPERTY_QUERY
     {
         public STORAGE_PROPERTY_ID PropertyId;
         public STORAGE_QUERY_TYPE QueryType;
@@ -869,14 +886,14 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct STORAGE_DEVICE_DESCRIPTOR_HEADER
+    public struct STORAGE_DEVICE_DESCRIPTOR_HEADER
     {
         public uint Version;
         public uint Size;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct STORAGE_DEVICE_DESCRIPTOR
+    public struct STORAGE_DEVICE_DESCRIPTOR
     {
         public uint Version;
         public uint Size;
@@ -941,7 +958,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct SRB_IO_CONTROL
+    public struct SRB_IO_CONTROL
     {
         public uint HeaderLenght;
 
@@ -955,7 +972,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NVME_PASS_THROUGH_IOCTL
+    public struct NVME_PASS_THROUGH_IOCTL
     {
         public SRB_IO_CONTROL srb;
 
@@ -979,7 +996,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct SCSI_PASS_THROUGH
+    public struct SCSI_PASS_THROUGH
     {
         [MarshalAs(UnmanagedType.U2)]
         public ushort Length;
@@ -1001,7 +1018,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct SCSI_PASS_THROUGH_WITH_BUFFERS
+    public struct SCSI_PASS_THROUGH_WITH_BUFFERS
     {
         public SCSI_PASS_THROUGH Spt;
 
@@ -1015,7 +1032,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NVME_POWER_STATE_DESC
+    public struct NVME_POWER_STATE_DESC
     {
         /// <summary>
         /// bit 0:15 Maximum  Power (MP) in centiwatts
@@ -1095,7 +1112,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NVME_IDENTIFY_CONTROLLER_DATA
+    public struct NVME_IDENTIFY_CONTROLLER_DATA
     {
         /// <summary>
         /// byte 0:1 M - PCI Vendor ID (VID)
@@ -1379,7 +1396,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NVME_HEALTH_INFO_LOG
+    public struct NVME_HEALTH_INFO_LOG
     {
         /// <summary>
         /// This field indicates critical warnings for the state of the  controller.
@@ -1502,11 +1519,11 @@ public class Kernel32
         public ushort[] TemperatureSensor;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 296)]
-        internal byte[] Reserved2;
+        public byte[] Reserved2;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct STORAGE_PROTOCOL_SPECIFIC_DATA
+    public struct STORAGE_PROTOCOL_SPECIFIC_DATA
     {
         public STORAGE_PROTOCOL_TYPE ProtocolType;
         public uint DataType;
@@ -1521,18 +1538,18 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct STORAGE_QUERY_BUFFER
+    public struct STORAGE_QUERY_BUFFER
     {
         public STORAGE_PROPERTY_ID PropertyId;
         public STORAGE_QUERY_TYPE QueryType;
         public STORAGE_PROTOCOL_SPECIFIC_DATA ProtocolSpecific;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
-        internal byte[] Buffer;
+        public byte[] Buffer;
     }
 
     [Flags]
-    internal enum MEM : uint
+    public enum MEM : uint
     {
         MEM_COMMIT = 0x1000,
         MEM_RESERVE = 0x2000,
@@ -1546,7 +1563,7 @@ public class Kernel32
     }
 
     [Flags]
-    internal enum PAGE : uint
+    public enum PAGE : uint
     {
         PAGE_EXECUTE = 0x10,
         PAGE_EXECUTE_READ = 0x20,
@@ -1562,7 +1579,7 @@ public class Kernel32
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    internal struct IOControlCode
+    public struct IOControlCode
     {
         /// <summary>
         /// Gets the resulting IO control code.
@@ -1606,7 +1623,7 @@ public class Kernel32
         }
     }
 
-    internal enum Provider
+    public enum Provider
     {
         ACPI = (byte)'A' << 24 | (byte)'C' << 16 | (byte)'P' << 8 | (byte)'I',
         FIRM = (byte)'F' << 24 | (byte)'I' << 16 | (byte)'R' << 8 | (byte)'M',

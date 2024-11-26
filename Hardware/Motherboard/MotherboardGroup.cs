@@ -23,7 +23,7 @@ internal class MotherboardGroup : IGroup
     /// </summary>
     /// <param name="smbios">The smbios.</param>
     /// <param name="settings">The settings.</param>
-    public MotherboardGroup(SMBios smbios, ISettings settings)
+    public MotherboardGroup(SmBios.SmBios smbios, ISettings settings)
     {
         _motherboards = new Motherboard[1];
         _motherboards[0] = new Motherboard(smbios, settings);

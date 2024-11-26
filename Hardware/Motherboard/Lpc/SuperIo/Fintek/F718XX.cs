@@ -5,6 +5,7 @@
 
 
 using System;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 
 // ReSharper disable once InconsistentNaming
 

@@ -1,4 +1,6 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
+﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
+
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 
 /// <summary>
 /// Embedded Controller Source

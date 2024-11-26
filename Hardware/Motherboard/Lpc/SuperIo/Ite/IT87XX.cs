@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
 
 // ReSharper disable once InconsistentNaming

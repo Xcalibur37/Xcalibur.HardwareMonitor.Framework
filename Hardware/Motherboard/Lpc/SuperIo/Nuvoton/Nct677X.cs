@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Helpers;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 

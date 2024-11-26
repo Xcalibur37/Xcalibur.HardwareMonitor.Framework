@@ -7,6 +7,7 @@ using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Ite;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nuvoton;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Winbond;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
 
@@ -122,7 +123,7 @@ internal sealed class SuperIoHardware : Hardware
     /// </summary>
     /// <param name="control">The control.</param>
     /// <returns></returns>
-    private static byte GetSoftwareValueAsByte(Framework.Hardware.Control control)
+    private static byte GetSoftwareValueAsByte(Control control)
     {
         const float percentToByteRatio = 2.55f;
         float value = control.SoftwareValue * percentToByteRatio;
@@ -556,7 +557,7 @@ internal sealed class SuperIoHardware : Hardware
             int index = ctrl.Index;
             if (index >= superIo.Controls.Length) continue;
             var sensor = new Sensor(ctrl.Name, index, SensorType.Control, this, settings);
-            var control = new Framework.Hardware.Control(sensor, settings, 0, 100);
+            var control = new Control(sensor, settings, 0, 100);
             control.ControlModeChanged += cc =>
             {
                 switch (cc.ControlMode)

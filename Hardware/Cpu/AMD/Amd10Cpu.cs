@@ -5,6 +5,8 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD;
 

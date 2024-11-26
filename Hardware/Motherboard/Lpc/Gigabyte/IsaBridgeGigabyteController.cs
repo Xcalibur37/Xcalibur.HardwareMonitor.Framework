@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
 

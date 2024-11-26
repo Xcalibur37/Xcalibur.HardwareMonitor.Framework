@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Memory;

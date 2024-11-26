@@ -1,31 +1,43 @@
-﻿
-
-
-
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Management;
+using Xcalibur.Extensions.V2;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
 #pragma warning disable CA1416 // Validate platform compatibility
 
+/// <summary>
+/// Storage Group
+/// </summary>
+/// <seealso cref="IGroup" />
 internal class StorageGroup : IGroup
 {
-    private readonly List<AbstractStorage> _hardware = new();
+    private readonly List<AbstractStorage> _hardware = [];
 
+    /// <summary>
+    /// Gets a list that stores information about <see cref="IHardware" /> in a given group.
+    /// </summary>
+    public IReadOnlyList<IHardware> Hardware => _hardware;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StorageGroup"/> class.
+    /// </summary>
+    /// <param name="settings">The settings.</param>
     public StorageGroup(ISettings settings)
     {
-        if (Software.OperatingSystem.IsUnix)
-            return;
-
+        if (Software.OperatingSystem.IsUnix) return;
         Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap = GetStorageSpaceDiskToPhysicalDiskMap();
         AddHardware(settings, storageSpaceDiskToPhysicalDiskMap);
     }
 
-    public IReadOnlyList<IHardware> Hardware => _hardware;
+    /// <summary>
+    /// Close open devices.
+    /// </summary>
+    public void Close()
+    {
+        _hardware.Apply(x => x.Close());
+    }
 
     /// <summary>
     /// Adds the hardware.
@@ -46,21 +58,19 @@ internal class StorageGroup : IGroup
                 ulong diskSize = Convert.ToUInt64(diskDrive.Properties["Size"].Value);
                 int scsi = Convert.ToInt32(diskDrive.Properties["SCSIPort"].Value);
 
-                if (deviceId != null)
+                if (deviceId == null) continue;
+                var instance = AbstractStorage.CreateInstance(deviceId, index, diskSize, scsi, settings);
+                if (instance != null)
                 {
-                    var instance = AbstractStorage.CreateInstance(deviceId, index, diskSize, scsi, settings);
-                    if (instance != null)
-                        _hardware.Add(instance);
+                    _hardware.Add(instance);
+                }
 
-                    if (storageSpaceDiskToPhysicalDiskMap.ContainsKey(index))
-                    {
-                        foreach ((uint, ulong) physicalDisk in storageSpaceDiskToPhysicalDiskMap[index])
-                        {
-                            var physicalDiskInstance = AbstractStorage.CreateInstance(@$"\\.\PHYSICALDRIVE{physicalDisk.Item1}", physicalDisk.Item1, physicalDisk.Item2, scsi, settings);
-                            if (physicalDiskInstance != null)
-                                _hardware.Add(physicalDiskInstance);
-                        }
-                    }
+                if (!storageSpaceDiskToPhysicalDiskMap.TryGetValue(index, out var value)) continue;
+                foreach ((uint, ulong) physicalDisk in value)
+                {
+                    var physicalDiskInstance = AbstractStorage.CreateInstance(@$"\\.\PHYSICALDRIVE{physicalDisk.Item1}", physicalDisk.Item1, physicalDisk.Item2, scsi, settings);
+                    if (physicalDiskInstance == null) continue;
+                    _hardware.Add(physicalDiskInstance);
                 }
             }
         }
@@ -78,7 +88,9 @@ internal class StorageGroup : IGroup
         var diskToPhysicalDisk = new Dictionary<uint, List<(uint, ulong)>>();
 
         if (!Software.OperatingSystem.IsWindows8OrGreater)
+        {
             return diskToPhysicalDisk;
+        }
 
         try
         {
@@ -131,31 +143,33 @@ internal class StorageGroup : IGroup
             // Maps the current VirtualDisk to the PhysicalDisk it is composed of.
             // Each VirtualDisk maps to one or more PhysicalDisk.
 
-            using var toPhysicalDisk = new ManagementObjectSearcher(scope,
-                                                                    new ObjectQuery(FollowAssociationQuery("MSFT_VirtualDisk",
-                                                                                                           (string)virtualDisk["ObjectId"],
-                                                                                                           "MSFT_VirtualDiskToPhysicalDisk")));
+            using var toPhysicalDisk = new ManagementObjectSearcher(
+                scope,
+                new ObjectQuery(FollowAssociationQuery("MSFT_VirtualDisk",
+                                                       (string)virtualDisk["ObjectId"],
+                                                       "MSFT_VirtualDiskToPhysicalDisk")));
 
             foreach (ManagementBaseObject physicalDisk in toPhysicalDisk.Get())
             {
                 ulong physicalDiskSize = (ulong)physicalDisk["Size"];
 
-                if (uint.TryParse((string)physicalDisk["DeviceId"], out uint physicalDiskId))
-                    map.Add((physicalDiskId, physicalDiskSize));
+                if (!uint.TryParse((string)physicalDisk["DeviceId"], out uint physicalDiskId)) continue;
+                map.Add((physicalDiskId, physicalDiskSize));
             }
         }
 
         return map;
     }
 
-    private static string FollowAssociationQuery(string source, string objectId, string associationClass)
-    {
-        return @$"ASSOCIATORS OF {{{source}.ObjectId=""{objectId.Replace(@"\", @"\\").Replace(@"""", @"\""")}""}} WHERE AssocClass = {associationClass}";
-    }
-
-    public void Close()
-    {
-        foreach (AbstractStorage storage in _hardware)
-            storage.Close();
-    }
+    /// <summary>
+    /// Follows the association query.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <param name="objectId">The object identifier.</param>
+    /// <param name="associationClass">The association class.</param>
+    /// <returns></returns>
+    private static string FollowAssociationQuery(string source, string objectId, string associationClass) => 
+        @$"ASSOCIATORS OF {{{source}.ObjectId=""{objectId
+            .Replace(@"\", @"\\")
+            .Replace(@"""", @"\""")}""}} WHERE AssocClass = {associationClass}";
 }

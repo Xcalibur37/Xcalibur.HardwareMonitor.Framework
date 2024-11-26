@@ -1,4 +1,6 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware;
+﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
+
+namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 
 /// <summary>
 /// Abstract object that stores settings passed to <see cref="IComputer"/>, <see cref="IHardware"/> and <see cref="ISensor"/>.

@@ -17,8 +17,7 @@
         /// </summary>
         /// <param name="name">Key to which the setting value is assigned.</param>
         /// <param name="value">Text setting value.</param>
-        public void SetValue(string name, string value)
-        { }
+        public void SetValue(string name, string value) { }
 
         /// <summary>
         /// Gets a setting option assigned to the given key.

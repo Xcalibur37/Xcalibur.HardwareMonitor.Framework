@@ -5,6 +5,7 @@ using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using OperatingSystem = Xcalibur.HardwareMonitor.Framework.Software.OperatingSystem;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
@@ -43,7 +44,7 @@ public class Motherboard : IHardware
     public MotherboardModel Model { get; }
 
     /// <summary>
-    /// Gets the name obtained from <see cref="SMBios" />.
+    /// Gets the name obtained from <see cref="SmBios" />.
     /// </summary>
     public string Name
     {
@@ -51,7 +52,6 @@ public class Motherboard : IHardware
         set
         {
             _customName = !string.IsNullOrEmpty(value) ? value : _name;
-
             _settings.SetValue(new Identifier(Identifier, "name").ToString(), _customName);
         }
     }
@@ -64,12 +64,12 @@ public class Motherboard : IHardware
     public virtual IDictionary<string, string> Properties => new SortedDictionary<string, string>();
 
     /// <inheritdoc />
-    public ISensor[] Sensors => Array.Empty<ISensor>();
+    public ISensor[] Sensors => [];
 
     /// <summary>
-    /// Gets the <see cref="SMBios" /> information.
+    /// Gets the <see cref="SmBios" /> information.
     /// </summary>
-    public SMBios SmBios { get; }
+    public SmBios.SmBios SmBios { get; }
 
     /// <inheritdoc />
     public IHardware[] SubHardware { get; }
@@ -79,12 +79,12 @@ public class Motherboard : IHardware
     #region Constructors
 
     /// <summary>
-    /// Creates motherboard instance by retrieving information from <see cref="SMBios" /> and creates a new <see cref="SubHardware" /> based on data from <see cref="LpcIo" />
+    /// Creates motherboard instance by retrieving information from <see cref="SmBios" /> and creates a new <see cref="SubHardware" /> based on data from <see cref="LpcIo" />
     /// and <see cref="EmbeddedControllerBase" />.
     /// </summary>
-    /// <param name="smBios"><see cref="SMBios" /> table containing motherboard data.</param>
+    /// <param name="smBios"><see cref="SmBios" /> table containing motherboard data.</param>
     /// <param name="settings">Additional settings passed by <see cref="IComputer" />.</param>
-    public Motherboard(SMBios smBios, ISettings settings)
+    public Motherboard(SmBios.SmBios smBios, ISettings settings)
     {
         _settings = settings;
 

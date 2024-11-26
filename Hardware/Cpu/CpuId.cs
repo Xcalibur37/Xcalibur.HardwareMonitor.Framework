@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Memory;
 

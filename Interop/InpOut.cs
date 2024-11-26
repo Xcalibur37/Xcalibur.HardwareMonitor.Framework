@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
 
+/// <summary>
+/// InpOut32 is a windows DLL and Driver to give direct access to hardware ports.
+/// </summary>
 internal class InpOut
 {
     public delegate IntPtr MapPhysToLinDelegate(IntPtr pbPhysAddr, uint dwPhysSize, out IntPtr pPhysicalMemoryHandle);

@@ -8,10 +8,10 @@ using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.AMD;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Intel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Nvidia;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Memory;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Network;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Psu.Corsair;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
@@ -34,8 +34,7 @@ public class Computer : IComputer
     private bool _motherboardEnabled;
     private bool _networkEnabled;
     private bool _open;
-    private bool _psuEnabled;
-    private SMBios _smbios;
+    private SmBios.SmBios _smbios;
     private bool _storageEnabled;
 
     #endregion
@@ -193,28 +192,6 @@ public class Computer : IComputer
     }
 
     /// <inheritdoc />
-    public bool IsPsuEnabled
-    {
-        get => _psuEnabled;
-        set
-        {
-            if (_open && value != _psuEnabled)
-            {
-                if (value)
-                {
-                    Add(new CorsairPsuGroup(_settings));
-                }
-                else
-                {
-                    RemoveType<CorsairPsuGroup>();
-                }
-            }
-
-            _psuEnabled = value;
-        }
-    }
-
-    /// <inheritdoc />
     public bool IsStorageEnabled
     {
         get => _storageEnabled;
@@ -237,9 +214,10 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// Contains computer information table read in accordance with <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
+    /// Contains computer information table read in accordance with
+    /// <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
     /// </summary>
-    public SMBios SmBios
+    public SmBios.SmBios SmBios
     {
         get
         {
@@ -261,15 +239,6 @@ public class Computer : IComputer
     public Computer()
     {
         _settings = new Settings();
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="IComputer" /> instance with additional <see cref="ISettings" />.
-    /// </summary>
-    /// <param name="settings">Computer settings that will be transferred to each <see cref="IHardware" />.</param>
-    public Computer(ISettings settings)
-    {
-        _settings = settings ?? new Settings();
     }
 
     #endregion
@@ -318,14 +287,17 @@ public class Computer : IComputer
     }
 
     /// <summary>
-    /// If this hasn't been opened before, opens <see cref="SmBios" />, <see cref="Ring0" />, <see cref="OpCode" /> and triggers the private <see cref="AddGroups" /> method depending on which categories are
-    /// enabled.
+    /// If this hasn't been opened before, opens
+    /// <see cref="SmBios" />,
+    /// <see cref="Ring0" />,
+    /// <see cref="OpCode" /> and triggers the private
+    /// <see cref="AddGroups" /> method depending on which categories are enabled.
     /// </summary>
     public void Open()
     {
         if (_open) return;
 
-        _smbios = new SMBios();
+        _smbios = new SmBios.SmBios();
 
         Ring0.Open();
         Mutexes.Open();
@@ -356,12 +328,9 @@ public class Computer : IComputer
         lock (_lock)
         {
             // Use a for-loop instead of foreach to avoid a collection modified exception after sleep, even though everything is under a lock.
-            foreach (var group in _groups)
+            foreach (var t in _groups.SelectMany(group => group.Hardware))
             {
-                foreach (var t in group.Hardware)
-                {
-                    t.Accept(visitor);
-                }
+                t.Accept(visitor);
             }
         }
     }
@@ -394,13 +363,13 @@ public class Computer : IComputer
     /// Gets the intel cpus.
     /// </summary>
     /// <returns></returns>
-    private List<IntelCpu> GetIntelCpus()
+    private IntelCpu[] GetIntelCpus()
     {
         // Create a temporary cpu group if one has not been added.
         lock (_lock)
         {
-            IGroup cpuGroup = _groups.Find(x => x is CpuGroup) ?? new CpuGroup(_settings);
-            return cpuGroup.Hardware.Select(x => x as IntelCpu).ToList();
+            var cpuGroup = _groups.Find(x => x is CpuGroup) ?? new CpuGroup(_settings);
+            return cpuGroup.Hardware.Select(x => x as IntelCpu).ToArray();
         }
     }
 
@@ -465,11 +434,6 @@ public class Computer : IComputer
         if (_networkEnabled)
         {
             Add(new NetworkGroup(_settings));
-        }
-
-        if (_psuEnabled)
-        {
-            Add(new CorsairPsuGroup(_settings));
         }
 
         if (_batteryEnabled)

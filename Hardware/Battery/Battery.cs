@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Battery;

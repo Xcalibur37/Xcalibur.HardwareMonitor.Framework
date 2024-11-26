@@ -1,4 +1,6 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware;
+﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
+
+namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 
 /// <summary>
 /// Base interface for creating observers who call to devices.

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 

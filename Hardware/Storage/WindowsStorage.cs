@@ -1,9 +1,4 @@
-﻿
-
-
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -12,6 +7,9 @@ using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
+/// <summary>
+/// Windows Storage
+/// </summary>
 internal static class WindowsStorage
 {
     public static Storage.StorageInfo GetStorageInfo(string deviceId, uint driveIndex)
@@ -49,20 +47,27 @@ internal static class WindowsStorage
         }
     }
 
+    /// <summary>
+    /// Gets the logical drives.
+    /// </summary>
+    /// <param name="driveIndex">Index of the drive.</param>
+    /// <returns></returns>
     public static string[] GetLogicalDrives(int driveIndex)
     {
         var list = new List<string>();
 
+        #pragma warning disable CA1416
         try
         {
-            using var s = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskPartition " + "WHERE DiskIndex = " + driveIndex);
+            using var s = new ManagementObjectSearcher("root\\CIMV2", 
+                $"SELECT * FROM Win32_DiskPartition WHERE DiskIndex={driveIndex}");
 
             foreach (ManagementBaseObject o in s.Get())
             {
-                if (o is ManagementObject dp)
+                if (o is not ManagementObject dp) continue;
+                foreach (ManagementBaseObject ld in dp.GetRelated("Win32_LogicalDisk"))
                 {
-                    foreach (ManagementBaseObject ld in dp.GetRelated("Win32_LogicalDisk"))
-                        list.Add(((string)ld["Name"]).TrimEnd(':'));
+                    list.Add(((string)ld["Name"]).TrimEnd(':'));
                 }
             }
         }
@@ -70,29 +75,8 @@ internal static class WindowsStorage
         {
             // Ignored.
         }
+        #pragma warning restore CA1416
 
         return list.ToArray();
-    }
-
-    private class StorageInfo : Storage.StorageInfo
-    {
-        public StorageInfo(int index, IntPtr descriptorPtr)
-        {
-            Kernel32.STORAGE_DEVICE_DESCRIPTOR descriptor = Marshal.PtrToStructure<Kernel32.STORAGE_DEVICE_DESCRIPTOR>(descriptorPtr);
-            Index = index;
-            Vendor = GetString(descriptorPtr, descriptor.VendorIdOffset, descriptor.Size);
-            Product = GetString(descriptorPtr, descriptor.ProductIdOffset, descriptor.Size);
-            Revision = GetString(descriptorPtr, descriptor.ProductRevisionOffset, descriptor.Size);
-            Serial = GetString(descriptorPtr, descriptor.SerialNumberOffset, descriptor.Size);
-            BusType = descriptor.BusType;
-            Removable = descriptor.RemovableMedia;
-            RawData = new byte[descriptor.Size];
-            Marshal.Copy(descriptorPtr, RawData, 0, RawData.Length);
-        }
-
-        private static string GetString(IntPtr descriptorPtr, uint offset, uint size)
-        {
-            return offset > 0 && offset < size ? Marshal.PtrToStringAnsi(IntPtr.Add(descriptorPtr, (int)offset))?.Trim() : string.Empty;
-        }
     }
 }

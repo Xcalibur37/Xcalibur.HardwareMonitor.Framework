@@ -2,6 +2,9 @@
 using System.Globalization;
 using System.Linq;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Intel;
 
@@ -13,6 +16,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
 {
     #region Fields
 
+    // ReSharper disable once InconsistentNaming
     private const uint MSR_PP1_ENERGY_STATUS = 0x641;
 
     private readonly string _deviceId;
@@ -34,7 +38,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
     #region Properties
 
     /// <inheritdoc />
-    public override string DeviceId => D3DDisplayDevice.GetActualDeviceIdentifier(_deviceId);
+    public override string DeviceId => D3dDisplayDevice.GetActualDeviceIdentifier(_deviceId);
 
     /// <inheritdoc />
     public override HardwareType HardwareType => HardwareType.GpuIntel;
@@ -50,7 +54,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
     /// <param name="deviceId">The device identifier.</param>
     /// <param name="deviceInfo">The device information.</param>
     /// <param name="settings">The settings.</param>
-    public IntelIntegratedGpu(IntelCpu intelCpu, string deviceId, D3DDisplayDevice.D3DDeviceInfo deviceInfo, ISettings settings)
+    public IntelIntegratedGpu(IntelCpu intelCpu, string deviceId, D3dDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
                new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)), settings)
     {
@@ -67,7 +71,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
     /// <inheritdoc />
     public override void Update()
     {
-        if (!D3DDisplayDevice.GetDeviceInfoByIdentifier(_deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo)) return;
+        if (!D3dDisplayDevice.GetDeviceInfoByIdentifier(_deviceId, out D3dDeviceInfo deviceInfo)) return;
 
         // Dedicated memory usage
         if (_dedicatedMemoryUsage != null)
@@ -110,7 +114,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
 
         // D3D device info
         if (_nodeUsage.Length != deviceInfo.Nodes.Length) return;
-        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+        foreach (D3dDeviceNodeInfo node in deviceInfo.Nodes)
         {
             long runningTimeDiff = node.RunningTime - _nodeUsagePrevValue[node.Id];
             long timeDiff = node.QueryTime.Ticks - _nodeUsagePrevTick[node.Id].Ticks;
@@ -127,7 +131,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
     /// </summary>
     /// <param name="intelCpu">The intel cpu.</param>
     /// <param name="deviceInfo">The device information.</param>
-    private void CreateSensors(IntelCpu intelCpu, D3DDisplayDevice.D3DDeviceInfo deviceInfo)
+    private void CreateSensors(IntelCpu intelCpu, D3dDeviceInfo deviceInfo)
     {
         int memorySensorIndex = 0;
 
@@ -163,7 +167,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
         _nodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
         _nodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
         int nodeSensorIndex = 0;
-        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
+        foreach (D3dDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
         {
             _nodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, Settings);
             _nodeUsagePrevValue[node.Id] = node.RunningTime;

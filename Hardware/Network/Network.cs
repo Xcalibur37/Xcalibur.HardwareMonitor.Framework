@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Network;
 

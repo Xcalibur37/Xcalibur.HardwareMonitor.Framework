@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Threading;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC.Exceptions;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;

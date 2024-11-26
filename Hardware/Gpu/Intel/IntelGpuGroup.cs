@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Intel;
 
@@ -23,14 +24,14 @@ internal class IntelGpuGroup : IGroup
     /// </summary>
     /// <param name="intelCpus">The intel cpus.</param>
     /// <param name="settings">The settings.</param>
-    public IntelGpuGroup(List<IntelCpu> intelCpus, ISettings settings)
+    public IntelGpuGroup(IntelCpu[] intelCpus, ISettings settings)
     {
-        if (Software.OperatingSystem.IsUnix || !(intelCpus?.Count > 0)) return;
-        foreach (var deviceId in D3DDisplayDevice.GetDeviceIdentifiers())
+        if (Software.OperatingSystem.IsUnix || intelCpus.Length == 0) return;
+        foreach (var deviceId in D3dDisplayDevice.GetDeviceIdentifiers())
         {
             var isIntel = deviceId.IndexOf("VEN_8086", StringComparison.Ordinal) != -1;
             if (!isIntel || 
-                !D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo) || 
+                !D3dDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out var deviceInfo) || 
                 !deviceInfo.Integrated) continue;
 
             // It may seem strange to only use the first cpu here, but in-case we have a multi cpu system with integrated graphics (does that exist?),

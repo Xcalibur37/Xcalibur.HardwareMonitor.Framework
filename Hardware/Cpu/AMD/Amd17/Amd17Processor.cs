@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
 {
@@ -12,7 +14,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         #region Fields
 
         private readonly Amd17Cpu _cpu;
-        private readonly Dictionary<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> _smuSensors = [];
+        private readonly Dictionary<KeyValuePair<uint, SmuSensorType>, Sensor> _smuSensors = [];
 
         private Sensor _busClock;
         private Sensor[] _ccdTemperatures;
@@ -370,8 +372,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                         sviPlane1Offset = Amd17Constants.F17H_M01H_SVI + 0xC;
                         break;
 
-                    case 0x61: //Zen 4
-                    case 0x44: //Zen 5
+                    case 0x61: // Zen 4
+                    case 0x44: // Zen 5
                         sviPlane0Offset = Amd17Constants.F17H_M01H_SVI + 0x10;
                         sviPlane1Offset = Amd17Constants.F17H_M01H_SVI + 0xC;
                         break;
@@ -502,7 +504,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// </summary>
         private void CreateSmuSensors()
         {
-            foreach (KeyValuePair<uint, RyzenSMU.SmuSensorType> sensor in _cpu.SMU.GetPmTableStructure())
+            foreach (KeyValuePair<uint, SmuSensorType> sensor in _cpu.SMU.GetPmTableStructure())
             {
                 var currentSensor = sensor.Value;
                 _smuSensors.Add(sensor,
@@ -522,7 +524,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             if (!_cpu.SMU.IsPmTableLayoutDefined()) return;
 
             float[] smuData = _cpu.SMU.GetPmTable();
-            foreach (KeyValuePair<KeyValuePair<uint, RyzenSMU.SmuSensorType>, Sensor> sensor in _smuSensors)
+            foreach (KeyValuePair<KeyValuePair<uint, SmuSensorType>, Sensor> sensor in _smuSensors)
             {
                 if (smuData.Length <= sensor.Key.Key) continue;
                 var key = sensor.Key;

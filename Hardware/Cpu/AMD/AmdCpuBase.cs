@@ -1,4 +1,6 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD;
+﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
+
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD;
 
 /// <summary>
 /// AMD CPU Base

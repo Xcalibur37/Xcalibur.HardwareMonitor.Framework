@@ -1,4 +1,6 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc
+﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
+
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc
 {
     /// <summary>
     /// Handler that will trigger the actions assigned to it when the event occurs.

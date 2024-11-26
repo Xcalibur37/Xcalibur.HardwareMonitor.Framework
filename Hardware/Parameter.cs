@@ -6,6 +6,7 @@
 
 using System;
 using System.Globalization;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 

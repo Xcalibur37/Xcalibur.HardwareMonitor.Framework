@@ -2,6 +2,8 @@
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.AMD;
@@ -578,18 +580,18 @@ internal sealed class AmdGpu : GpuBase
         if (Software.OperatingSystem.IsUnix) return;
 
         // Get D3D devices
-        string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
+        string[] deviceIds = D3dDisplayDevice.GetDeviceIdentifiers();
         if (deviceIds == null) return;
 
         // Process devices
         foreach (string deviceId in deviceIds)
         {
-            string actualDeviceId = D3DDisplayDevice.GetActualDeviceIdentifier(deviceId);
+            string actualDeviceId = D3dDisplayDevice.GetActualDeviceIdentifier(deviceId);
 
             if ((actualDeviceId.IndexOf(_adapterInfo.PNPString, StringComparison.OrdinalIgnoreCase) == -1 &&
                  _adapterInfo.PNPString.IndexOf(actualDeviceId, StringComparison.OrdinalIgnoreCase) == -1) ||
-                !D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId,
-                    out D3DDisplayDevice.D3DDeviceInfo deviceInfo)) continue;
+                !D3dDisplayDevice.GetDeviceInfoByIdentifier(deviceId,
+                    out D3dDeviceInfo deviceInfo)) continue;
             _d3dDeviceId = deviceId;
 
             int nodeSensorIndex = 2;
@@ -606,7 +608,7 @@ internal sealed class AmdGpu : GpuBase
             _gpuNodeUsagePrevValue = new long[deviceInfo.Nodes.Length];
             _gpuNodeUsagePrevTick = new DateTime[deviceInfo.Nodes.Length];
 
-            foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
+            foreach (D3dDeviceNodeInfo node in deviceInfo.Nodes.OrderBy(x => x.Name))
             {
                 _gpuNodeUsage[node.Id] = new Sensor(node.Name, nodeSensorIndex++, SensorType.Load, this, Settings);
                 _gpuNodeUsagePrevValue[node.Id] = node.RunningTime;
@@ -624,7 +626,7 @@ internal sealed class AmdGpu : GpuBase
     private void UpdateD3dSensors()
     {
         if (_d3dDeviceId == null ||
-            !D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+            !D3dDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3dDeviceInfo deviceInfo))
             return;
 
         _gpuDedicatedMemoryTotal.Value = 1f * deviceInfo.GpuVideoMemoryLimit / 1024 / 1024;
@@ -645,7 +647,7 @@ internal sealed class AmdGpu : GpuBase
         _gpuSharedMemoryFree.Value = _gpuSharedMemoryTotal.Value - _gpuSharedMemoryUsage.Value;
         ActivateSensor(_gpuSharedMemoryFree);
 
-        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+        foreach (D3dDeviceNodeInfo node in deviceInfo.Nodes)
         {
             long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
             long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;

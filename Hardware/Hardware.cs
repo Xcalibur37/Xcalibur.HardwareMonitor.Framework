@@ -2,6 +2,7 @@
 using System.Linq;
 using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 

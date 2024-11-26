@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fintek;

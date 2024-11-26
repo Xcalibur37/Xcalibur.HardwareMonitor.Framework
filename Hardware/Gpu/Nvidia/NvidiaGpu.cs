@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Win32;
 using Xcalibur.Extensions.V2;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Nvidia;
@@ -52,7 +54,7 @@ internal sealed class NvidiaGpu : GpuBase
     #region Properties
 
     /// <inheritdoc />
-    public override string DeviceId => _d3dDeviceId != null ? D3DDisplayDevice.GetActualDeviceIdentifier(_d3dDeviceId) : null;
+    public override string DeviceId => _d3dDeviceId != null ? D3dDisplayDevice.GetActualDeviceIdentifier(_d3dDeviceId) : null;
 
     /// <inheritdoc />
     public override HardwareType HardwareType => HardwareType.GpuNvidia;
@@ -1003,7 +1005,7 @@ internal sealed class NvidiaGpu : GpuBase
         if (pciInfo is not { } pci) return;
 
         // Get devices
-        string[] deviceIds = D3DDisplayDevice.GetDeviceIdentifiers();
+        string[] deviceIds = D3dDisplayDevice.GetDeviceIdentifiers();
         if (deviceIds == null) return;
 
         // Process devices
@@ -1017,7 +1019,7 @@ internal sealed class NvidiaGpu : GpuBase
                     StringComparison.OrdinalIgnoreCase) == -1) continue;
             bool isMatch = false;
 
-            string actualDeviceId = D3DDisplayDevice.GetActualDeviceIdentifier(deviceId);
+            string actualDeviceId = D3dDisplayDevice.GetActualDeviceIdentifier(deviceId);
             try
             {
 #pragma warning disable CA1416
@@ -1074,7 +1076,7 @@ internal sealed class NvidiaGpu : GpuBase
                 }
             }
 
-            if (!isMatch || !D3DDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out var deviceInfo)) continue;
+            if (!isMatch || !D3dDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out var deviceInfo)) continue;
             int nodeSensorIndex = (_loads?.Length ?? 0) + (_powers?.Length ?? 0);
             int memorySensorIndex = 4; // There are 4 normal GPU memory sensors.
 
@@ -1107,7 +1109,7 @@ internal sealed class NvidiaGpu : GpuBase
     private void UpdateD3dSensors()
     {
         if (_d3dDeviceId == null ||
-            !D3DDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3DDisplayDevice.D3DDeviceInfo deviceInfo))
+            !D3dDisplayDevice.GetDeviceInfoByIdentifier(_d3dDeviceId, out D3dDeviceInfo deviceInfo))
             return;
 
         _gpuDedicatedMemoryUsage.Value = 1f * deviceInfo.GpuDedicatedUsed / 1024 / 1024;
@@ -1115,7 +1117,7 @@ internal sealed class NvidiaGpu : GpuBase
         ActivateSensor(_gpuDedicatedMemoryUsage);
         ActivateSensor(_gpuSharedMemoryUsage);
 
-        foreach (D3DDisplayDevice.D3DDeviceNodeInfo node in deviceInfo.Nodes)
+        foreach (D3dDeviceNodeInfo node in deviceInfo.Nodes)
         {
             long runningTimeDiff = node.RunningTime - _gpuNodeUsagePrevValue[node.Id];
             long timeDiff = node.QueryTime.Ticks - _gpuNodeUsagePrevTick[node.Id].Ticks;

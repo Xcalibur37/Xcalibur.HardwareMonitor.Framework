@@ -1,4 +1,6 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware;
+﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
+
+namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 
 /// <summary>
 /// Abstract object that represents additional parameters included in <see cref="ISensor"/>.

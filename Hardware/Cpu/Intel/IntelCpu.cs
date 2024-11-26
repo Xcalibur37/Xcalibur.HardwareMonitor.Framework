@@ -1,4 +1,6 @@
 using System;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
 

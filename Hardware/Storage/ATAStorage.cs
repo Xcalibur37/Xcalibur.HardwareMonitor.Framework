@@ -1,26 +1,40 @@
-﻿
-
-
-
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Ssd;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
+/// <summary>
+/// ATA storage
+/// </summary>
+/// <seealso cref="AbstractStorage" />
 public abstract class AtaStorage : AbstractStorage
 {
+    #region Fields
+
     // array of all hard drive types, matching type is searched in this order
-    private static readonly Type[] _hddTypes = { typeof(SsdPlextor), typeof(SsdIntel), typeof(SsdSandforce), typeof(SsdIndilinx), typeof(SsdSamsung), typeof(SsdMicron), typeof(GenericHardDisk) };
+    private static readonly Type[] _hddTypes = 
+        [
+            typeof(SsdPlextor), 
+            typeof(SsdIntel), 
+            typeof(SsdSandForce), 
+            typeof(SsdIndilinx), 
+            typeof(SsdSamsung), 
+            typeof(SsdMicron), 
+            typeof(GenericHardDisk)
+    ];
 
     private IDictionary<SmartAttribute, Sensor> _sensors;
+
+    #endregion
+
+    #region Properties
 
     /// <summary>
     /// Gets the SMART data.
@@ -32,23 +46,57 @@ public abstract class AtaStorage : AbstractStorage
     /// </summary>
     public IReadOnlyList<SmartAttribute> SmartAttributes { get; }
 
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AtaStorage"/> class.
+    /// </summary>
+    /// <param name="storageInfo">The storage information.</param>
+    /// <param name="smart">The smart.</param>
+    /// <param name="name">The name.</param>
+    /// <param name="firmwareRevision">The firmware revision.</param>
+    /// <param name="id">The identifier.</param>
+    /// <param name="index">The index.</param>
+    /// <param name="smartAttributes">The smart attributes.</param>
+    /// <param name="settings">The settings.</param>
     internal AtaStorage(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, string id, int index, IReadOnlyList<SmartAttribute> smartAttributes, ISettings settings)
         : base(storageInfo, name, firmwareRevision, id, index, settings)
     {
         Smart = smart;
         if (smart.IsValid)
+        {
             smart.EnableSmart();
-            
+        }
+
         SmartAttributes = smartAttributes;
         CreateSensors();
     }
 
+    #endregion
+
+    /// <summary>
+    /// </summary>
+    /// <inheritdoc />
+    public override void Close()
+    {
+        Smart.Close();
+        base.Close();
+    }
+
+    /// <summary>
+    /// Creates the instance.
+    /// </summary>
+    /// <param name="storageInfo">The storage information.</param>
+    /// <param name="settings">The settings.</param>
+    /// <returns></returns>
     internal static AbstractStorage CreateInstance(StorageInfo storageInfo, ISettings settings)
     {
         ISmart smart = new WindowsSmart(storageInfo.Index);
         string name = null;
         string firmwareRevision = null;
-        Kernel32.SMART_ATTRIBUTE[] smartAttributes = { };
+        Kernel32.SMART_ATTRIBUTE[] smartAttributes = [];
 
         if (smart.IsValid)
         {
@@ -56,8 +104,10 @@ public abstract class AtaStorage : AbstractStorage
             bool smartEnabled = smart.EnableSmart();
 
             if (smartEnabled)
+            {
                 smartAttributes = smart.ReadSmartData();
-                
+            }
+
             if (!nameValid)
             {
                 name = null;
@@ -85,9 +135,18 @@ public abstract class AtaStorage : AbstractStorage
                         break;
                     }
                 }
-                catch (ArgumentException) { }
-                catch (IOException) { }
-                catch (UnauthorizedAccessException) { }
+                catch (ArgumentException)
+                {
+                    // Do nothing
+                }
+                catch (IOException)
+                {
+                    // Do nothing
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Do nothing
+                }
             }
 
             if (!hasNonZeroSizeDrive)
@@ -98,12 +157,16 @@ public abstract class AtaStorage : AbstractStorage
         }
 
         if (string.IsNullOrEmpty(name))
+        {
             name = string.IsNullOrEmpty(storageInfo.Name) ? "Generic Hard Disk" : storageInfo.Name;
+        }
 
         if (string.IsNullOrEmpty(firmwareRevision))
+        {
             firmwareRevision = string.IsNullOrEmpty(storageInfo.Revision) ? "Unknown" : storageInfo.Revision;
+        }
 
-        foreach (Type type in _hddTypes)
+        foreach (var type in _hddTypes)
         {
             // get the array of the required SMART attributes for the current type
 
@@ -118,36 +181,29 @@ public abstract class AtaStorage : AbstractStorage
 
                     foreach (Kernel32.SMART_ATTRIBUTE value in smartAttributes)
                     {
-                        if (value.Id == requireAttribute.AttributeId)
-                        {
-                            attributeFound = true;
-                            break;
-                        }
-                    }
-
-                    if (!attributeFound)
-                    {
-                        allAttributesFound = false;
+                        if (value.Id != requireAttribute.AttributeId) continue;
+                        attributeFound = true;
                         break;
                     }
+
+                    if (attributeFound) continue;
+                    allAttributesFound = false;
+                    break;
                 }
             }
 
             // if an attribute is missing, then try the next type
-            if (!allAttributesFound)
-                continue;
+            if (!allAttributesFound) continue;
 
             // check if there is a matching name prefix for this type
             if (type.GetCustomAttributes(typeof(NamePrefixAttribute), true) is NamePrefixAttribute[] namePrefixes)
             {
                 foreach (NamePrefixAttribute prefix in namePrefixes)
                 {
-                    if (name.StartsWith(prefix.Prefix, StringComparison.InvariantCulture))
-                    {
-                        const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
-
-                        return Activator.CreateInstance(type, flags, null, new object[] { storageInfo, smart, name, firmwareRevision, storageInfo.Index, settings }, null) as AtaStorage;
-                    }
+                    if (!name.StartsWith(prefix.Prefix, StringComparison.InvariantCulture)) continue;
+                    const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+                    return Activator.CreateInstance(type, flags, null, 
+                    [storageInfo, smart, name, firmwareRevision, storageInfo.Index, settings], null) as AtaStorage;
                 }
             }
         }
@@ -215,11 +271,5 @@ public abstract class AtaStorage : AbstractStorage
     protected static float RawToInt(byte[] raw, byte value, IReadOnlyList<IParameter> parameters)
     {
         return (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
-    }
-
-    public override void Close()
-    {
-        Smart.Close();
-        base.Close();
     }
 }

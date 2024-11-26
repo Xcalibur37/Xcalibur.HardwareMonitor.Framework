@@ -1,4 +1,5 @@
 ﻿using System;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Winbond;
 
