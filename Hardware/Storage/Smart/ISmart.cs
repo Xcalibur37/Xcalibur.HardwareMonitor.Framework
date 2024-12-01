@@ -40,11 +40,11 @@ public interface ISmart : IDisposable
     /// Reads the smart data.
     /// </summary>
     /// <returns></returns>
-    Kernel32.SMART_ATTRIBUTE[] ReadSmartData();
+    Interop.Models.Kernel32.SmartAttribute[] ReadSmartData();
 
     /// <summary>
     /// Reads the smart thresholds.
     /// </summary>
     /// <returns></returns>
-    Kernel32.SMART_THRESHOLD[] ReadSmartThresholds();
+    Interop.Models.Kernel32.SmartThreshold[] ReadSmartThresholds();
 }

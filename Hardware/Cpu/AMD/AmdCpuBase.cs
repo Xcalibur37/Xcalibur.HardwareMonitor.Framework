@@ -36,11 +36,11 @@ internal abstract class AmdCpuBase : CpuBase
 
         // Verify that we have the correct bus, device and function
         if (!Ring0.ReadPciConfig(address, DEVICE_VENDOR_ID_REGISTER, out uint deviceVendor))
-            return Interop.Ring0.INVALID_PCI_ADDRESS;
+            return Interop.Ring0.InvalidPciAddress;
 
         // Get address and return
         return deviceVendor != (deviceId << 16 | AMD_VENDOR_ID)
-            ? Interop.Ring0.INVALID_PCI_ADDRESS
+            ? Interop.Ring0.InvalidPciAddress
             : address;
     }
 }

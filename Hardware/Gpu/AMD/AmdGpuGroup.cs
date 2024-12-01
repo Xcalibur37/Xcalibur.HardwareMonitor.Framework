@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.ADL;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.AMD;
 
@@ -16,7 +17,7 @@ internal class AmdGpuGroup : IGroup
 
     private readonly List<AmdGpu> _hardware = [];
     private IntPtr _context = IntPtr.Zero;
-    private AtiAdlxx.ADLStatus _status;
+    private AdlStatus _status;
 
     #endregion
 
@@ -52,7 +53,7 @@ internal class AmdGpuGroup : IGroup
         try
         {
             _hardware.Apply(x => x.Close());
-            if (_status == AtiAdlxx.ADLStatus.ADL_OK && _context != IntPtr.Zero)
+            if (_status == AdlStatus.AdlOk && _context != IntPtr.Zero)
             {
                 AtiAdlxx.ADL2_Main_Control_Destroy(_context);
             }
@@ -85,8 +86,8 @@ internal class AmdGpuGroup : IGroup
             List<AmdGpu> potentialHardware = [];
 
             // ADL status
-            _status = AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.Main_Memory_Alloc, 1, ref _context);
-            if (_status != AtiAdlxx.ADLStatus.ADL_OK) return;
+            _status = AtiAdlxx.ADL2_Main_Control_Create(AtiAdlxx.MainMemoryAlloc, 1, ref _context);
+            if (_status != AdlStatus.AdlOk) return;
 
             // Get ADL adapter count
             int numberOfAdapters = 0;
@@ -95,15 +96,15 @@ internal class AmdGpuGroup : IGroup
 
             // ADL Status: OK
             // Process adapters
-            var adapterInfo = new AtiAdlxx.ADLAdapterInfo[numberOfAdapters];
-            if (AtiAdlxx.ADL2_Adapter_AdapterInfo_Get(ref _context, adapterInfo) == AtiAdlxx.ADLStatus.ADL_OK)
+            var adapterInfo = new AdlAdapterInfo[numberOfAdapters];
+            if (AtiAdlxx.ADL2_Adapter_AdapterInfo_Get(ref _context, adapterInfo) == AdlStatus.AdlOk)
             {
                 for (int i = 0; i < numberOfAdapters; i++)
                 {
                     uint device = 0;
                     var currentAdapter = adapterInfo[i];
-                    AtiAdlxx.ADLGcnInfo gcnInfo = new();
-                    AtiAdlxx.ADLPMLogSupportInfo pmLogSupportInfo = new();
+                    AdlGcnInfo gcnInfo = new();
+                    AdlpmLogSupportInfo pmLogSupportInfo = new();
                     AtiAdlxx.ADL2_Adapter_Active_Get(_context, currentAdapter.AdapterIndex, out _);
 
                     // Get ASIC GCN architecture
@@ -118,15 +119,15 @@ internal class AmdGpuGroup : IGroup
                         AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Support_Get)) &&
                         AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Device_PMLog_Device_Create)))
                     {
-                        if (AtiAdlxx.ADLStatus.ADL_OK ==
+                        if (AdlStatus.AdlOk ==
                             AtiAdlxx.ADL2_Device_PMLog_Device_Create(_context, currentAdapter.AdapterIndex,
                                 ref device) &&
-                            AtiAdlxx.ADLStatus.ADL_OK == AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context,
+                            AdlStatus.AdlOk == AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context,
                                 currentAdapter.AdapterIndex, ref pmLogSupportInfo))
                         {
                             // Has supported sensors
                             hasSensorsSupported = pmLogSupportInfo.usSensors.Count(x =>
-                                x != (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES) > 0;
+                                x != (ushort)AdlpmLogSensors.AdlSensorMaxtypes) > 0;
                         }
 
                         // Destroy device
@@ -138,7 +139,7 @@ internal class AmdGpuGroup : IGroup
 
                     // No UDID, not ATI, or is already added, exit
                     if (string.IsNullOrEmpty(currentAdapter.UDID) ||
-                        currentAdapter.VendorID != AtiAdlxx.ATI_VENDOR_ID ||
+                        currentAdapter.VendorID != AtiAdlxx.AtiVendorId ||
                         IsAlreadyAdded(currentAdapter.BusNumber, currentAdapter.DeviceNumber)) continue;
 
                     // Evaluate which list to add new AMD GPU based on supported sensors

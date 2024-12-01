@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
+using GroupAffinity = Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.GroupAffinity;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 
@@ -250,7 +253,7 @@ internal static class OpCode
         }
         else
         {
-            Interop.Kernel32.VirtualFree(_codeBuffer, UIntPtr.Zero, Interop.Kernel32.MEM.MEM_RELEASE);
+            Interop.Kernel32.VirtualFree(_codeBuffer, UIntPtr.Zero, Mem.MemRelease);
         }
     }
 
@@ -328,8 +331,8 @@ internal static class OpCode
         {
             _codeBuffer = Interop.Kernel32.VirtualAlloc(IntPtr.Zero,
                                                         (UIntPtr)_size,
-                                                        Interop.Kernel32.MEM.MEM_COMMIT | Interop.Kernel32.MEM.MEM_RESERVE,
-                                                        Interop.Kernel32.PAGE.PAGE_EXECUTE_READWRITE);
+                                                        Mem.MemCommit | Mem.MemReserve,
+                                                        Page.PageExecuteReadwrite);
         }
 
         Marshal.Copy(rdTscCode, 0, _codeBuffer, rdTscCode.Length);

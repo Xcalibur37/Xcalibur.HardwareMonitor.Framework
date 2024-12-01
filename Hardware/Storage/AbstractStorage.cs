@@ -8,6 +8,7 @@ using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Nvme;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
@@ -139,7 +140,7 @@ public abstract class AbstractStorage : Hardware
     {
         var info = WindowsStorage.GetStorageInfo(deviceId, driveNumber);
         if (info == null || info.Removable || 
-            info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeVirtual or Kernel32.STORAGE_BUS_TYPE.BusTypeFileBackedVirtual)
+            info.BusType is StorageBusType.BusTypeVirtual or StorageBusType.BusTypeFileBackedVirtual)
             return null;
 
         info.DiskSize = diskSize;
@@ -149,13 +150,13 @@ public abstract class AbstractStorage : Hardware
         
         //fallback, when it is not possible to read out with the nvme implementation,
         //try it with the sata smart implementation
-        if (info.BusType == Kernel32.STORAGE_BUS_TYPE.BusTypeNvme)
+        if (info.BusType == StorageBusType.BusTypeNvme)
         {
             AbstractStorage x = NvmeGeneric.CreateInstance(info, settings);
             if (x != null) return x;
         }
 
-        return info.BusType is Kernel32.STORAGE_BUS_TYPE.BusTypeAta or Kernel32.STORAGE_BUS_TYPE.BusTypeSata or Kernel32.STORAGE_BUS_TYPE.BusTypeNvme
+        return info.BusType is StorageBusType.BusTypeAta or StorageBusType.BusTypeSata or StorageBusType.BusTypeNvme
             ? AtaStorage.CreateInstance(info, settings)
             : StorageGeneric.CreateInstance(info, settings);
     }
@@ -262,11 +263,11 @@ public abstract class AbstractStorage : Hardware
     private void UpdatePerformanceSensors()
     {
         if (!Kernel32.DeviceIoControl(_storageInfo.Handle,
-                                      Kernel32.IOCTL.IOCTL_DISK_PERFORMANCE,
+                                      IoCtl.IOCTL_DISK_PERFORMANCE,
                                       IntPtr.Zero,
                                       0,
-                                      out Kernel32.DISK_PERFORMANCE diskPerformance,
-                                      Marshal.SizeOf<Kernel32.DISK_PERFORMANCE>(),
+                                      out DiskPerformance diskPerformance,
+                                      Marshal.SizeOf<DiskPerformance>(),
                                       out _,
                                       IntPtr.Zero)) return;
 

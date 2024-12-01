@@ -76,6 +76,8 @@ public abstract class AtaStorage : AbstractStorage
 
     #endregion
 
+    #region Methods
+    
     /// <summary>
     /// </summary>
     /// <inheritdoc />
@@ -96,7 +98,7 @@ public abstract class AtaStorage : AbstractStorage
         ISmart smart = new WindowsSmart(storageInfo.Index);
         string name = null;
         string firmwareRevision = null;
-        Kernel32.SMART_ATTRIBUTE[] smartAttributes = [];
+        Interop.Models.Kernel32.SmartAttribute[] smartAttributes = [];
 
         if (smart.IsValid)
         {
@@ -179,7 +181,7 @@ public abstract class AtaStorage : AbstractStorage
                 {
                     bool attributeFound = false;
 
-                    foreach (Kernel32.SMART_ATTRIBUTE value in smartAttributes)
+                    foreach (Interop.Models.Kernel32.SmartAttribute value in smartAttributes)
                     {
                         if (value.Id != requireAttribute.AttributeId) continue;
                         attributeFound = true;
@@ -213,6 +215,19 @@ public abstract class AtaStorage : AbstractStorage
         return null;
     }
 
+    /// <summary>
+    /// Raw value to int.
+    /// </summary>
+    /// <param name="raw">The raw.</param>
+    /// <param name="value">The value.</param>
+    /// <param name="parameters">The parameters.</param>
+    /// <returns></returns>
+    protected static float RawToInt(byte[] raw, byte value, IReadOnlyList<IParameter> parameters)
+        => (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
+
+    /// <summary>
+    /// Creates the sensors.
+    /// </summary>
     protected sealed override void CreateSensors()
     {
         _sensors = new Dictionary<SmartAttribute, Sensor>();
@@ -237,39 +252,41 @@ public abstract class AtaStorage : AbstractStorage
                                                                             Settings));
 
             foreach (KeyValuePair<SmartAttribute, Sensor> sensor in _sensors)
+            {
                 ActivateSensor(sensor.Value);
+            }
         }
 
         base.CreateSensors();
     }
 
-    protected virtual void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values) { }
+    /// <summary>
+    /// Updates the additional sensors.
+    /// </summary>
+    /// <param name="values">The values.</param>
+    protected virtual void UpdateAdditionalSensors(Interop.Models.Kernel32.SmartAttribute[] values) { }
 
+    /// <summary>
+    /// Updates the sensors.
+    /// </summary>
     protected override void UpdateSensors()
     {
-        if (Smart.IsValid)
+        if (!Smart.IsValid) return;
+        Interop.Models.Kernel32.SmartAttribute[] smartAttributes = Smart.ReadSmartData();
+
+        foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in _sensors)
         {
-            Kernel32.SMART_ATTRIBUTE[] smartAttributes = Smart.ReadSmartData();
-
-            foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in _sensors)
+            SmartAttribute attribute = keyValuePair.Key;
+            foreach (Interop.Models.Kernel32.SmartAttribute value in smartAttributes)
             {
-                SmartAttribute attribute = keyValuePair.Key;
-                foreach (Kernel32.SMART_ATTRIBUTE value in smartAttributes)
-                {
-                    if (value.Id == attribute.Id)
-                    {
-                        Sensor sensor = keyValuePair.Value;
-                        sensor.Value = attribute.ConvertValue(value, sensor.Parameters);
-                    }
-                }
+                if (value.Id != attribute.Id) continue;
+                Sensor sensor = keyValuePair.Value;
+                sensor.Value = attribute.ConvertValue(value, sensor.Parameters);
             }
-
-            UpdateAdditionalSensors(smartAttributes);
         }
+
+        UpdateAdditionalSensors(smartAttributes);
     }
 
-    protected static float RawToInt(byte[] raw, byte value, IReadOnlyList<IParameter> parameters)
-    {
-        return (raw[3] << 24) | (raw[2] << 16) | (raw[1] << 8) | raw[0];
-    }
+    #endregion
 }

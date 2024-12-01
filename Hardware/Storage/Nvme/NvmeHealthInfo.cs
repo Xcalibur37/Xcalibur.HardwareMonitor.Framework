@@ -1,5 +1,6 @@
 ﻿using System;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Nvme;
 
@@ -48,7 +49,7 @@ public class NvmeHealthInfo
     /// <value>
     /// The critical warning.
     /// </value>
-    public Kernel32.NVME_CRITICAL_WARNING CriticalWarning { get; protected set; }
+    public NvmeCriticalWarning CriticalWarning { get; protected set; }
 
     /// <summary>
     /// Gets or sets the data unit read.
@@ -162,9 +163,9 @@ public class NvmeHealthInfo
     /// Initializes a new instance of the <see cref="NvmeHealthInfo"/> class.
     /// </summary>
     /// <param name="log">The log.</param>
-    public NvmeHealthInfo(Kernel32.NVME_HEALTH_INFO_LOG log)
+    public NvmeHealthInfo(NvmeHealthInfoLog log)
     {
-        CriticalWarning = (Kernel32.NVME_CRITICAL_WARNING)log.CriticalWarning;
+        CriticalWarning = (NvmeCriticalWarning)log.CriticalWarning;
         Temperature = NvmeHelper.KelvinToCelsius(log.CompositeTemp);
         AvailableSpare = log.AvailableSpare;
         AvailableSpareThreshold = log.AvailableSpareThreshold;

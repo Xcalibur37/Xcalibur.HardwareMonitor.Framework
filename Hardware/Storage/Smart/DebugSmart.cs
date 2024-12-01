@@ -2,9 +2,12 @@
 
 using System;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
 {
+    #region Constructors
+    
     /// <summary>
     /// Debug Smart
     /// </summary>
@@ -314,109 +317,94 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
 
         private int _driveNumber;
 
+        /// <summary>
+        /// Returns true if ... is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsValid => true;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DebugSmart"/> class.
+        /// </summary>
+        /// <param name="driveNumber">The drive number.</param>
         public DebugSmart(int driveNumber)
         {
             _driveNumber = driveNumber;
         }
 
-        public bool IsValid => true;
-
+        /// <summary>
+        /// Closes this instance.
+        /// </summary>
         public void Close()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        public bool EnableSmart()
-        {
-            if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
-            return true;
-        }
-
-        public Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
-        {
-            if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
-            return _drives[_driveNumber].DriveAttributeValues;
-        }
-
-        public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
-        {
-            if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
-            return _drives[_driveNumber].DriveThresholdValues;
-        }
-
-        public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision)
-        {
-            if (_driveNumber < 0)
-                throw new ObjectDisposedException(nameof(DebugSmart));
-            name = _drives[_driveNumber].Name;
-            firmwareRevision = _drives[_driveNumber].FirmwareVersion;
-            return true;
-        }
-
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Close();
         }
 
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected void Dispose(bool disposing)
         {
-            if (disposing)
-                _driveNumber = -1;
+            if (!disposing) return;
+            _driveNumber = -1;
         }
 
-        private class Drive
+        /// <summary>
+        /// Enable smart.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.ObjectDisposedException">DebugSmart</exception>
+        public bool EnableSmart() => _driveNumber < 0 ? throw new ObjectDisposedException(nameof(DebugSmart)) : true;
+
+        /// <summary>
+        /// Reads the name and firmware revision.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="firmwareRevision">The firmware revision.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ObjectDisposedException">DebugSmart</exception>
+        public bool ReadNameAndFirmwareRevision(out string name, out string firmwareRevision)
         {
-            public Drive(string name, string firmware, int idBase, string value)
-            {
-                Name = name;
-                FirmwareVersion = firmware;
-
-                string[] lines = value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                DriveAttributeValues = new Kernel32.SMART_ATTRIBUTE[lines.Length];
-                var thresholds = new System.Collections.Generic.List<Kernel32.SMART_THRESHOLD>();
-
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    string[] array = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (array.Length is not 4 and not 5)
-                        throw new Exception();
-
-                    var v = new Kernel32.SMART_ATTRIBUTE { Id = Convert.ToByte(array[0], idBase), RawValue = new byte[6] };
-
-                    for (int j = 0; j < 6; j++)
-                    {
-                        v.RawValue[j] = Convert.ToByte(array[1].Substring(2 * j, 2), 16);
-                    }
-
-                    v.WorstValue = Convert.ToByte(array[2], 10);
-                    v.CurrentValue = Convert.ToByte(array[3], 10);
-
-                    DriveAttributeValues[i] = v;
-
-                    if (array.Length == 5)
-                    {
-                        var t = new Kernel32.SMART_THRESHOLD { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
-                        thresholds.Add(t);
-                    }
-                }
-
-                DriveThresholdValues = thresholds.ToArray();
-            }
-
-            public Kernel32.SMART_ATTRIBUTE[] DriveAttributeValues { get; }
-
-            public Kernel32.SMART_THRESHOLD[] DriveThresholdValues { get; }
-
-            public string FirmwareVersion { get; }
-
-            public string Name { get; }
+            if (_driveNumber < 0) throw new ObjectDisposedException(nameof(DebugSmart));
+            name = _drives[_driveNumber].Name;
+            firmwareRevision = _drives[_driveNumber].FirmwareVersion;
+            return true;
         }
+
+        /// <summary>
+        /// Reads the smart data.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.ObjectDisposedException">DebugSmart</exception>
+        public Interop.Models.Kernel32.SmartAttribute[] ReadSmartData() =>
+            _driveNumber < 0
+                ? throw new ObjectDisposedException(nameof(DebugSmart))
+                : (Interop.Models.Kernel32.SmartAttribute[])_drives[_driveNumber].DriveAttributeValues;
+
+        /// <summary>
+        /// Reads the smart thresholds.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.ObjectDisposedException">DebugSmart</exception>
+        public SmartThreshold[] ReadSmartThresholds() =>
+            _driveNumber < 0
+                ? throw new ObjectDisposedException(nameof(DebugSmart))
+                : _drives[_driveNumber].DriveThresholdValues;
     }
+
+    #endregion
 }
 
 #endif

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Nvme;
 
@@ -135,7 +136,7 @@ public class NvmeSmart : IDisposable
         if (_handle?.IsClosed != false) return null;
 
         bool valid = false;
-        var data = new Kernel32.NVME_HEALTH_INFO_LOG();
+        var data = new NvmeHealthInfoLog();
         if (NvmeDrive != null)
         {
             valid = NvmeDrive.HealthInfoLog(_handle, out data);
@@ -154,7 +155,7 @@ public class NvmeSmart : IDisposable
         if (_handle?.IsClosed != false) return null;
 
         bool valid = false;
-        var data = new Kernel32.NVME_IDENTIFY_CONTROLLER_DATA();
+        var data = new NvmeIdentifyControllerData();
         if (NvmeDrive != null)
         {
             valid = NvmeDrive.IdentifyController(_handle, out data);

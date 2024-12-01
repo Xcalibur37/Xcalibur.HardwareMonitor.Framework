@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Battery;
 
@@ -16,7 +17,7 @@ internal sealed class Battery : Hardware
     #region Fields
 
     private readonly SafeFileHandle _batteryHandle;
-    private readonly Kernel32.BATTERY_INFORMATION _batteryInformation;
+    private readonly BatteryInformation _batteryInformation;
     private readonly uint _batteryTag;
     private Sensor _chargeDischargeCurrentSensor;
     private Sensor _chargeDischargeRateSensor;
@@ -142,7 +143,7 @@ internal sealed class Battery : Hardware
         string name,
         string manufacturer,
         SafeFileHandle batteryHandle,
-        Kernel32.BATTERY_INFORMATION batteryInfo,
+        BatteryInformation batteryInfo,
         uint batteryTag,
         ISettings settings) :
         base(name, new Identifier("battery"), settings)
@@ -170,14 +171,14 @@ internal sealed class Battery : Hardware
     /// <inheritdoc />
     public override void Update()
     {
-        Kernel32.BATTERY_WAIT_STATUS bws = new()
+        BatteryWaitStatus bws = new()
         {
             BatteryTag = _batteryTag
         };
 
-        Kernel32.BATTERY_STATUS batteryStatus = new();
+        BatteryStatus batteryStatus = new();
         if (Kernel32.DeviceIoControl(_batteryHandle,
-                                     Kernel32.IOCTL.IOCTL_BATTERY_QUERY_STATUS,
+                                     IoCtl.IOCTL_BATTERY_QUERY_STATUS,
                                      ref bws,
                                      Marshal.SizeOf(bws),
                                      ref batteryStatus,
@@ -353,15 +354,15 @@ internal sealed class Battery : Hardware
     private void UpdateRemainingTime()
     {
         uint estimatedRunTime = 0;
-        Kernel32.BATTERY_QUERY_INFORMATION bqi = new()
+        BatteryQueryInformation bqi = new()
         {
             BatteryTag = _batteryTag,
-            InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryEstimatedTime
+            InformationLevel = BatteryQueryInformationLevel.BatteryEstimatedTime
         };
 
         // Remaining Time
         if (Kernel32.DeviceIoControl(_batteryHandle,
-                Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
+                IoCtl.IOCTL_BATTERY_QUERY_INFORMATION,
                 ref bqi,
                 Marshal.SizeOf(bqi),
                 ref estimatedRunTime,
@@ -370,7 +371,7 @@ internal sealed class Battery : Hardware
                 IntPtr.Zero))
         {
             RemainingTime = estimatedRunTime;
-            if (estimatedRunTime != Kernel32.BATTERY_UNKNOWN_TIME)
+            if (estimatedRunTime != Kernel32.BatteryUnknownTime)
             {
                 ActivateSensor(_remainingTimeSensor);
                 _remainingTimeSensor.Value = estimatedRunTime;

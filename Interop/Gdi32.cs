@@ -1,12 +1,5 @@
-﻿
-
-
-
-
-// ReSharper disable IdentifierTypo
-// ReSharper disable InconsistentNaming
-
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.D3D;
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
 
@@ -16,17 +9,17 @@ internal static class Gdi32
 
     [DllImport(DllName, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern uint D3DKMTCloseAdapter(ref D3dkmth.D3DKMT_CLOSEADAPTER closeAdapter);
+    internal static extern uint D3DKMTCloseAdapter(ref D3DkmtCloseadapter closeAdapter);
 
     [DllImport(DllName, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern uint D3DKMTOpenAdapterFromDeviceName(ref D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME openAdapterFromDeviceName);
+    internal static extern uint D3DKMTOpenAdapterFromDeviceName(ref D3DkmtOpenadapterfromdevicename openAdapterFromDeviceName);
 
     [DllImport(DllName, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern uint D3DKMTQueryAdapterInfo(ref D3dkmth.D3DKMT_QUERYADAPTERINFO queryAdapterInfo);
+    internal static extern uint D3DKMTQueryAdapterInfo(ref D3DkmtQueryadapterinfo queryAdapterInfo);
 
     [DllImport(DllName, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    internal static extern uint D3DKMTQueryStatistics(ref D3dkmth.D3DKMT_QUERYSTATISTICS queryStatistics);
+    internal static extern uint D3DKMTQueryStatistics(ref D3DkmtQuerystatistics queryStatistics);
 }

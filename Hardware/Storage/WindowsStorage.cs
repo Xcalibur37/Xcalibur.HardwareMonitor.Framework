@@ -4,6 +4,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
@@ -12,21 +13,21 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 /// </summary>
 internal static class WindowsStorage
 {
-    public static Storage.StorageInfo GetStorageInfo(string deviceId, uint driveIndex)
+    public static StorageInfo GetStorageInfo(string deviceId, uint driveIndex)
     {
         using SafeFileHandle handle = Kernel32.OpenDevice(deviceId);
 
         if (handle?.IsInvalid != false)
             return null;
 
-        var query = new Kernel32.STORAGE_PROPERTY_QUERY { PropertyId = Kernel32.STORAGE_PROPERTY_ID.StorageDeviceProperty, QueryType = Kernel32.STORAGE_QUERY_TYPE.PropertyStandardQuery };
+        var query = new StoragePropertyQuery { PropertyId = StoragePropertyId.StorageDeviceProperty, QueryType = StorageQueryType.PropertyStandardQuery };
 
         if (!Kernel32.DeviceIoControl(handle,
-                                      Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY,
+                                      IoCtl.IOCTL_STORAGE_QUERY_PROPERTY,
                                       ref query,
                                       Marshal.SizeOf(query),
-                                      out Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER header,
-                                      Marshal.SizeOf<Kernel32.STORAGE_DEVICE_DESCRIPTOR_HEADER>(),
+                                      out StorageDeviceDescriptorHeader header,
+                                      Marshal.SizeOf<StorageDeviceDescriptorHeader>(),
                                       out _,
                                       IntPtr.Zero))
         {
@@ -37,7 +38,7 @@ internal static class WindowsStorage
 
         try
         {
-            return Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), descriptorPtr, header.Size, out uint bytesReturned, IntPtr.Zero)
+            return Kernel32.DeviceIoControl(handle, IoCtl.IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), descriptorPtr, header.Size, out uint bytesReturned, IntPtr.Zero)
                 ? new StorageInfo((int)driveIndex, descriptorPtr)
                 : null;
         }

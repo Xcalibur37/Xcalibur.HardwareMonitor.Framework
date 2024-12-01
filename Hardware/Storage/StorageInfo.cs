@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
@@ -18,7 +19,7 @@ public class StorageInfo
     /// <value>
     /// The type of the bus.
     /// </value>
-    public Kernel32.STORAGE_BUS_TYPE BusType { get; protected set; }
+    public StorageBusType BusType { get; protected set; }
 
     /// <summary>
     /// Gets or sets the device identifier.
@@ -132,7 +133,7 @@ public class StorageInfo
     /// <param name="descriptorPtr">The descriptor PTR.</param>
     public StorageInfo(int index, IntPtr descriptorPtr)
     {
-        var descriptor = Marshal.PtrToStructure<Kernel32.STORAGE_DEVICE_DESCRIPTOR>(descriptorPtr);
+        var descriptor = Marshal.PtrToStructure<StorageDeviceDescriptor>(descriptorPtr);
         Index = index;
         Vendor = GetString(descriptorPtr, descriptor.VendorIdOffset, descriptor.Size);
         Product = GetString(descriptorPtr, descriptor.ProductIdOffset, descriptor.Size);

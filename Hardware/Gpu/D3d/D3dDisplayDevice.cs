@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.D3D;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
 
@@ -64,17 +65,17 @@ internal static class D3dDisplayDevice
     {
         deviceInfo = new D3dDeviceInfo();
 
-        OpenAdapterFromDeviceName(out uint status, deviceIdentifier, out D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter);
-        if (status != WinNt.STATUS_SUCCESS) return false;
+        OpenAdapterFromDeviceName(out uint status, deviceIdentifier, out D3DkmtOpenadapterfromdevicename adapter);
+        if (status != WinNt.StatusSuccess) return false;
 
-        GetAdapterType(out status, adapter, out D3dkmth.D3DKMT_ADAPTERTYPE adapterType);
-        if (status != WinNt.STATUS_SUCCESS) return false;
-        if (!adapterType.Value.HasFlag(D3dkmth.D3DKMT_ADAPTERTYPE_FLAGS.SoftwareDevice)) return false;
+        GetAdapterType(out status, adapter, out D3DkmtAdaptertype adapterType);
+        if (status != WinNt.StatusSuccess) return false;
+        if (!adapterType.Value.HasFlag(D3DkmtAdaptertypeFlags.SoftwareDevice)) return false;
 
-        deviceInfo.Integrated = !adapterType.Value.HasFlag(D3dkmth.D3DKMT_ADAPTERTYPE_FLAGS.HybridIntegrated);
+        deviceInfo.Integrated = !adapterType.Value.HasFlag(D3DkmtAdaptertypeFlags.HybridIntegrated);
         GetQueryStatisticsAdapterInformation(out status, adapter, 
-            out D3dkmth.D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION adapterInformation);
-        if (status != WinNt.STATUS_SUCCESS) return false;
+            out D3DkmtQuerystatisticsAdapterInformation adapterInformation);
+        if (status != WinNt.StatusSuccess) return false;
 
         uint segmentCount = adapterInformation.NbSegments;
         uint nodeCount = adapterInformation.NodeCount;
@@ -84,11 +85,11 @@ internal static class D3dDisplayDevice
         DateTime queryTime = DateTime.Now;
         for (uint nodeId = 0; nodeId < nodeCount; nodeId++)
         {
-            GetNodeMetaData(out status, adapter, nodeId, out D3dkmth.D3DKMT_NODEMETADATA nodeMetaData);
-            if (status != WinNt.STATUS_SUCCESS) return false;
+            GetNodeMetaData(out status, adapter, nodeId, out D3DkmtNodemetadata nodeMetaData);
+            if (status != WinNt.StatusSuccess) return false;
 
-            GetQueryStatisticsNode(out status, adapter, nodeId, out D3dkmth.D3DKMT_QUERYSTATISTICS_NODE_INFORMATION nodeInformation);
-            if (status != WinNt.STATUS_SUCCESS) return false;
+            GetQueryStatisticsNode(out status, adapter, nodeId, out D3DkmtQuerystatisticsNodeInformation nodeInformation);
+            if (status != WinNt.StatusSuccess) return false;
 
             deviceInfo.Nodes[nodeId] = new D3dDeviceNodeInfo
             {
@@ -99,8 +100,8 @@ internal static class D3dDisplayDevice
             };
         }
 
-        GetSegmentSize(out status, adapter, out D3dkmth.D3DKMT_SEGMENTSIZEINFO segmentSizeInfo);
-        if (status != WinNt.STATUS_SUCCESS) return false;
+        GetSegmentSize(out status, adapter, out D3DkmtSegmentsizeinfo segmentSizeInfo);
+        if (status != WinNt.StatusSuccess) return false;
 
         deviceInfo.GpuSharedLimit = segmentSizeInfo.SharedSystemMemorySize;
         deviceInfo.GpuVideoMemoryLimit = segmentSizeInfo.DedicatedVideoMemorySize;
@@ -109,8 +110,8 @@ internal static class D3dDisplayDevice
         for (uint segmentId = 0; segmentId < segmentCount; segmentId++)
         {
             GetQueryStatisticsSegment(out status, adapter, segmentId, 
-                out D3dkmth.D3DKMT_QUERYSTATISTICS_SEGMENT_INFORMATION segmentInformation);
-            if (status != WinNt.STATUS_SUCCESS) return false;
+                out D3DkmtQuerystatisticsSegmentInformation segmentInformation);
+            if (status != WinNt.StatusSuccess) return false;
 
             ulong bytesResident = segmentInformation.BytesResident;
             ulong bytesCommitted = segmentInformation.BytesCommitted;
@@ -128,7 +129,7 @@ internal static class D3dDisplayDevice
         }
 
         CloseAdapter(out status, adapter);
-        return status == WinNt.STATUS_SUCCESS;
+        return status == WinNt.StatusSuccess;
     }
 
     /// <summary>
@@ -136,20 +137,20 @@ internal static class D3dDisplayDevice
     /// </summary>
     /// <param name="nodeMetaData">The node meta data.</param>
     /// <returns></returns>
-    private static string GetNodeEngineTypeString(D3dkmth.D3DKMT_NODEMETADATA nodeMetaData) =>
+    private static string GetNodeEngineTypeString(D3DkmtNodemetadata nodeMetaData) =>
         nodeMetaData.NodeData.EngineType switch
         {
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OTHER => 
+            DxgkEngineType.DxgkEngineTypeOther => 
                 "D3D " + (!string.IsNullOrWhiteSpace(nodeMetaData.NodeData.FriendlyName) 
                     ? nodeMetaData.NodeData.FriendlyName : "Other"),
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_3D => "D3D 3D",
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_DECODE => "D3D Video Decode",
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_ENCODE => "D3D Video Encode",
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_VIDEO_PROCESSING => "D3D Video Processing",
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_SCENE_ASSEMBLY => "D3D Scene Assembly",
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_COPY => "D3D Copy",
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_OVERLAY => "D3D Overlay",
-            D3dkmdt.DXGK_ENGINE_TYPE.DXGK_ENGINE_TYPE_CRYPTO => "D3D Crypto",
+            DxgkEngineType.DxgkEngineType3D => "D3D 3D",
+            DxgkEngineType.DxgkEngineTypeVideoDecode => "D3D Video Decode",
+            DxgkEngineType.DxgkEngineTypeVideoEncode => "D3D Video Encode",
+            DxgkEngineType.DxgkEngineTypeVideoProcessing => "D3D Video Processing",
+            DxgkEngineType.DxgkEngineTypeSceneAssembly => "D3D Scene Assembly",
+            DxgkEngineType.DxgkEngineTypeCopy => "D3D Copy",
+            DxgkEngineType.DxgkEngineTypeOverlay => "D3D Overlay",
+            DxgkEngineType.DxgkEngineTypeCrypto => "D3D Crypto",
             _ => "D3D Unknown"
         };
 
@@ -162,23 +163,23 @@ internal static class D3dDisplayDevice
     private static void GetSegmentSize
     (
         out uint status,
-        D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter,
-        out D3dkmth.D3DKMT_SEGMENTSIZEINFO sizeInformation)
+        D3DkmtOpenadapterfromdevicename adapter,
+        out D3DkmtSegmentsizeinfo sizeInformation)
     {
-        IntPtr segmentSizePtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3dkmth.D3DKMT_SEGMENTSIZEINFO)));
-        sizeInformation = new D3dkmth.D3DKMT_SEGMENTSIZEINFO();
+        IntPtr segmentSizePtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3DkmtSegmentsizeinfo)));
+        sizeInformation = new D3DkmtSegmentsizeinfo();
         Marshal.StructureToPtr(sizeInformation, segmentSizePtr, true);
 
-        var queryAdapterInfo = new D3dkmth.D3DKMT_QUERYADAPTERINFO
+        var queryAdapterInfo = new D3DkmtQueryadapterinfo
         {
             hAdapter = adapter.hAdapter,
-            Type = D3dkmth.KMTQUERYADAPTERINFOTYPE.KMTQAITYPE_GETSEGMENTSIZE,
+            Type = Kmtqueryadapterinfotype.KmtqaitypeGetsegmentsize,
             pPrivateDriverData = segmentSizePtr,
-            PrivateDriverDataSize = Marshal.SizeOf(typeof(D3dkmth.D3DKMT_SEGMENTSIZEINFO))
+            PrivateDriverDataSize = Marshal.SizeOf(typeof(D3DkmtSegmentsizeinfo))
         };
 
         status = Gdi32.D3DKMTQueryAdapterInfo(ref queryAdapterInfo);
-        sizeInformation = Marshal.PtrToStructure<D3dkmth.D3DKMT_SEGMENTSIZEINFO>(segmentSizePtr);
+        sizeInformation = Marshal.PtrToStructure<D3DkmtSegmentsizeinfo>(segmentSizePtr);
         Marshal.FreeHGlobal(segmentSizePtr);
     }
 
@@ -189,23 +190,23 @@ internal static class D3dDisplayDevice
     /// <param name="adapter">The adapter.</param>
     /// <param name="nodeId">The node identifier.</param>
     /// <param name="nodeMetaDataResult">The node meta data result.</param>
-    private static void GetNodeMetaData(out uint status, D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, 
-        out D3dkmth.D3DKMT_NODEMETADATA nodeMetaDataResult)
+    private static void GetNodeMetaData(out uint status, D3DkmtOpenadapterfromdevicename adapter, uint nodeId, 
+        out D3DkmtNodemetadata nodeMetaDataResult)
     {
-        IntPtr nodeMetaDataPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3dkmth.D3DKMT_NODEMETADATA)));
-        nodeMetaDataResult = new D3dkmth.D3DKMT_NODEMETADATA { NodeOrdinalAndAdapterIndex = nodeId };
+        IntPtr nodeMetaDataPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3DkmtNodemetadata)));
+        nodeMetaDataResult = new D3DkmtNodemetadata { NodeOrdinalAndAdapterIndex = nodeId };
         Marshal.StructureToPtr(nodeMetaDataResult, nodeMetaDataPtr, true);
 
-        var queryAdapterInfo = new D3dkmth.D3DKMT_QUERYADAPTERINFO
+        var queryAdapterInfo = new D3DkmtQueryadapterinfo
         {
             hAdapter = adapter.hAdapter,
-            Type = D3dkmth.KMTQUERYADAPTERINFOTYPE.KMTQAITYPE_NODEMETADATA,
+            Type = Kmtqueryadapterinfotype.KmtqaitypeNodemetadata,
             pPrivateDriverData = nodeMetaDataPtr,
-            PrivateDriverDataSize = Marshal.SizeOf(typeof(D3dkmth.D3DKMT_NODEMETADATA))
+            PrivateDriverDataSize = Marshal.SizeOf(typeof(D3DkmtNodemetadata))
         };
 
         status = Gdi32.D3DKMTQueryAdapterInfo(ref queryAdapterInfo);
-        nodeMetaDataResult = Marshal.PtrToStructure<D3dkmth.D3DKMT_NODEMETADATA>(nodeMetaDataPtr);
+        nodeMetaDataResult = Marshal.PtrToStructure<D3DkmtNodemetadata>(nodeMetaDataPtr);
         Marshal.FreeHGlobal(nodeMetaDataPtr);
     }
 
@@ -216,13 +217,13 @@ internal static class D3dDisplayDevice
     /// <param name="adapter">The adapter.</param>
     /// <param name="nodeId">The node identifier.</param>
     /// <param name="nodeInformation">The node information.</param>
-    private static void GetQueryStatisticsNode(out uint status, D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter, uint nodeId, 
-        out D3dkmth.D3DKMT_QUERYSTATISTICS_NODE_INFORMATION nodeInformation)
+    private static void GetQueryStatisticsNode(out uint status, D3DkmtOpenadapterfromdevicename adapter, uint nodeId, 
+        out D3DkmtQuerystatisticsNodeInformation nodeInformation)
     {
-        var queryElement = new D3dkmth.D3DKMT_QUERYSTATISTICS_QUERY_ELEMENT { QueryNode = { NodeId = nodeId } };
-        var queryStatistics = new D3dkmth.D3DKMT_QUERYSTATISTICS
+        var queryElement = new D3DkmtQuerystatisticsQueryElement { QueryNode = { NodeId = nodeId } };
+        var queryStatistics = new D3DkmtQuerystatistics
         {
-            AdapterLuid = adapter.AdapterLuid, Type = D3dkmth.D3DKMT_QUERYSTATISTICS_TYPE.D3DKMT_QUERYSTATISTICS_NODE, QueryElement = queryElement
+            AdapterLuid = adapter.AdapterLuid, Type = D3DkmtQuerystatisticsType.D3DkmtQuerystatisticsNode, QueryElement = queryElement
         };
         status = Gdi32.D3DKMTQueryStatistics(ref queryStatistics);
         nodeInformation = queryStatistics.QueryResult.NodeInformation;
@@ -238,14 +239,14 @@ internal static class D3dDisplayDevice
     private static void GetQueryStatisticsSegment
     (
         out uint status,
-        D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter,
+        D3DkmtOpenadapterfromdevicename adapter,
         uint segmentId,
-        out D3dkmth.D3DKMT_QUERYSTATISTICS_SEGMENT_INFORMATION segmentInformation)
+        out D3DkmtQuerystatisticsSegmentInformation segmentInformation)
     {
-        var queryElement = new D3dkmth.D3DKMT_QUERYSTATISTICS_QUERY_ELEMENT { QuerySegment = { SegmentId = segmentId } };
-        var queryStatistics = new D3dkmth.D3DKMT_QUERYSTATISTICS
+        var queryElement = new D3DkmtQuerystatisticsQueryElement { QuerySegment = { SegmentId = segmentId } };
+        var queryStatistics = new D3DkmtQuerystatistics
         {
-            AdapterLuid = adapter.AdapterLuid, Type = D3dkmth.D3DKMT_QUERYSTATISTICS_TYPE.D3DKMT_QUERYSTATISTICS_SEGMENT, QueryElement = queryElement
+            AdapterLuid = adapter.AdapterLuid, Type = D3DkmtQuerystatisticsType.D3DkmtQuerystatisticsSegment, QueryElement = queryElement
         };
         status = Gdi32.D3DKMTQueryStatistics(ref queryStatistics);
         segmentInformation = queryStatistics.QueryResult.SegmentInformation;
@@ -260,13 +261,13 @@ internal static class D3dDisplayDevice
     private static void GetQueryStatisticsAdapterInformation
     (
         out uint status,
-        D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter,
-        out D3dkmth.D3DKMT_QUERYSTATISTICS_ADAPTER_INFORMATION adapterInformation)
+        D3DkmtOpenadapterfromdevicename adapter,
+        out D3DkmtQuerystatisticsAdapterInformation adapterInformation)
     {
-        var queryStatistics = new D3dkmth.D3DKMT_QUERYSTATISTICS
+        var queryStatistics = new D3DkmtQuerystatistics
         {
             AdapterLuid = adapter.AdapterLuid, 
-            Type = D3dkmth.D3DKMT_QUERYSTATISTICS_TYPE.D3DKMT_QUERYSTATISTICS_ADAPTER
+            Type = D3DkmtQuerystatisticsType.D3DkmtQuerystatisticsAdapter
         };
         status = Gdi32.D3DKMTQueryStatistics(ref queryStatistics);
         adapterInformation = queryStatistics.QueryResult.AdapterInformation;
@@ -278,20 +279,20 @@ internal static class D3dDisplayDevice
     /// <param name="status">The status.</param>
     /// <param name="adapter">The adapter.</param>
     /// <param name="adapterTypeResult">The adapter type result.</param>
-    private static void GetAdapterType(out uint status, D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter, 
-        out D3dkmth.D3DKMT_ADAPTERTYPE adapterTypeResult)
+    private static void GetAdapterType(out uint status, D3DkmtOpenadapterfromdevicename adapter, 
+        out D3DkmtAdaptertype adapterTypeResult)
     {
-        IntPtr adapterTypePtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3dkmth.D3DKMT_ADAPTERTYPE)));
-        var queryAdapterInfo = new D3dkmth.D3DKMT_QUERYADAPTERINFO
+        IntPtr adapterTypePtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(D3DkmtAdaptertype)));
+        var queryAdapterInfo = new D3DkmtQueryadapterinfo
         {
             hAdapter = adapter.hAdapter,
-            Type = D3dkmth.KMTQUERYADAPTERINFOTYPE.KMTQAITYPE_ADAPTERTYPE,
+            Type = Kmtqueryadapterinfotype.KmtqaitypeAdaptertype,
             pPrivateDriverData = adapterTypePtr,
-            PrivateDriverDataSize = Marshal.SizeOf(typeof(D3dkmth.D3DKMT_ADAPTERTYPE))
+            PrivateDriverDataSize = Marshal.SizeOf(typeof(D3DkmtAdaptertype))
         };
 
         status = Gdi32.D3DKMTQueryAdapterInfo(ref queryAdapterInfo);
-        adapterTypeResult = Marshal.PtrToStructure<D3dkmth.D3DKMT_ADAPTERTYPE>(adapterTypePtr);
+        adapterTypeResult = Marshal.PtrToStructure<D3DkmtAdaptertype>(adapterTypePtr);
         Marshal.FreeHGlobal(adapterTypePtr);
     }
 
@@ -302,9 +303,9 @@ internal static class D3dDisplayDevice
     /// <param name="displayDeviceName">Display name of the device.</param>
     /// <param name="adapter">The adapter.</param>
     private static void OpenAdapterFromDeviceName(out uint status, string displayDeviceName, 
-        out D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter)
+        out D3DkmtOpenadapterfromdevicename adapter)
     {
-        adapter = new D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME { pDeviceName = displayDeviceName };
+        adapter = new D3DkmtOpenadapterfromdevicename { pDeviceName = displayDeviceName };
         status = Gdi32.D3DKMTOpenAdapterFromDeviceName(ref adapter);
     }
 
@@ -313,9 +314,9 @@ internal static class D3dDisplayDevice
     /// </summary>
     /// <param name="status">The status.</param>
     /// <param name="adapter">The adapter.</param>
-    private static void CloseAdapter(out uint status, D3dkmth.D3DKMT_OPENADAPTERFROMDEVICENAME adapter)
+    private static void CloseAdapter(out uint status, D3DkmtOpenadapterfromdevicename adapter)
     {
-        var closeAdapter = new D3dkmth.D3DKMT_CLOSEADAPTER { hAdapter = adapter.hAdapter };
+        var closeAdapter = new D3DkmtCloseadapter { hAdapter = adapter.hAdapter };
         status = Gdi32.D3DKMTCloseAdapter(ref closeAdapter);
     }
 }

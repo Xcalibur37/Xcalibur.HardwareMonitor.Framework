@@ -1,10 +1,4 @@
-﻿
-
-
-
-
-// ReSharper disable InconsistentNaming
-// ReSharper disable IdentifierTypo
+﻿using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
 
@@ -13,16 +7,16 @@ namespace Xcalibur.HardwareMonitor.Framework.Interop;
 /// </summary>
 internal static class Ring0
 {
-    public const uint INVALID_PCI_ADDRESS = 0xFFFFFFFF;
+    public const uint InvalidPciAddress = 0xFFFFFFFF;
 
-    private const uint OLS_TYPE = 40000;
+    private const uint OlsType = 40000;
 
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_GET_REFCOUNT = new(OLS_TYPE, 0x801, Kernel32.IOControlCode.Access.Any);
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_READ_MSR = new(OLS_TYPE, 0x821, Kernel32.IOControlCode.Access.Any);
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_WRITE_MSR = new(OLS_TYPE, 0x822, Kernel32.IOControlCode.Access.Any);
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_READ_IO_PORT_BYTE = new(OLS_TYPE, 0x833, Kernel32.IOControlCode.Access.Read);
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_WRITE_IO_PORT_BYTE = new(OLS_TYPE, 0x836, Kernel32.IOControlCode.Access.Write);
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_READ_PCI_CONFIG = new(OLS_TYPE, 0x851, Kernel32.IOControlCode.Access.Read);
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_WRITE_PCI_CONFIG = new(OLS_TYPE, 0x852, Kernel32.IOControlCode.Access.Write);
-    public static readonly Kernel32.IOControlCode IOCTL_OLS_READ_MEMORY = new(OLS_TYPE, 0x841, Kernel32.IOControlCode.Access.Read);
+    public static readonly IoControlCode IoctlOlsGetRefcount = new(OlsType, 0x801, Access.Any);
+    public static readonly IoControlCode IoctlOlsReadMsr = new(OlsType, 0x821, Access.Any);
+    public static readonly IoControlCode IoctlOlsWriteMsr = new(OlsType, 0x822, Access.Any);
+    public static readonly IoControlCode IoctlOlsReadIoPortByte = new(OlsType, 0x833, Access.Read);
+    public static readonly IoControlCode IoctlOlsWriteIoPortByte = new(OlsType, 0x836, Access.Write);
+    public static readonly IoControlCode IoctlOlsReadPciConfig = new(OlsType, 0x851, Access.Read);
+    public static readonly IoControlCode IoctlOlsWritePciConfig = new(OlsType, 0x852, Access.Write);
+    public static readonly IoControlCode IoctlOlsReadMemory = new(OlsType, 0x841, Access.Read);
 }

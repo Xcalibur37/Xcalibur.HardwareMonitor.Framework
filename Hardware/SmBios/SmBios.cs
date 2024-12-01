@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Xcalibur.HardwareMonitor.Framework.Hardware.SmBios.Information;
-using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.SmBios;
 
@@ -83,10 +83,10 @@ public class SmBios
             List<CacheInformation> processorCacheList = [];
             List<ProcessorInformation> processorInformationList = [];
 
-            string[] tables = FirmwareTable.EnumerateTables(Kernel32.Provider.RSMB);
+            string[] tables = FirmwareTable.EnumerateTables(Provider.Rsmb);
             if (tables is { Length: > 0 })
             {
-                raw = FirmwareTable.GetTable(Kernel32.Provider.RSMB, tables[0]);
+                raw = FirmwareTable.GetTable(Provider.Rsmb, tables[0]);
                 if (raw == null || raw.Length == 0) return;
 
                 byte majorVersion = raw[1];

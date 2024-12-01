@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart;
-using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Ssd;
 
@@ -94,12 +93,12 @@ internal class SsdMicron : AtaStorage
     }
 
     /// <inheritdoc />
-    protected override void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values)
+    protected override void UpdateAdditionalSensors(Interop.Models.Kernel32.SmartAttribute[] values)
     {
         float? hostProgramPagesCount = null;
         float? ftlProgramPagesCount = null;
 
-        foreach (Kernel32.SMART_ATTRIBUTE value in values)
+        foreach (Interop.Models.Kernel32.SmartAttribute value in values)
         {
             if (value.Id == 0xF7)
             {

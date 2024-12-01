@@ -2,141 +2,145 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.Win32.SafeHandles;
+using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Battery;
 
+/// <summary>
+/// Battery Group
+/// </summary>
+/// <seealso cref="IGroup" />
 internal class BatteryGroup : IGroup
 {
-    private readonly List<Battery> _hardware = new();
+    private readonly List<Battery> _hardware = [];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BatteryGroup"/> class.
+    /// </summary>
+    /// <param name="settings">The settings.</param>
     public unsafe BatteryGroup(ISettings settings)
     {
         // No implementation for battery information on Unix systems
-        if (Software.OperatingSystem.IsUnix)
-            return;
+        if (Software.OperatingSystem.IsUnix) return;
 
-        IntPtr hdev = SetupApi.SetupDiGetClassDevs(ref SetupApi.GUID_DEVICE_BATTERY, IntPtr.Zero, IntPtr.Zero, SetupApi.DIGCF_PRESENT | SetupApi.DIGCF_DEVICEINTERFACE);
-        if (hdev != SetupApi.INVALID_HANDLE_VALUE)
+        IntPtr hdev = SetupApi.SetupDiGetClassDevs(ref SetupApi.GuidDeviceBattery, IntPtr.Zero, IntPtr.Zero, SetupApi.DigcfPresent | SetupApi.DigcfDeviceinterface);
+        if (hdev == SetupApi.InvalidHandleValue) return;
+        for (uint i = 0; ; i++)
         {
-            for (uint i = 0; ; i++)
+            SpDeviceInterfaceData did = default;
+            did.cbSize = (uint)Marshal.SizeOf(typeof(SpDeviceInterfaceData));
+
+            if (!SetupApi.SetupDiEnumDeviceInterfaces(hdev,
+                    IntPtr.Zero,
+                    ref SetupApi.GuidDeviceBattery,
+                    i,
+                    ref did))
             {
-                SetupApi.SP_DEVICE_INTERFACE_DATA did = default;
-                did.cbSize = (uint)Marshal.SizeOf(typeof(SetupApi.SP_DEVICE_INTERFACE_DATA));
+                if (Marshal.GetLastWin32Error() == SetupApi.ErrorNoMoreItems) break;
+            }
+            else
+            {
+                SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
+                    did,
+                    IntPtr.Zero,
+                    0,
+                    out uint cbRequired,
+                    IntPtr.Zero);
 
-                if (!SetupApi.SetupDiEnumDeviceInterfaces(hdev,
-                                                          IntPtr.Zero,
-                                                          ref SetupApi.GUID_DEVICE_BATTERY,
-                                                          i,
-                                                          ref did))
-                {
-                    if (Marshal.GetLastWin32Error() == SetupApi.ERROR_NO_MORE_ITEMS)
-                        break;
-                }
-                else
-                {
-                    SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                             did,
-                                                             IntPtr.Zero,
-                                                             0,
-                                                             out uint cbRequired,
-                                                             IntPtr.Zero);
+                if (Marshal.GetLastWin32Error() != SetupApi.ErrorInsufficientBuffer) continue;
+                IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.Lptr, cbRequired);
+                Marshal.WriteInt32(pdidd, Environment.Is64BitProcess ? 8 : 4 + Marshal.SystemDefaultCharSize); // cbSize.
 
-                    if (Marshal.GetLastWin32Error() == SetupApi.ERROR_INSUFFICIENT_BUFFER)
+                if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
+                        did,
+                        pdidd,
+                        cbRequired,
+                        out _,
+                        IntPtr.Zero))
+                {
+                    string devicePath = new((char*)(pdidd + 4));
+
+                    SafeFileHandle battery = Kernel32.CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
+                    if (!battery.IsInvalid)
                     {
-                        IntPtr pdidd = Kernel32.LocalAlloc(Kernel32.LPTR, cbRequired);
-                        Marshal.WriteInt32(pdidd, Environment.Is64BitProcess ? 8 : 4 + Marshal.SystemDefaultCharSize); // cbSize.
+                        BatteryQueryInformation bqi = default;
 
-                        if (SetupApi.SetupDiGetDeviceInterfaceDetail(hdev,
-                                                                     did,
-                                                                     pdidd,
-                                                                     cbRequired,
-                                                                     out _,
-                                                                     IntPtr.Zero))
+                        uint dwWait = 0;
+                        if (Kernel32.DeviceIoControl(battery,
+                                IoCtl.IOCTL_BATTERY_QUERY_TAG,
+                                ref dwWait,
+                                Marshal.SizeOf(dwWait),
+                                ref bqi.BatteryTag,
+                                Marshal.SizeOf(bqi.BatteryTag),
+                                out _,
+                                IntPtr.Zero))
                         {
-                            string devicePath = new((char*)(pdidd + 4));
+                            BatteryInformation bi = default;
+                            bqi.InformationLevel = BatteryQueryInformationLevel.BatteryInformation;
 
-                            SafeFileHandle battery = Kernel32.CreateFile(devicePath, FileAccess.ReadWrite, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, IntPtr.Zero);
-                            if (!battery.IsInvalid)
+                            if (Kernel32.DeviceIoControl(battery,
+                                    IoCtl.IOCTL_BATTERY_QUERY_INFORMATION,
+                                    ref bqi,
+                                    Marshal.SizeOf(bqi),
+                                    ref bi,
+                                    Marshal.SizeOf(bi),
+                                    out _,
+                                    IntPtr.Zero))
                             {
-                                Kernel32.BATTERY_QUERY_INFORMATION bqi = default;
-
-                                uint dwWait = 0;
-                                if (Kernel32.DeviceIoControl(battery,
-                                                             Kernel32.IOCTL.IOCTL_BATTERY_QUERY_TAG,
-                                                             ref dwWait,
-                                                             Marshal.SizeOf(dwWait),
-                                                             ref bqi.BatteryTag,
-                                                             Marshal.SizeOf(bqi.BatteryTag),
-                                                             out _,
-                                                             IntPtr.Zero))
+                                // Only batteries count.
+                                if (bi.Capabilities.HasFlag(BatteryCapabilities.BATTERY_SYSTEM_BATTERY))
                                 {
-                                    Kernel32.BATTERY_INFORMATION bi = default;
-                                    bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryInformation;
+                                    const int maxLoadString = 100;
+
+                                    IntPtr ptrDevName = Marshal.AllocCoTaskMem(maxLoadString);
+                                    bqi.InformationLevel = BatteryQueryInformationLevel.BatteryDeviceName;
 
                                     if (Kernel32.DeviceIoControl(battery,
-                                                                 Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                 ref bqi,
-                                                                 Marshal.SizeOf(bqi),
-                                                                 ref bi,
-                                                                 Marshal.SizeOf(bi),
-                                                                 out _,
-                                                                 IntPtr.Zero))
+                                            IoCtl.IOCTL_BATTERY_QUERY_INFORMATION,
+                                            ref bqi,
+                                            Marshal.SizeOf(bqi),
+                                            ptrDevName,
+                                            maxLoadString,
+                                            out _,
+                                            IntPtr.Zero))
                                     {
-                                        // Only batteries count.
-                                        if (bi.Capabilities.HasFlag(Kernel32.BatteryCapabilities.BATTERY_SYSTEM_BATTERY))
+                                        IntPtr ptrManName = Marshal.AllocCoTaskMem(maxLoadString);
+                                        bqi.InformationLevel = BatteryQueryInformationLevel.BatteryManufactureName;
+
+                                        if (Kernel32.DeviceIoControl(battery,
+                                                IoCtl.IOCTL_BATTERY_QUERY_INFORMATION,
+                                                ref bqi,
+                                                Marshal.SizeOf(bqi),
+                                                ptrManName,
+                                                maxLoadString,
+                                                out _,
+                                                IntPtr.Zero))
                                         {
-                                            const int maxLoadString = 100;
+                                            string name = Marshal.PtrToStringUni(ptrDevName);
+                                            string manufacturer = Marshal.PtrToStringUni(ptrManName);
 
-                                            IntPtr ptrDevName = Marshal.AllocCoTaskMem(maxLoadString);
-                                            bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryDeviceName;
-
-                                            if (Kernel32.DeviceIoControl(battery,
-                                                                         Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                         ref bqi,
-                                                                         Marshal.SizeOf(bqi),
-                                                                         ptrDevName,
-                                                                         maxLoadString,
-                                                                         out _,
-                                                                         IntPtr.Zero))
-                                            {
-                                                IntPtr ptrManName = Marshal.AllocCoTaskMem(maxLoadString);
-                                                bqi.InformationLevel = Kernel32.BATTERY_QUERY_INFORMATION_LEVEL.BatteryManufactureName;
-
-                                                if (Kernel32.DeviceIoControl(battery,
-                                                                             Kernel32.IOCTL.IOCTL_BATTERY_QUERY_INFORMATION,
-                                                                             ref bqi,
-                                                                             Marshal.SizeOf(bqi),
-                                                                             ptrManName,
-                                                                             maxLoadString,
-                                                                             out _,
-                                                                             IntPtr.Zero))
-                                                {
-                                                    string name = Marshal.PtrToStringUni(ptrDevName);
-                                                    string manufacturer = Marshal.PtrToStringUni(ptrManName);
-
-                                                    _hardware.Add(new Battery(name, manufacturer, battery, bi, bqi.BatteryTag, settings));
-                                                }
-
-                                                Marshal.FreeCoTaskMem(ptrManName);
-                                            }
-
-                                            Marshal.FreeCoTaskMem(ptrDevName);
+                                            _hardware.Add(new Battery(name, manufacturer, battery, bi, bqi.BatteryTag, settings));
                                         }
+
+                                        Marshal.FreeCoTaskMem(ptrManName);
                                     }
+
+                                    Marshal.FreeCoTaskMem(ptrDevName);
                                 }
                             }
                         }
-
-                        Kernel32.LocalFree(pdidd);
                     }
                 }
-            }
 
-            SetupApi.SetupDiDestroyDeviceInfoList(hdev);
+                Kernel32.LocalFree(pdidd);
+            }
         }
+
+        SetupApi.SetupDiDestroyDeviceInfoList(hdev);
     }
 
     /// <inheritdoc />
@@ -145,7 +149,6 @@ internal class BatteryGroup : IGroup
     /// <inheritdoc />
     public void Close()
     {
-        foreach (Battery battery in _hardware)
-            battery.Close();
+        _hardware.Apply(x => x.Close());
     }
 }

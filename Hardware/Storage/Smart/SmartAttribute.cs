@@ -1,15 +1,11 @@
-﻿
-
-
-
-
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
-using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart;
 
+/// <summary>
+/// Attribute: Smart
+/// </summary>
 public class SmartAttribute
 {
     private readonly RawValueConversion _rawValueConversion;
@@ -94,10 +90,8 @@ public class SmartAttribute
 
     public SensorType? SensorType { get; }
 
-    internal float ConvertValue(Kernel32.SMART_ATTRIBUTE value, IReadOnlyList<IParameter> parameters)
+    internal float ConvertValue(Interop.Models.Kernel32.SmartAttribute value, IReadOnlyList<IParameter> parameters)
     {
-        if (_rawValueConversion == null)
-            return value.CurrentValue;
-        return _rawValueConversion(value.RawValue, value.CurrentValue, parameters);
+        return _rawValueConversion?.Invoke(value.RawValue, value.CurrentValue, parameters) ?? value.CurrentValue;
     }
 }

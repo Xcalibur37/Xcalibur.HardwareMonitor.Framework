@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel.Models;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
@@ -46,7 +47,7 @@ internal static class Ring0
         if (_driver != null)
         {
             uint refCount = 0;
-            _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_GET_REFCOUNT, null, ref refCount);
+            _driver.DeviceIoControl(Interop.Ring0.IoctlOlsGetRefcount, null, ref refCount);
             _driver.Close();
 
             if (refCount <= 1)
@@ -100,7 +101,7 @@ internal static class Ring0
         if (_driver == null) return 0;
 
         uint value = 0;
-        _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_IO_PORT_BYTE, port, ref value);
+        _driver.DeviceIoControl(Interop.Ring0.IoctlOlsReadIoPortByte, port, ref value);
         return (byte)(value & 0xFF);
     }
     
@@ -115,7 +116,7 @@ internal static class Ring0
     {
         if (_driver == null) return false;
         ReadMemoryInput input = new() { Address = address, UnitSize = 1, Count = (uint)Marshal.SizeOf(buffer) };
-        return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
+        return _driver.DeviceIoControl(Interop.Ring0.IoctlOlsReadMemory, input, ref buffer);
     }
 
     /// <summary>
@@ -129,7 +130,7 @@ internal static class Ring0
     {
         if (_driver == null) return false;
         ReadMemoryInput input = new() { Address = address, UnitSize = (uint)Marshal.SizeOf(typeof(T)), Count = (uint)buffer.Length };
-        return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MEMORY, input, ref buffer);
+        return _driver.DeviceIoControl(Interop.Ring0.IoctlOlsReadMemory, input, ref buffer);
     }
 
     /// <summary>
@@ -149,7 +150,7 @@ internal static class Ring0
         }
 
         ulong buffer = 0;
-        bool result = _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_MSR, index, ref buffer);
+        bool result = _driver.DeviceIoControl(Interop.Ring0.IoctlOlsReadMsr, index, ref buffer);
         edx = (uint)((buffer >> 32) & 0xFFFFFFFF);
         eax = (uint)(buffer & 0xFFFFFFFF);
         return result;
@@ -189,7 +190,7 @@ internal static class Ring0
         ReadPciConfigInput input = new() { PciAddress = pciAddress, RegAddress = regAddress };
 
         value = 0;
-        return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_READ_PCI_CONFIG, input, ref value);
+        return _driver.DeviceIoControl(Interop.Ring0.IoctlOlsReadPciConfig, input, ref value);
     }
 
     /// <summary>
@@ -203,7 +204,7 @@ internal static class Ring0
             return;
 
         WriteIoPortInput input = new() { PortNumber = port, Value = value };
-        _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_IO_PORT_BYTE, input);
+        _driver.DeviceIoControl(Interop.Ring0.IoctlOlsWriteIoPortByte, input);
     }
 
     /// <summary>
@@ -219,7 +220,7 @@ internal static class Ring0
             return false;
 
         WriteMsrInput input = new() { Register = index, Value = ((ulong)edx << 32) | eax };
-        return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_MSR, input);
+        return _driver.DeviceIoControl(Interop.Ring0.IoctlOlsWriteMsr, input);
     }
 
     /// <summary>
@@ -233,7 +234,7 @@ internal static class Ring0
     {
         if (_driver == null || (regAddress & 3) != 0) return false;
         WritePciConfigInput input = new() { PciAddress = pciAddress, RegAddress = regAddress, Value = value };
-        return _driver.DeviceIOControl(Interop.Ring0.IOCTL_OLS_WRITE_PCI_CONFIG, input);
+        return _driver.DeviceIoControl(Interop.Ring0.IoctlOlsWritePciConfig, input);
     }
 
     /// <summary>

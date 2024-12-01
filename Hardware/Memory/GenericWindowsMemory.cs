@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Memory;
 
@@ -51,7 +52,7 @@ internal sealed class GenericWindowsMemory : Hardware
     /// <inheritdoc />
     public override void Update()
     {
-        Kernel32.MEMORYSTATUSEX status = new() { dwLength = (uint)Marshal.SizeOf<Kernel32.MEMORYSTATUSEX>() };
+        MemoryStatusEx status = new() { dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>() };
 
         if (!Kernel32.GlobalMemoryStatusEx(ref status)) return;
 

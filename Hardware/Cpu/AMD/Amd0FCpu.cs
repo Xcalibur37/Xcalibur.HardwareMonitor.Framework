@@ -141,7 +141,7 @@ internal sealed class Amd0FCpu : AmdCpuBase
         if (!Mutexes.WaitPciBus(10)) return;
 
         // Evaluate
-        if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
+        if (_miscellaneousControlAddress != Interop.Ring0.InvalidPciAddress)
         {
             for (uint i = 0; i < _coreTemperatures.Length; i++)
             {

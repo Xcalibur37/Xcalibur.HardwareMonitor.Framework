@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.ADL;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.AMD;
 
@@ -16,10 +17,10 @@ internal sealed class AmdGpu : GpuBase
 {
     #region Fields
 
-    private AtiAdlxx.ADLAdapterInfo _adapterInfo;
-    private AtiAdlxx.ADLPMLogStartOutput _adlPmLogStartOutput;
-    private AtiAdlxx.ADLPMLogSupportInfo _adlPmLogSupportInfo;
-    private AtiAdlxx.ADLGcnInfo _adlGcnInfo;
+    private AdlAdapterInfo _adapterInfo;
+    private AdlpmLogStartOutput _adlPmLogStartOutput;
+    private AdlpmLogSupportInfo _adlPmLogSupportInfo;
+    private AdlGcnInfo _adlGcnInfo;
     private IntPtr _context;
     private Sensor _controlSensor;
     private Sensor _coreClock;
@@ -105,7 +106,7 @@ internal sealed class AmdGpu : GpuBase
     /// <param name="adapterInfo">The adapter information.</param>
     /// <param name="gcnInfo">The GCN information.</param>
     /// <param name="settings">The settings.</param>
-    public AmdGpu(IntPtr amdContext, AtiAdlxx.ADLAdapterInfo adapterInfo, AtiAdlxx.ADLGcnInfo gcnInfo, ISettings settings)
+    public AmdGpu(IntPtr amdContext, AdlAdapterInfo adapterInfo, AdlGcnInfo gcnInfo, ISettings settings)
         : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd",
             adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
@@ -178,10 +179,10 @@ internal sealed class AmdGpu : GpuBase
     private void SoftwareControlValueChanged(IControl control)
     {
         if (control.ControlMode != ControlMode.Software) return;
-        AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new()
+        AdlFanSpeedValue fanSpeedValue = new()
         {
-            iSpeedType = AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT,
-            iFlags = AtiAdlxx.ADL_DL_FANCTRL_FLAG_USER_DEFINED_SPEED,
+            iSpeedType = AtiAdlxx.AdlDlFanctrlSpeedTypePercent,
+            iFlags = AtiAdlxx.AdlDlFanctrlFlagUserDefinedSpeed,
             iFanSpeed = (int)control.SoftwareValue
         };
         AtiAdlxx.ADL2_Overdrive5_FanSpeed_Set(_context, _adapterInfo.AdapterIndex, 0, ref fanSpeedValue);
@@ -260,13 +261,13 @@ internal sealed class AmdGpu : GpuBase
         GetOd5Temperature(_temperatureCore);
 
         if (_currentOverdriveApiLevel < 7) return;
-        GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType.EDGE, _temperatureCore, -256, 0.001, false);
-        GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType.MEM, _temperatureMemory);
-        GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType.VRVDDC, _temperatureVddc);
-        GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType.VRMVDD, _temperatureMvdd);
-        GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType.LIQUID, _temperatureLiquid);
-        GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType.PLX, _temperaturePlx);
-        GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType.HOTSPOT, _temperatureHotSpot);
+        GetOdnTemperature(AdlodnTemperatureType.Edge, _temperatureCore, -256, 0.001, false);
+        GetOdnTemperature(AdlodnTemperatureType.Mem, _temperatureMemory);
+        GetOdnTemperature(AdlodnTemperatureType.Vrvddc, _temperatureVddc);
+        GetOdnTemperature(AdlodnTemperatureType.Vrmvdd, _temperatureMvdd);
+        GetOdnTemperature(AdlodnTemperatureType.Liquid, _temperatureLiquid);
+        GetOdnTemperature(AdlodnTemperatureType.Plx, _temperaturePlx);
+        GetOdnTemperature(AdlodnTemperatureType.Hotspot, _temperatureHotSpot);
     }
 
     /// <summary>
@@ -296,8 +297,8 @@ internal sealed class AmdGpu : GpuBase
     private void UpdateFanSensors()
     {
         if (!_overdriveApiSupported) return;
-        GetOd5FanSpeed(AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_RPM, _fan);
-        GetOd5FanSpeed(AtiAdlxx.ADL_DL_FANCTRL_SPEED_TYPE_PERCENT, _controlSensor);
+        GetOd5FanSpeed(AtiAdlxx.AdlDlFanctrlSpeedTypeRpm, _fan);
+        GetOd5FanSpeed(AtiAdlxx.AdlDlFanctrlSpeedTypePercent, _controlSensor);
     }
 
     /// <summary>
@@ -325,7 +326,7 @@ internal sealed class AmdGpu : GpuBase
 
         // Memory total
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_MemoryInfoX4_Get)) &&
-            AtiAdlxx.ADL2_Adapter_MemoryInfoX4_Get(_context, _adapterInfo.AdapterIndex, out var memoryInfo) == AtiAdlxx.ADLStatus.ADL_OK)
+            AtiAdlxx.ADL2_Adapter_MemoryInfoX4_Get(_context, _adapterInfo.AdapterIndex, out var memoryInfo) == AdlStatus.AdlOk)
         {
             _memoryTotal.Value = memoryInfo.iMemorySize / 1024 / 1024;
             ActivateSensor(_memoryTotal);
@@ -340,7 +341,7 @@ internal sealed class AmdGpu : GpuBase
     {
         // Memory used
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_DedicatedVRAMUsage_Get)) &&
-            AtiAdlxx.ADL2_Adapter_DedicatedVRAMUsage_Get(_context, _adapterInfo.AdapterIndex, out var vramUsed) == AtiAdlxx.ADLStatus.ADL_OK)
+            AtiAdlxx.ADL2_Adapter_DedicatedVRAMUsage_Get(_context, _adapterInfo.AdapterIndex, out var vramUsed) == AdlStatus.AdlOk)
         {
             _memoryUsed.Value = vramUsed;
             ActivateSensor(_memoryUsed);
@@ -360,9 +361,9 @@ internal sealed class AmdGpu : GpuBase
     {
         _controlSensor = new Sensor("GPU Fan", 0, SensorType.Control, this, Settings);
 
-        AtiAdlxx.ADLFanSpeedInfo fanSpeedInfo = new();
+        AdlFanSpeedInfo fanSpeedInfo = new();
         if (AtiAdlxx.ADL2_Overdrive5_FanSpeedInfo_Get(_context, _adapterInfo.AdapterIndex, 0, ref fanSpeedInfo) != 
-            AtiAdlxx.ADLStatus.ADL_OK)
+            AdlStatus.AdlOk)
         {
             fanSpeedInfo.iMaxPercent = 100;
             fanSpeedInfo.iMinPercent = 0;
@@ -385,10 +386,10 @@ internal sealed class AmdGpu : GpuBase
 
         if (!AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps)) ||
             AtiAdlxx.ADL2_Adapter_FrameMetrics_Caps(_context, _adapterInfo.AdapterIndex, ref frameMetricsSupported) !=
-                AtiAdlxx.ADLStatus.ADL_OK ||
-                frameMetricsSupported != AtiAdlxx.ADL_TRUE ||
+                AdlStatus.AdlOk ||
+                frameMetricsSupported != AtiAdlxx.AdlTrue ||
             AtiAdlxx.ADL2_Adapter_FrameMetrics_Start(_context, _adapterInfo.AdapterIndex, 0) !=
-                AtiAdlxx.ADLStatus.ADL_OK) return;
+                AdlStatus.AdlOk) return;
         _frameMetricsStarted = true;
         _fullscreenFps.Value = -1;
         ActivateSensor(_fullscreenFps);
@@ -404,7 +405,7 @@ internal sealed class AmdGpu : GpuBase
 
         float framesPerSecond = 0;
         if (AtiAdlxx.ADL2_Adapter_FrameMetrics_Get(_context, _adapterInfo.AdapterIndex, 0, ref framesPerSecond) !=
-            AtiAdlxx.ADLStatus.ADL_OK) return;
+            AdlStatus.AdlOk) return;
         _fullscreenFps.Value = framesPerSecond;
     }
 
@@ -434,34 +435,34 @@ internal sealed class AmdGpu : GpuBase
             !AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Device_PMLog_Device_Create)) ||
             !AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Adapter_PMLog_Start))) return;
 
-        AtiAdlxx.ADLPMLogStartInput adlPmLogStartInput = new()
+        AdlpmLogStartInput adlPmLogStartInput = new()
         {
-            usSensors = new ushort[AtiAdlxx.ADL_PMLOG_MAX_SENSORS]
+            usSensors = new ushort[AtiAdlxx.AdlPmlogMaxSensors]
         };
 
-        _adlPmLogSupportInfo = new AtiAdlxx.ADLPMLogSupportInfo();
+        _adlPmLogSupportInfo = new AdlpmLogSupportInfo();
         if (_device != 0 ||
-            AtiAdlxx.ADLStatus.ADL_OK !=
+            AdlStatus.AdlOk !=
             AtiAdlxx.ADL2_Device_PMLog_Device_Create(_context, _adapterInfo.AdapterIndex, ref _device) ||
-            AtiAdlxx.ADLStatus.ADL_OK !=
+            AdlStatus.AdlOk !=
             AtiAdlxx.ADL2_Adapter_PMLog_Support_Get(_context, _adapterInfo.AdapterIndex, ref _adlPmLogSupportInfo))
             return;
         int i = 0;
-        while (_adlPmLogSupportInfo.usSensors[i] != (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES)
+        while (_adlPmLogSupportInfo.usSensors[i] != (ushort)AdlpmLogSensors.AdlSensorMaxtypes)
         {
             adlPmLogStartInput.usSensors[i] = _adlPmLogSupportInfo.usSensors[i];
             i++;
         }
 
-        adlPmLogStartInput.usSensors[i] = (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES;
+        adlPmLogStartInput.usSensors[i] = (ushort)AdlpmLogSensors.AdlSensorMaxtypes;
         adlPmLogStartInput.ulSampleRate = _pmLogSampleRate;
 
-        _adlPmLogStartOutput = new AtiAdlxx.ADLPMLogStartOutput();
+        _adlPmLogStartOutput = new AdlpmLogStartOutput();
         if (AtiAdlxx.ADL2_Adapter_PMLog_Start(_context,
                 _adapterInfo.AdapterIndex,
                 ref adlPmLogStartInput,
                 ref _adlPmLogStartOutput,
-                _device) == AtiAdlxx.ADLStatus.ADL_OK)
+                _device) == AdlStatus.AdlOk)
         {
             _pmLogStarted = true;
         }
@@ -477,16 +478,16 @@ internal sealed class AmdGpu : GpuBase
         int enabled = 0;
         int version = 0;
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Overdrive_Caps)) &&
-            AtiAdlxx.ADL2_Overdrive_Caps(_context, _adapterInfo.AdapterIndex, ref frameMetricsSupported, ref enabled, ref version) == AtiAdlxx.ADLStatus.ADL_OK)
+            AtiAdlxx.ADL2_Overdrive_Caps(_context, _adapterInfo.AdapterIndex, ref frameMetricsSupported, ref enabled, ref version) == AdlStatus.AdlOk)
         {
-            _overdriveApiSupported = frameMetricsSupported == AtiAdlxx.ADL_TRUE;
+            _overdriveApiSupported = frameMetricsSupported == AtiAdlxx.AdlTrue;
             _currentOverdriveApiLevel = version;
         }
         else
         {
-            AtiAdlxx.ADLOD6Capabilities capabilities = new();
+            Adlod6Capabilities capabilities = new();
             if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Overdrive6_Capabilities_Get)) && 
-                AtiAdlxx.ADL2_Overdrive6_Capabilities_Get(_context, _adapterInfo.AdapterIndex, ref capabilities) == AtiAdlxx.ADLStatus.ADL_OK && capabilities.iCapabilities > 0)
+                AtiAdlxx.ADL2_Overdrive6_Capabilities_Get(_context, _adapterInfo.AdapterIndex, ref capabilities) == AdlStatus.AdlOk && capabilities.iCapabilities > 0)
             {
                 _overdriveApiSupported = true;
                 _currentOverdriveApiLevel = 6;
@@ -494,7 +495,7 @@ internal sealed class AmdGpu : GpuBase
 
             if (_overdriveApiSupported) return;
             if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_Overdrive5_ODParameters_Get)) &&
-                AtiAdlxx.ADL2_Overdrive5_ODParameters_Get(_context, _adapterInfo.AdapterIndex, out AtiAdlxx.ADLODParameters p) == AtiAdlxx.ADLStatus.ADL_OK &&
+                AtiAdlxx.ADL2_Overdrive5_ODParameters_Get(_context, _adapterInfo.AdapterIndex, out AdlodParameters p) == AdlStatus.AdlOk &&
                 p.iActivityReportingSupported > 0)
             {
                 _overdriveApiSupported = true;
@@ -510,64 +511,63 @@ internal sealed class AmdGpu : GpuBase
     /// <summary>
     /// Update power sensors.
     /// </summary>
-    /// <returns></returns>
     private void UpdatePowerSensors()
     {
         if (_overdriveApiSupported && _currentOverdriveApiLevel >= 6)
         {
-            GetOd6Power(AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_TOTAL_POWER, _powerTotal);
-            GetOd6Power(AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_PPT_POWER, _powerPpt);
-            GetOd6Power(AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_SOCKET_POWER, _powerSoC);
-            GetOd6Power(AtiAdlxx.ADLODNCurrentPowerType.ODN_GPU_CHIP_POWER, _powerCore);
+            GetOd6Power(AdlodnCurrentPowerType.OdnGpuTotalPower, _powerTotal);
+            GetOd6Power(AdlodnCurrentPowerType.OdnGpuPptPower, _powerPpt);
+            GetOd6Power(AdlodnCurrentPowerType.OdnGpuSocketPower, _powerSoC);
+            GetOd6Power(AdlodnCurrentPowerType.OdnGpuChipPower, _powerCore);
         }
 
         if (_overdriveApiSupported && _currentOverdriveApiLevel < 8) return;
 
         _overdrive8LogExists = false;
-        AtiAdlxx.ADLPMLogDataOutput logDataOutput = new();
+        AdlpmLogDataOutput logDataOutput = new();
         if (AtiAdlxx.ADL_Method_Exists(nameof(AtiAdlxx.ADL2_New_QueryPMLogData_Get)) &&
-            AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterInfo.AdapterIndex, ref logDataOutput) == AtiAdlxx.ADLStatus.ADL_OK)
+            AtiAdlxx.ADL2_New_QueryPMLogData_Get(_context, _adapterInfo.AdapterIndex, ref logDataOutput) == AdlStatus.AdlOk)
         {
             _overdrive8LogExists = true;
         }
 
-        AtiAdlxx.ADLPMLogData adlPmLogData = new();
+        AdlpmLogData adlPmLogData = new();
         if (_pmLogStarted)
         {
-            adlPmLogData = (AtiAdlxx.ADLPMLogData)Marshal.PtrToStructure(_adlPmLogStartOutput.pLoggingAddress, typeof(AtiAdlxx.ADLPMLogData))!;
+            adlPmLogData = (AdlpmLogData)Marshal.PtrToStructure(_adlPmLogStartOutput.pLoggingAddress, typeof(AdlpmLogData))!;
         }
 
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_GFXCLK, _coreClock, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_SOCCLK, _socClock);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_CLK_MEMCLK, _memoryClock, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogClkGfxclk, _coreClock, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogClkSocclk, _socClock);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogClkMemclk, _memoryClock, reset: false);
 
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_EDGE, _temperatureCore, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_MEM, _temperatureMemory, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_VRVDDC, _temperatureVddc, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_VRMVDD, _temperatureMvdd, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_LIQUID, _temperatureLiquid, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_PLX, _temperaturePlx, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_HOTSPOT, _temperatureHotSpot, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_TEMPERATURE_SOC, _temperatureSoC);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperatureEdge, _temperatureCore, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperatureMem, _temperatureMemory, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperatureVrvddc, _temperatureVddc, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperatureVrmvdd, _temperatureMvdd, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperatureLiquid, _temperatureLiquid, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperaturePlx, _temperaturePlx, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperatureHotspot, _temperatureHotSpot, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogTemperatureSoc, _temperatureSoC);
 
 
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_FAN_RPM, _fan, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_FAN_PERCENTAGE, _controlSensor, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogFanRpm, _fan, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogFanPercentage, _controlSensor, reset: false);
 
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_GFX_VOLTAGE, _coreVoltage, 0.001f, false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_SOC_VOLTAGE, _socVoltage, 0.001f);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_MEM_VOLTAGE, _memoryVoltage, 0.001f);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogGfxVoltage, _coreVoltage, 0.001f, false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogSocVoltage, _socVoltage, 0.001f);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogMemVoltage, _memoryVoltage, 0.001f);
 
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_INFO_ACTIVITY_GFX, _coreLoad, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_INFO_ACTIVITY_MEM, _memoryLoad);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogInfoActivityGfx, _coreLoad, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogInfoActivityMem, _memoryLoad);
 
-        if (_adlGcnInfo.ASICFamilyId >= (int)AtiAdlxx.GCNFamilies.FAMILY_NV3 || !GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_ASIC_POWER, _powerTotal, reset: false))
+        if (_adlGcnInfo.ASICFamilyId >= (int)GcnFamilies.FamilyNv3 || !GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogAsicPower, _powerTotal, reset: false))
         {
-            GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_BOARD_POWER, _powerTotal, reset: false);
+            GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogBoardPower, _powerTotal, reset: false);
         }
 
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_GFX_POWER, _powerCore, reset: false);
-        GetAdlSensor(adlPmLogData, logDataOutput, AtiAdlxx.ADLPMLogSensors.ADL_PMLOG_SOC_POWER, _powerSoC, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogGfxPower, _powerCore, reset: false);
+        GetAdlSensor(adlPmLogData, logDataOutput, AdlpmLogSensors.AdlPmlogSocPower, _powerSoC, reset: false);
     }
 
     /// <summary>
@@ -666,11 +666,11 @@ internal sealed class AmdGpu : GpuBase
     /// <returns>
     ///   <c>true</c> if [is sensor supported by pm log] [the specified sensor type]; otherwise, <c>false</c>.
     /// </returns>
-    private bool IsSensorSupportedByPmLog(AtiAdlxx.ADLPMLogSensors sensorType)
+    private bool IsSensorSupportedByPmLog(AdlpmLogSensors sensorType)
     {
         if (!_pmLogStarted || sensorType == 0) return false;
 
-        for (int i = 0; i < AtiAdlxx.ADL_PMLOG_MAX_SENSORS; i++)
+        for (int i = 0; i < AtiAdlxx.AdlPmlogMaxSensors; i++)
         {
             if (_adlPmLogSupportInfo.usSensors[i] != (int)sensorType) continue;
             return true;
@@ -690,8 +690,8 @@ internal sealed class AmdGpu : GpuBase
     /// <returns>
     /// true if sensor is supported, false otherwise
     /// </returns>
-    private bool GetAdlSensor(AtiAdlxx.ADLPMLogData adlPmLogData, AtiAdlxx.ADLPMLogDataOutput od8Log,
-                              AtiAdlxx.ADLPMLogSensors sensorType, Sensor sensor, float factor = 1.0f, bool reset = true)
+    private bool GetAdlSensor(AdlpmLogData adlPmLogData, AdlpmLogDataOutput od8Log,
+                              AdlpmLogSensors sensorType, Sensor sensor, float factor = 1.0f, bool reset = true)
     {
         int i = (int)sensorType;
         bool supportedByPmLog = IsSensorSupportedByPmLog(sensorType);
@@ -725,7 +725,7 @@ internal sealed class AmdGpu : GpuBase
             {
                 for (int k = 0; k < adlPmLogData.ulValues.Length - 1; k += 2)
                 {
-                    if (adlPmLogData.ulValues[k] == (ushort)AtiAdlxx.ADLPMLogSensors.ADL_SENSOR_MAXTYPES) break;
+                    if (adlPmLogData.ulValues[k] == (ushort)AdlpmLogSensors.AdlSensorMaxtypes) break;
                     if (adlPmLogData.ulValues[k] != i) continue;
                     
                     sensor.Value = adlPmLogData.ulValues[k + 1] * factor;
@@ -761,8 +761,8 @@ internal sealed class AmdGpu : GpuBase
     /// </summary>
     private void GetOd5CurrentActivity()
     {
-        AtiAdlxx.ADLPMActivity adlpmActivity = new();
-        if (AtiAdlxx.ADL2_Overdrive5_CurrentActivity_Get(_context, _adapterInfo.AdapterIndex, ref adlpmActivity) == AtiAdlxx.ADLStatus.ADL_OK)
+        AdlpmActivity adlpmActivity = new();
+        if (AtiAdlxx.ADL2_Overdrive5_CurrentActivity_Get(_context, _adapterInfo.AdapterIndex, ref adlpmActivity) == AdlStatus.AdlOk)
         {
             if (adlpmActivity.iEngineClock > 0)
             {
@@ -813,8 +813,8 @@ internal sealed class AmdGpu : GpuBase
     /// <param name="sensor">The sensor.</param>
     private void GetOd5FanSpeed(int speedType, Sensor sensor)
     {
-        AtiAdlxx.ADLFanSpeedValue fanSpeedValue = new() { iSpeedType = speedType };
-        if (AtiAdlxx.ADL2_Overdrive5_FanSpeed_Get(_context, _adapterInfo.AdapterIndex, 0, ref fanSpeedValue) == AtiAdlxx.ADLStatus.ADL_OK)
+        AdlFanSpeedValue fanSpeedValue = new() { iSpeedType = speedType };
+        if (AtiAdlxx.ADL2_Overdrive5_FanSpeed_Get(_context, _adapterInfo.AdapterIndex, 0, ref fanSpeedValue) == AdlStatus.AdlOk)
         {
             sensor.Value = fanSpeedValue.iFanSpeed;
             ActivateSensor(sensor);
@@ -831,8 +831,8 @@ internal sealed class AmdGpu : GpuBase
     /// <param name="temperatureCore">The temperature core.</param>
     private void GetOd5Temperature(Sensor temperatureCore)
     {
-        AtiAdlxx.ADLTemperature temperature = new();
-        if (AtiAdlxx.ADL2_Overdrive5_Temperature_Get(_context, _adapterInfo.AdapterIndex, 0, ref temperature) == AtiAdlxx.ADLStatus.ADL_OK)
+        AdlTemperature temperature = new();
+        if (AtiAdlxx.ADL2_Overdrive5_Temperature_Get(_context, _adapterInfo.AdapterIndex, 0, ref temperature) == AdlStatus.AdlOk)
         {
             temperatureCore.Value = 0.001f * temperature.iTemperature;
             ActivateSensor(temperatureCore);
@@ -851,7 +851,7 @@ internal sealed class AmdGpu : GpuBase
     /// <param name="minTemperature">The minimum temperature.</param>
     /// <param name="scale">The scale.</param>
     /// <param name="reset">If set to <c>true</c>, resets the sensor value to <c>null</c>.</param>
-    private void GetOdnTemperature(AtiAdlxx.ADLODNTemperatureType type, Sensor sensor, double minTemperature = -256, double scale = 1, bool reset = true)
+    private void GetOdnTemperature(AdlodnTemperatureType type, Sensor sensor, double minTemperature = -256, double scale = 1, bool reset = true)
     {
         // If a sensor isn't available, some cards report 54000 degrees C.
         // 110C is expected for Navi, so 256C should be enough to use as a maximum.
@@ -860,7 +860,7 @@ internal sealed class AmdGpu : GpuBase
         minTemperature = (int)(minTemperature / scale);
 
         int temperature = 0;
-        if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterInfo.AdapterIndex, type, ref temperature) == AtiAdlxx.ADLStatus.ADL_OK &&
+        if (AtiAdlxx.ADL2_OverdriveN_Temperature_Get(_context, _adapterInfo.AdapterIndex, type, ref temperature) == AdlStatus.AdlOk &&
             temperature >= minTemperature &&
             temperature <= maxTemperature)
         {
@@ -882,10 +882,10 @@ internal sealed class AmdGpu : GpuBase
     /// </summary>
     /// <param name="type">The type.</param>
     /// <param name="sensor">The sensor.</param>
-    private void GetOd6Power(AtiAdlxx.ADLODNCurrentPowerType type, Sensor sensor)
+    private void GetOd6Power(AdlodnCurrentPowerType type, Sensor sensor)
     {
         int powerOf8 = 0;
-        if (AtiAdlxx.ADL2_Overdrive6_CurrentPower_Get(_context, _adapterInfo.AdapterIndex, type, ref powerOf8) == AtiAdlxx.ADLStatus.ADL_OK)
+        if (AtiAdlxx.ADL2_Overdrive6_CurrentPower_Get(_context, _adapterInfo.AdapterIndex, type, ref powerOf8) == AdlStatus.AdlOk)
         {
             sensor.Value = powerOf8 >> 8;
             ActivateSensor(sensor);

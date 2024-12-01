@@ -1,12 +1,5 @@
-﻿
-
-
-
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
-
-// ReSharper disable InconsistentNaming
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
 

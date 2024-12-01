@@ -10,6 +10,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.IPMI;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
@@ -44,7 +45,7 @@ internal class Ipmi : ISuperIo
     private readonly ManagementObject _ipmi;
     private readonly Manufacturer _manufacturer;
 
-    private readonly List<Interop.Ipmi.Sdr> _sdrs = new();
+    private readonly List<Sdr> _sdrs = new();
     private readonly List<string> _temperatureNames = new();
     private readonly List<float> _temperatures = new();
     private readonly List<string> _voltageNames = new();
@@ -231,8 +232,8 @@ internal class Ipmi : ISuperIo
 
                     fixed (byte* pSdr = sdrRaw)
                     {
-                        Interop.Ipmi.Sdr sdr =
-                            (Interop.Ipmi.Sdr)Marshal.PtrToStructure((nint)pSdr + 3, typeof(Interop.Ipmi.Sdr));
+                        Sdr sdr =
+                            (Sdr)Marshal.PtrToStructure((nint)pSdr + 3, typeof(Sdr));
                         _sdrs.Add(sdr);
                         stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " +
                                                   BitConverter.ToString(sdrRaw).Replace("-", ""));
@@ -241,7 +242,7 @@ internal class Ipmi : ISuperIo
             }
         }
 
-        foreach (Interop.Ipmi.Sdr sdr in _sdrs)
+        foreach (Sdr sdr in _sdrs)
         {
             if (sdr.rectype != 1) continue;
 
@@ -415,7 +416,7 @@ internal class Ipmi : ISuperIo
     /// <param name="sdr">The SDR.</param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    private static float RawToFloat(byte sensorReading, Interop.Ipmi.Sdr sdr)
+    private static float RawToFloat(byte sensorReading, Sdr sdr)
     {
         double reading = sensorReading;
 

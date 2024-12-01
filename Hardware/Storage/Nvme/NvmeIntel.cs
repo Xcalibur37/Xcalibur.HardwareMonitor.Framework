@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Nvme;
 
@@ -18,39 +19,39 @@ internal class NvmeIntel : INvmeDrive
     /// <param name="hDevice">The h device.</param>
     /// <param name="data">The data.</param>
     /// <returns></returns>
-    public bool HealthInfoLog(SafeHandle hDevice, out Kernel32.NVME_HEALTH_INFO_LOG data)
+    public bool HealthInfoLog(SafeHandle hDevice, out NvmeHealthInfoLog data)
     {
-        data = Kernel32.CreateStruct<Kernel32.NVME_HEALTH_INFO_LOG>();
+        data = Kernel32.CreateStruct<NvmeHealthInfoLog>();
         if (hDevice?.IsInvalid != false) return false;
 
         bool result = false;
 
-        Kernel32.NVME_PASS_THROUGH_IOCTL passThrough = Kernel32.CreateStruct<Kernel32.NVME_PASS_THROUGH_IOCTL>();
-        passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<Kernel32.SRB_IO_CONTROL>();
-        passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNVMeMiniPortSignature1);
+        NvmePassThroughIoctl passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
+        passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<SrbIoControl>();
+        passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNvMeMiniPortSignature1);
         passThrough.srb.Timeout = 10;
-        passThrough.srb.ControlCode = Kernel32.NVME_PASS_THROUGH_SRB_IO_CODE;
+        passThrough.srb.ControlCode = Kernel32.NvmePassThroughSrbIoCode;
         passThrough.srb.ReturnCode = 0;
-        passThrough.srb.Length = (uint)Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>() - (uint)Marshal.SizeOf<Kernel32.SRB_IO_CONTROL>();
-        passThrough.NVMeCmd[0] = (uint)Kernel32.STORAGE_PROTOCOL_NVME_DATA_TYPE.NVMeDataTypeLogPage; // GetLogPage
+        passThrough.srb.Length = (uint)Marshal.SizeOf<NvmePassThroughIoctl>() - (uint)Marshal.SizeOf<SrbIoControl>();
+        passThrough.NVMeCmd[0] = (uint)StorageProtocolNvmeDataType.NvMeDataTypeLogPage; // GetLogPage
         passThrough.NVMeCmd[1] = 0xFFFFFFFF; // address
         passThrough.NVMeCmd[10] = 0x007f0002; // uint cdw10 = 0x000000002 | (((size / 4) - 1) << 16);
-        passThrough.Direction = Kernel32.NVME_DIRECTION.NVME_FROM_DEV_TO_HOST;
+        passThrough.Direction = NvmeDirection.NvmeFromDevToHost;
         passThrough.QueueId = 0;
         passThrough.DataBufferLen = (uint)passThrough.DataBuffer.Length;
         passThrough.MetaDataLen = 0;
-        passThrough.ReturnBufferLen = (uint)Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>();
+        passThrough.ReturnBufferLen = (uint)Marshal.SizeOf<NvmePassThroughIoctl>();
 
-        int length = Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>();
+        int length = Marshal.SizeOf<NvmePassThroughIoctl>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
-            nint offset = Marshal.OffsetOf<Kernel32.NVME_PASS_THROUGH_IOCTL>(nameof(Kernel32.NVME_PASS_THROUGH_IOCTL.DataBuffer));
+            nint offset = Marshal.OffsetOf<NvmePassThroughIoctl>(nameof(NvmePassThroughIoctl.DataBuffer));
             var newPtr = nint.Add(buffer, offset.ToInt32());
-            data = Marshal.PtrToStructure<Kernel32.NVME_HEALTH_INFO_LOG>(newPtr);
+            data = Marshal.PtrToStructure<NvmeHealthInfoLog>(newPtr);
             Marshal.FreeHGlobal(buffer);
             result = true;
         }
@@ -74,46 +75,46 @@ internal class NvmeIntel : INvmeDrive
     /// <param name="hDevice">The h device.</param>
     /// <param name="data">The data.</param>
     /// <returns></returns>
-    public bool IdentifyController(SafeHandle hDevice, out Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data)
+    public bool IdentifyController(SafeHandle hDevice, out NvmeIdentifyControllerData data)
     {
-        data = Kernel32.CreateStruct<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>();
+        data = Kernel32.CreateStruct<NvmeIdentifyControllerData>();
         if (hDevice?.IsInvalid != false) return false;
 
         bool result = false;
 
-        Kernel32.NVME_PASS_THROUGH_IOCTL passThrough = Kernel32.CreateStruct<Kernel32.NVME_PASS_THROUGH_IOCTL>();
-        passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<Kernel32.SRB_IO_CONTROL>();
-        passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNVMeMiniPortSignature1);
+        NvmePassThroughIoctl passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
+        passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<SrbIoControl>();
+        passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNvMeMiniPortSignature1);
         passThrough.srb.Timeout = 10;
-        passThrough.srb.ControlCode = Kernel32.NVME_PASS_THROUGH_SRB_IO_CODE;
+        passThrough.srb.ControlCode = Kernel32.NvmePassThroughSrbIoCode;
         passThrough.srb.ReturnCode = 0;
-        passThrough.srb.Length = (uint)Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>() - (uint)Marshal.SizeOf<Kernel32.SRB_IO_CONTROL>();
+        passThrough.srb.Length = (uint)Marshal.SizeOf<NvmePassThroughIoctl>() - (uint)Marshal.SizeOf<SrbIoControl>();
         passThrough.NVMeCmd = new uint[16];
         passThrough.NVMeCmd[0] = 6; //identify
         passThrough.NVMeCmd[10] = 1; //return to host
-        passThrough.Direction = Kernel32.NVME_DIRECTION.NVME_FROM_DEV_TO_HOST;
+        passThrough.Direction = NvmeDirection.NvmeFromDevToHost;
         passThrough.QueueId = 0;
         passThrough.DataBufferLen = (uint)passThrough.DataBuffer.Length;
         passThrough.MetaDataLen = 0;
-        passThrough.ReturnBufferLen = (uint)Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>();
+        passThrough.ReturnBufferLen = (uint)Marshal.SizeOf<NvmePassThroughIoctl>();
 
-        int length = Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>();
+        int length = Marshal.SizeOf<NvmePassThroughIoctl>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, Kernel32.IOCTL.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
-            nint offset = Marshal.OffsetOf<Kernel32.NVME_PASS_THROUGH_IOCTL>(nameof(Kernel32.NVME_PASS_THROUGH_IOCTL.DataBuffer));
+            nint offset = Marshal.OffsetOf<NvmePassThroughIoctl>(nameof(NvmePassThroughIoctl.DataBuffer));
             var newPtr = nint.Add(buffer, offset.ToInt32());
-            int finalSize = Marshal.SizeOf<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>();
-            nint ptr = Marshal.AllocHGlobal(Marshal.SizeOf<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>());
+            int finalSize = Marshal.SizeOf<NvmeIdentifyControllerData>();
+            nint ptr = Marshal.AllocHGlobal(Marshal.SizeOf<NvmeIdentifyControllerData>());
             Kernel32.RtlZeroMemory(ptr, finalSize);
             int len = Math.Min(finalSize, passThrough.DataBuffer.Length);
             Kernel32.RtlCopyMemory(ptr, newPtr, (uint)len);
             Marshal.FreeHGlobal(buffer);
 
-            data = Marshal.PtrToStructure<Kernel32.NVME_IDENTIFY_CONTROLLER_DATA>(ptr);
+            data = Marshal.PtrToStructure<NvmeIdentifyControllerData>(ptr);
             Marshal.FreeHGlobal(ptr);
             result = true;
         }
@@ -135,27 +136,27 @@ internal class NvmeIntel : INvmeDrive
         SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.Scsi);
         if (handle?.IsInvalid != false) return null;
 
-        Kernel32.NVME_PASS_THROUGH_IOCTL passThrough = Kernel32.CreateStruct<Kernel32.NVME_PASS_THROUGH_IOCTL>();
-        passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<Kernel32.SRB_IO_CONTROL>();
-        passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNVMeMiniPortSignature1);
+        NvmePassThroughIoctl passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
+        passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<SrbIoControl>();
+        passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNvMeMiniPortSignature1);
         passThrough.srb.Timeout = 10;
-        passThrough.srb.ControlCode = Kernel32.NVME_PASS_THROUGH_SRB_IO_CODE;
+        passThrough.srb.ControlCode = Kernel32.NvmePassThroughSrbIoCode;
         passThrough.srb.ReturnCode = 0;
-        passThrough.srb.Length = (uint)Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>() - (uint)Marshal.SizeOf<Kernel32.SRB_IO_CONTROL>();
+        passThrough.srb.Length = (uint)Marshal.SizeOf<NvmePassThroughIoctl>() - (uint)Marshal.SizeOf<SrbIoControl>();
         passThrough.NVMeCmd = new uint[16];
         passThrough.NVMeCmd[0] = 6; //identify
         passThrough.NVMeCmd[10] = 1; //return to host
-        passThrough.Direction = Kernel32.NVME_DIRECTION.NVME_FROM_DEV_TO_HOST;
+        passThrough.Direction = NvmeDirection.NvmeFromDevToHost;
         passThrough.QueueId = 0;
         passThrough.DataBufferLen = (uint)passThrough.DataBuffer.Length;
         passThrough.MetaDataLen = 0;
-        passThrough.ReturnBufferLen = (uint)Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>();
+        passThrough.ReturnBufferLen = (uint)Marshal.SizeOf<NvmePassThroughIoctl>();
 
-        int length = Marshal.SizeOf<Kernel32.NVME_PASS_THROUGH_IOCTL>();
+        int length = Marshal.SizeOf<NvmePassThroughIoctl>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = Kernel32.DeviceIoControl(handle, Kernel32.IOCTL.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
         Marshal.FreeHGlobal(buffer);
 
         if (validTransfer) { }

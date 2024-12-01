@@ -1,183 +1,126 @@
-﻿
-
-
-
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
-
-// ReSharper disable InconsistentNaming
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.FTDI;
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
 
-internal static class Ftd2xx
+/// <summary>
+/// FTDI Chip D2XX Drivers
+/// </summary>
+internal static class Ftd2Xx
 {
     private const string DllName = "Ftd2xx.dll";
 
+    /// <summary>
+    /// Checks if the DLL exists.
+    /// </summary>
+    /// <returns></returns>
     public static bool DllExists()
     {
         IntPtr module = Kernel32.LoadLibrary(DllName);
-        if (module == IntPtr.Zero)
-            return false;
-
+        if (module == IntPtr.Zero) return false;
         Kernel32.FreeLibrary(module);
         return true;
     }
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_CreateDeviceInfoList(out uint numDevices);
+    public static extern FtStatus FT_CreateDeviceInfoList(out uint numDevices);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_GetDeviceInfoList([Out] FT_DEVICE_INFO_NODE[] deviceInfoNodes, ref uint length);
+    public static extern FtStatus FT_GetDeviceInfoList([Out] FtDeviceInfoNode[] deviceInfoNodes, ref uint length);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_Open(int device, out FT_HANDLE handle);
+    public static extern FtStatus FT_Open(int device, out FtHandle handle);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_Close(FT_HANDLE handle);
+    public static extern FtStatus FT_Close(FtHandle handle);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_SetBaudRate(FT_HANDLE handle, uint baudRate);
+    public static extern FtStatus FT_SetBaudRate(FtHandle handle, uint baudRate);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_SetDataCharacteristics(FT_HANDLE handle, byte wordLength, byte stopBits, byte parity);
+    public static extern FtStatus FT_SetDataCharacteristics(FtHandle handle, byte wordLength, byte stopBits, byte parity);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_SetFlowControl(FT_HANDLE handle, FT_FLOW_CONTROL flowControl, byte xon, byte xoff);
+    public static extern FtStatus FT_SetFlowControl(FtHandle handle, FtFlowControl flowControl, byte xon, byte xoff);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_SetTimeouts(FT_HANDLE handle, uint readTimeout, uint writeTimeout);
+    public static extern FtStatus FT_SetTimeouts(FtHandle handle, uint readTimeout, uint writeTimeout);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_Write(FT_HANDLE handle, byte[] buffer, uint bytesToWrite, out uint bytesWritten);
+    public static extern FtStatus FT_Write(FtHandle handle, byte[] buffer, uint bytesToWrite, out uint bytesWritten);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_Purge(FT_HANDLE handle, FT_PURGE mask);
+    public static extern FtStatus FT_Purge(FtHandle handle, FtPurge mask);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_GetStatus(FT_HANDLE handle, out uint amountInRxQueue, out uint amountInTxQueue, out uint eventStatus);
+    public static extern FtStatus FT_GetStatus(FtHandle handle, out uint amountInRxQueue, out uint amountInTxQueue, out uint eventStatus);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_Read(FT_HANDLE handle, [Out] byte[] buffer, uint bytesToRead, out uint bytesReturned);
+    public static extern FtStatus FT_Read(FtHandle handle, [Out] byte[] buffer, uint bytesToRead, out uint bytesReturned);
 
     [DllImport(DllName)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    public static extern FT_STATUS FT_ReadByte(FT_HANDLE handle, out byte buffer, uint bytesToRead, out uint bytesReturned);
+    public static extern FtStatus FT_ReadByte(FtHandle handle, out byte buffer, uint bytesToRead, out uint bytesReturned);
 
-    public static FT_STATUS Write(FT_HANDLE handle, byte[] buffer)
+    /// <summary>
+    /// Writes the specified handle.
+    /// </summary>
+    /// <param name="handle">The handle.</param>
+    /// <param name="buffer">The buffer.</param>
+    /// <returns></returns>
+    public static FtStatus Write(FtHandle handle, byte[] buffer)
     {
-        FT_STATUS status = FT_Write(handle, buffer, (uint)buffer.Length, out uint bytesWritten);
-        if (bytesWritten != buffer.Length)
-            return FT_STATUS.FT_FAILED_TO_WRITE_DEVICE;
-
-        return status;
+        FtStatus status = FT_Write(handle, buffer, (uint)buffer.Length, out uint bytesWritten);
+        return bytesWritten != buffer.Length ? FtStatus.FtFailedToWriteDevice : status;
     }
 
-    public static int BytesToRead(FT_HANDLE handle)
+    /// <summary>
+    /// Bytes to read.
+    /// </summary>
+    /// <param name="handle">The handle.</param>
+    /// <returns></returns>
+    public static int BytesToRead(FtHandle handle)
     {
-        if (FT_GetStatus(handle, out uint amountInRxQueue, out uint _, out uint _) == FT_STATUS.FT_OK)
-            return (int)amountInRxQueue;
-
-        return 0;
+        return FT_GetStatus(handle, out uint amountInRxQueue, out uint _, out uint _) == FtStatus.FtOk
+            ? (int)amountInRxQueue
+            : 0;
     }
 
-    public static byte ReadByte(FT_HANDLE handle)
+    /// <summary>
+    /// Reads the byte.
+    /// </summary>
+    /// <param name="handle">The handle.</param>
+    /// <returns></returns>
+    /// <exception cref="System.InvalidOperationException"></exception>
+    public static byte ReadByte(FtHandle handle)
     {
-        FT_STATUS status = FT_ReadByte(handle, out byte buffer, 1, out uint bytesReturned);
-        if (status != FT_STATUS.FT_OK || bytesReturned != 1)
-            throw new InvalidOperationException();
-
-        return buffer;
+        FtStatus status = FT_ReadByte(handle, out byte buffer, 1, out uint bytesReturned);
+        return status != FtStatus.FtOk || bytesReturned != 1 ? throw new InvalidOperationException() : buffer;
     }
 
-    public static void Read(FT_HANDLE handle, byte[] buffer)
+    /// <summary>
+    /// Reads the specified handle.
+    /// </summary>
+    /// <param name="handle">The handle.</param>
+    /// <param name="buffer">The buffer.</param>
+    /// <exception cref="System.InvalidOperationException"></exception>
+    public static void Read(FtHandle handle, byte[] buffer)
     {
-        FT_STATUS status = FT_Read(handle, buffer, (uint)buffer.Length, out uint bytesReturned);
-        if (status != FT_STATUS.FT_OK || bytesReturned != buffer.Length)
-            throw new InvalidOperationException();
-    }
-
-    internal enum FT_DEVICE : uint
-    {
-        FT_DEVICE_232BM,
-        FT_DEVICE_232AM,
-        FT_DEVICE_100AX,
-        FT_DEVICE_UNKNOWN,
-        FT_DEVICE_2232C,
-        FT_DEVICE_232R,
-        FT_DEVICE_2232H,
-        FT_DEVICE_4232H
-    }
-
-    internal enum FT_STATUS
-    {
-        FT_OK,
-        FT_INVALID_HANDLE,
-        FT_DEVICE_NOT_FOUND,
-        FT_DEVICE_NOT_OPENED,
-        FT_IO_ERROR,
-        FT_INSUFFICIENT_RESOURCES,
-        FT_INVALID_PARAMETER,
-        FT_INVALID_BAUD_RATE,
-        FT_DEVICE_NOT_OPENED_FOR_ERASE,
-        FT_DEVICE_NOT_OPENED_FOR_WRITE,
-        FT_FAILED_TO_WRITE_DEVICE,
-        FT_EEPROM_READ_FAILED,
-        FT_EEPROM_WRITE_FAILED,
-        FT_EEPROM_ERASE_FAILED,
-        FT_EEPROM_NOT_PRESENT,
-        FT_EEPROM_NOT_PROGRAMMED,
-        FT_INVALID_ARGS,
-        FT_OTHER_ERROR
-    }
-
-    internal enum FT_FLOW_CONTROL : ushort
-    {
-        FT_FLOW_DTR_DSR = 512,
-        FT_FLOW_NONE = 0,
-        FT_FLOW_RTS_CTS = 256,
-        FT_FLOW_XON_XOFF = 1024
-    }
-
-    internal enum FT_PURGE : uint
-    {
-        FT_PURGE_RX = 1,
-        FT_PURGE_TX = 2,
-        FT_PURGE_ALL = 3
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct FT_HANDLE
-    {
-        private readonly IntPtr _handle;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct FT_DEVICE_INFO_NODE
-    {
-        public uint Flags;
-        public FT_DEVICE Type;
-        public uint ID;
-        public uint LocId;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
-        public string SerialNumber;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string Description;
-
-        public FT_HANDLE Handle;
+        FtStatus status = FT_Read(handle, buffer, (uint)buffer.Length, out uint bytesReturned);
+        if (status == FtStatus.FtOk && bytesReturned == buffer.Length) return;
+        throw new InvalidOperationException();
     }
 }

@@ -66,11 +66,11 @@ internal class SsdSandForce : AtaStorage
     /// Updates the additional sensors.
     /// </summary>
     /// <param name="values">The values.</param>
-    protected override void UpdateAdditionalSensors(Kernel32.SMART_ATTRIBUTE[] values)
+    protected override void UpdateAdditionalSensors(Interop.Models.Kernel32.SmartAttribute[] values)
     {
         float? controllerWritesToNand = null;
         float? hostWritesToController = null;
-        foreach (Kernel32.SMART_ATTRIBUTE value in values)
+        foreach (Interop.Models.Kernel32.SmartAttribute value in values)
         {
             if (value.Id == 0xE9)
             {

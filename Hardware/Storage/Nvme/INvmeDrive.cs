@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Nvme;
 
@@ -14,7 +15,7 @@ internal interface INvmeDrive
     /// <param name="hDevice">The h device.</param>
     /// <param name="data">The data.</param>
     /// <returns></returns>
-    bool HealthInfoLog(SafeHandle hDevice, out Kernel32.NVME_HEALTH_INFO_LOG data);
+    bool HealthInfoLog(SafeHandle hDevice, out NvmeHealthInfoLog data);
 
     /// <summary>
     /// Identifies the specified storage information.
@@ -29,5 +30,5 @@ internal interface INvmeDrive
     /// <param name="hDevice">The h device.</param>
     /// <param name="data">The data.</param>
     /// <returns></returns>
-    bool IdentifyController(SafeHandle hDevice, out Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data);
+    bool IdentifyController(SafeHandle hDevice, out NvmeIdentifyControllerData data);
 }

@@ -7,6 +7,17 @@ using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Cooler;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Display;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.DynamicPStates;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Fans;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.GPU;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Level;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.ML;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Power;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Thermal;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Usages;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Nvidia;
 
@@ -19,8 +30,8 @@ internal sealed class NvidiaGpu : GpuBase
     #region Fields
 
     private readonly int _adapterIndex;
-    private readonly NvApi.NvDisplayHandle? _displayHandle;
-    private readonly NvApi.NvPhysicalGpuHandle _handle;
+    private readonly NvDisplayHandle? _displayHandle;
+    private readonly NvPhysicalGpuHandle _handle;
 
     private Sensor[] _clocks;
     private int _clockVersion;
@@ -41,7 +52,7 @@ internal sealed class NvidiaGpu : GpuBase
     private Sensor _memoryTotal;
     private Sensor _memoryUsed;
     private Sensor _memoryLoad;
-    private NvidiaML.NvmlDevice? _nvmlDevice;
+    private NvmlDevice? _nvmlDevice;
     private Sensor _pcieThroughputRx;
     private Sensor _pcieThroughputTx;
     private Sensor[] _powers;
@@ -70,7 +81,7 @@ internal sealed class NvidiaGpu : GpuBase
     /// <param name="handle">The handle.</param>
     /// <param name="displayHandle">The display handle.</param>
     /// <param name="settings">The settings.</param>
-    public NvidiaGpu(int adapterIndex, NvApi.NvPhysicalGpuHandle handle, NvApi.NvDisplayHandle? displayHandle, ISettings settings)
+    public NvidiaGpu(int adapterIndex, NvPhysicalGpuHandle handle, NvDisplayHandle? displayHandle, ISettings settings)
         : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _adapterIndex = adapterIndex;
@@ -128,9 +139,9 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="handle">The handle.</param>
     /// <returns></returns>
-    private static string GetName(NvApi.NvPhysicalGpuHandle handle)
+    private static string GetName(NvPhysicalGpuHandle handle)
     {
-        if (NvApi.NvAPI_GPU_GetFullName(handle, out string gpuName) == NvApi.NvStatus.OK)
+        if (NvApi.NvAPI_GPU_GetFullName(handle, out string gpuName) == NvStatus.OK)
         {
             string name = gpuName.Trim();
             return name.StartsWith("NVIDIA", StringComparison.OrdinalIgnoreCase) ? name : "NVIDIA " + name;
@@ -144,21 +155,21 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvMemoryInfo GetMemoryInfo(out NvApi.NvStatus status)
+    private NvMemoryInfo GetMemoryInfo(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetMemoryInfo == null || _displayHandle == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        NvApi.NvMemoryInfo memoryInfo = new()
+        NvMemoryInfo memoryInfo = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvMemoryInfo>(2)
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvMemoryInfo>(2)
         };
 
         status = NvApi.NvAPI_GPU_GetMemoryInfo(_displayHandle.Value, ref memoryInfo);
-        return status == NvApi.NvStatus.OK ? memoryInfo : default;
+        return status == NvStatus.OK ? memoryInfo : default;
     }
 
     /// <summary>
@@ -166,21 +177,21 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvGpuClockFrequencies GetClockFrequencies(out NvApi.NvStatus status)
+    private NvGpuClockFrequencies GetClockFrequencies(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetAllClockFrequencies == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        NvApi.NvGpuClockFrequencies clockFrequencies = new()
+        NvGpuClockFrequencies clockFrequencies = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvGpuClockFrequencies>(_clockVersion)
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvGpuClockFrequencies>(_clockVersion)
         };
 
         status = NvApi.NvAPI_GPU_GetAllClockFrequencies(_handle, ref clockFrequencies);
-        return status == NvApi.NvStatus.OK ? clockFrequencies : default;
+        return status == NvStatus.OK ? clockFrequencies : default;
     }
 
     /// <summary>
@@ -188,22 +199,22 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvThermalSettings GetThermalSettings(out NvApi.NvStatus status)
+    private NvThermalSettings GetThermalSettings(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetThermalSettings == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        NvApi.NvThermalSettings settings = new()
+        NvThermalSettings settings = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSettings>(1),
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvThermalSettings>(1),
             Count = NvApi.MAX_THERMAL_SENSORS_PER_GPU
         };
 
-        status = NvApi.NvAPI_GPU_GetThermalSettings(_handle, (int)NvApi.NvThermalTarget.All, ref settings);
-        return status == NvApi.NvStatus.OK ? settings : default;
+        status = NvApi.NvAPI_GPU_GetThermalSettings(_handle, (int)NvThermalTarget.All, ref settings);
+        return status == NvStatus.OK ? settings : default;
     }
 
     /// <summary>
@@ -212,22 +223,22 @@ internal sealed class NvidiaGpu : GpuBase
     /// <param name="mask">The mask.</param>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvThermalSensors GetThermalSensors(uint mask, out NvApi.NvStatus status)
+    private NvThermalSensors GetThermalSensors(uint mask, out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_ThermalGetSensors == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        var thermalSensors = new NvApi.NvThermalSensors
+        var thermalSensors = new NvThermalSensors
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvThermalSensors>(2),
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvThermalSensors>(2),
             Mask = mask
         };
 
         status = NvApi.NvAPI_GPU_ThermalGetSensors(_handle, ref thermalSensors);
-        return status == NvApi.NvStatus.OK ? thermalSensors : default;
+        return status == NvStatus.OK ? thermalSensors : default;
     }
 
     /// <summary>
@@ -235,22 +246,22 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvFanCoolersStatus GetFanCoolersStatus(out NvApi.NvStatus status)
+    private NvFanCoolersStatus GetFanCoolersStatus(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_ClientFanCoolersGetStatus == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        var coolers = new NvApi.NvFanCoolersStatus
+        var coolers = new NvFanCoolersStatus
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolersStatus>(1),
-            Items = new NvApi.NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvFanCoolersStatus>(1),
+            Items = new NvFanCoolersStatusItem[NvApi.MAX_FAN_COOLERS_STATUS_ITEMS]
         };
 
         status = NvApi.NvAPI_GPU_ClientFanCoolersGetStatus(_handle, ref coolers);
-        return status == NvApi.NvStatus.OK ? coolers : default;
+        return status == NvStatus.OK ? coolers : default;
     }
 
     /// <summary>
@@ -258,21 +269,21 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvFanCoolerControl GetFanCoolersControllers(out NvApi.NvStatus status)
+    private NvFanCoolerControl GetFanCoolersControllers(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_ClientFanCoolersGetControl == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        var controllers = new NvApi.NvFanCoolerControl
+        var controllers = new NvFanCoolerControl
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvFanCoolerControl>(1)
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvFanCoolerControl>(1)
         };
 
         status = NvApi.NvAPI_GPU_ClientFanCoolersGetControl(_handle, ref controllers);
-        return status == NvApi.NvStatus.OK ? controllers : default;
+        return status == NvStatus.OK ? controllers : default;
     }
 
     /// <summary>
@@ -280,22 +291,22 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvCoolerSettings GetCoolerSettings(out NvApi.NvStatus status)
+    private NvCoolerSettings GetCoolerSettings(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetCoolerSettings == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        NvApi.NvCoolerSettings settings = new()
+        NvCoolerSettings settings = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvCoolerSettings>(2),
-            Cooler = new NvApi.NvCooler[NvApi.MAX_COOLERS_PER_GPU]
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvCoolerSettings>(2),
+            Cooler = new NvCooler[NvApi.MAX_COOLERS_PER_GPU]
         };
 
-        status = NvApi.NvAPI_GPU_GetCoolerSettings(_handle, NvApi.NvCoolerTarget.All, ref settings);
-        return status == NvApi.NvStatus.OK ? settings : default;
+        status = NvApi.NvAPI_GPU_GetCoolerSettings(_handle, NvCoolerTarget.All, ref settings);
+        return status == NvStatus.OK ? settings : default;
     }
 
     /// <summary>
@@ -303,22 +314,22 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvDynamicPStatesInfo GetDynamicPStatesInfoEx(out NvApi.NvStatus status)
+    private NvDynamicPStatesInfo GetDynamicPStatesInfoEx(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetDynamicPstatesInfoEx == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        NvApi.NvDynamicPStatesInfo pStatesInfo = new()
+        NvDynamicPStatesInfo pStatesInfo = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvDynamicPStatesInfo>(1),
-            Utilizations = new NvApi.NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvDynamicPStatesInfo>(1),
+            Utilizations = new NvDynamicPState[NvApi.MAX_GPU_UTILIZATIONS]
         };
 
         status = NvApi.NvAPI_GPU_GetDynamicPstatesInfoEx(_handle, ref pStatesInfo);
-        return status == NvApi.NvStatus.OK ? pStatesInfo : default;
+        return status == NvStatus.OK ? pStatesInfo : default;
     }
 
     /// <summary>
@@ -326,21 +337,21 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvUsages GetUsages(out NvApi.NvStatus status)
+    private NvUsages GetUsages(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetUsages == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        NvApi.NvUsages usages = new()
+        NvUsages usages = new()
         {
-            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvUsages>(1)
+            Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvUsages>(1)
         };
 
         status = NvApi.NvAPI_GPU_GetUsages(_handle, ref usages);
-        return status == NvApi.NvStatus.OK ? usages : default;
+        return status == NvStatus.OK ? usages : default;
     }
 
     /// <summary>
@@ -348,21 +359,21 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private NvApi.NvPowerTopology GetPowerTopology(out NvApi.NvStatus status)
+    private NvPowerTopology GetPowerTopology(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_ClientPowerTopologyGetStatus == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
-        NvApi.NvPowerTopology powerTopology = new()
+        NvPowerTopology powerTopology = new()
         {
-            Version = NvApi.MAKE_NVAPI_VERSION<NvApi.NvPowerTopology>(1)
+            Version = NvApi.MAKE_NVAPI_VERSION<NvPowerTopology>(1)
         };
 
         status = NvApi.NvAPI_GPU_ClientPowerTopologyGetStatus(_handle, ref powerTopology);
-        return status == NvApi.NvStatus.OK ? powerTopology : default;
+        return status == NvStatus.OK ? powerTopology : default;
     }
 
     /// <summary>
@@ -370,11 +381,11 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    private int GetTachReading(out NvApi.NvStatus status)
+    private int GetTachReading(out NvStatus status)
     {
         if (NvApi.NvAPI_GPU_GetTachReading == null)
         {
-            status = NvApi.NvStatus.Error;
+            status = NvStatus.Error;
             return default;
         }
 
@@ -387,12 +398,12 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="utilizationDomain">The utilization domain.</param>
     /// <returns></returns>
-    private static string GetUtilizationDomainName(NvApi.NvUtilizationDomain utilizationDomain) => utilizationDomain switch
+    private static string GetUtilizationDomainName(NvUtilizationDomain utilizationDomain) => utilizationDomain switch
     {
-        NvApi.NvUtilizationDomain.Gpu => "GPU Core",
-        NvApi.NvUtilizationDomain.FrameBuffer => "GPU Memory Controller",
-        NvApi.NvUtilizationDomain.VideoEngine => "GPU Video Engine",
-        NvApi.NvUtilizationDomain.BusInterface => "GPU Bus",
+        NvUtilizationDomain.Gpu => "GPU Core",
+        NvUtilizationDomain.FrameBuffer => "GPU Memory Controller",
+        NvUtilizationDomain.VideoEngine => "GPU Video Engine",
+        NvUtilizationDomain.BusInterface => "GPU Bus",
         _ => null
     };
 
@@ -423,20 +434,19 @@ internal sealed class NvidiaGpu : GpuBase
     {
         int index = control.Sensor?.Index ?? 0;
 
-        NvApi.NvCoolerLevels coolerLevels = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvCoolerLevels>(1), Levels = new NvApi.NvLevel[NvApi.MAX_COOLERS_PER_GPU] };
+        NvCoolerLevels coolerLevels = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvCoolerLevels>(1), Levels = new NvLevel[NvApi.MAX_COOLERS_PER_GPU] };
         coolerLevels.Levels[0].Level = (int)control.SoftwareValue;
-        coolerLevels.Levels[0].Policy = NvApi.NvLevelPolicy.Manual;
-        if (NvApi.NvAPI_GPU_SetCoolerLevels(_handle, index, ref coolerLevels) == NvApi.NvStatus.OK)
-            return;
+        coolerLevels.Levels[0].Policy = NvLevelPolicy.Manual;
+        if (NvApi.NvAPI_GPU_SetCoolerLevels(_handle, index, ref coolerLevels) == NvStatus.OK) return;
 
-        NvApi.NvFanCoolerControl fanCoolersControllers = GetFanCoolersControllers(out _);
+        NvFanCoolerControl fanCoolersControllers = GetFanCoolersControllers(out _);
 
         for (int i = 0; i < fanCoolersControllers.Count; i++)
         {
-            NvApi.NvFanCoolerControlItem nvFanCoolerControlItem = fanCoolersControllers.Items[i];
+            NvFanCoolerControlItem nvFanCoolerControlItem = fanCoolersControllers.Items[i];
             if (nvFanCoolerControlItem.CoolerId == index)
             {
-                nvFanCoolerControlItem.ControlMode = NvApi.NvFanControlMode.Manual;
+                nvFanCoolerControlItem.ControlMode = NvFanControlMode.Manual;
                 nvFanCoolerControlItem.Level = (uint)control.SoftwareValue;
 
                 fanCoolersControllers.Items[i] = nvFanCoolerControlItem;
@@ -453,19 +463,18 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void RestoreDefaultFanBehavior(int index)
     {
-        NvApi.NvCoolerLevels coolerLevels = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvApi.NvCoolerLevels>(1), Levels = new NvApi.NvLevel[NvApi.MAX_COOLERS_PER_GPU] };
-        coolerLevels.Levels[0].Policy = NvApi.NvLevelPolicy.Auto;
-        if (NvApi.NvAPI_GPU_SetCoolerLevels(_handle, index, ref coolerLevels) == NvApi.NvStatus.OK)
-            return;
+        NvCoolerLevels coolerLevels = new() { Version = (uint)NvApi.MAKE_NVAPI_VERSION<NvCoolerLevels>(1), Levels = new NvLevel[NvApi.MAX_COOLERS_PER_GPU] };
+        coolerLevels.Levels[0].Policy = NvLevelPolicy.Auto;
+        if (NvApi.NvAPI_GPU_SetCoolerLevels(_handle, index, ref coolerLevels) == NvStatus.OK) return;
 
-        NvApi.NvFanCoolerControl fanCoolersControllers = GetFanCoolersControllers(out _);
+        NvFanCoolerControl fanCoolersControllers = GetFanCoolersControllers(out _);
 
         for (int i = 0; i < fanCoolersControllers.Count; i++)
         {
-            NvApi.NvFanCoolerControlItem nvFanCoolerControlItem = fanCoolersControllers.Items[i];
+            NvFanCoolerControlItem nvFanCoolerControlItem = fanCoolersControllers.Items[i];
             if (nvFanCoolerControlItem.CoolerId == index)
             {
-                nvFanCoolerControlItem.ControlMode = NvApi.NvFanControlMode.Auto;
+                nvFanCoolerControlItem.ControlMode = NvFanControlMode.Auto;
                 nvFanCoolerControlItem.Level = 0;
 
                 fanCoolersControllers.Items[i] = nvFanCoolerControlItem;
@@ -483,23 +492,23 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void CreateThermalSensors()
     {
-        NvApi.NvThermalSettings thermalSettings = GetThermalSettings(out NvApi.NvStatus status);
-        if (status != NvApi.NvStatus.OK || thermalSettings.Count <= 0) return;
+        NvThermalSettings thermalSettings = GetThermalSettings(out NvStatus status);
+        if (status != NvStatus.OK || thermalSettings.Count <= 0) return;
 
         // Thermal sensors
         _temperatures = new Sensor[thermalSettings.Count];
         for (int i = 0; i < thermalSettings.Count; i++)
         {
-            NvApi.NvSensor sensor = thermalSettings.Sensor[i];
+            NvSensor sensor = thermalSettings.Sensor[i];
             string name = sensor.Target switch
             {
-                NvApi.NvThermalTarget.Gpu => "GPU Core",
-                NvApi.NvThermalTarget.Memory => "GPU Memory",
-                NvApi.NvThermalTarget.PowerSupply => "GPU Power Supply",
-                NvApi.NvThermalTarget.Board => "GPU Board",
-                NvApi.NvThermalTarget.VisualComputingBoard => "GPU Visual Computing Board",
-                NvApi.NvThermalTarget.VisualComputingInlet => "GPU Visual Computing Inlet",
-                NvApi.NvThermalTarget.VisualComputingOutlet => "GPU Visual Computing Outlet",
+                NvThermalTarget.Gpu => "GPU Core",
+                NvThermalTarget.Memory => "GPU Memory",
+                NvThermalTarget.PowerSupply => "GPU Power Supply",
+                NvThermalTarget.Board => "GPU Board",
+                NvThermalTarget.VisualComputingBoard => "GPU Visual Computing Board",
+                NvThermalTarget.VisualComputingInlet => "GPU Visual Computing Inlet",
+                NvThermalTarget.VisualComputingOutlet => "GPU Visual Computing Outlet",
                 _ => "GPU"
             };
 
@@ -516,9 +525,9 @@ internal sealed class NvidiaGpu : GpuBase
         {
             // Find the maximum thermal sensor mask value.
             _thermalSensorsMask = 1u << thermalSensorsMaxBit;
-            GetThermalSensors(_thermalSensorsMask, out NvApi.NvStatus thermalSensorsStatus);
+            GetThermalSensors(_thermalSensorsMask, out NvStatus thermalSensorsStatus);
 
-            if (thermalSensorsStatus == NvApi.NvStatus.OK)
+            if (thermalSensorsStatus == NvStatus.OK)
             {
                 hasAnyThermalSensor = true;
                 continue;
@@ -540,14 +549,14 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void UpdateThermalSensors()
     {
-        NvApi.NvStatus status;
+        NvStatus status;
 
         if (_temperatures is { Length: > 0 })
         {
-            NvApi.NvThermalSettings settings = GetThermalSettings(out status);
+            NvThermalSettings settings = GetThermalSettings(out status);
             // settings.Count is 0 when no valid data available, this happens when you try to read out this
             // value with a high polling interval.
-            if (status == NvApi.NvStatus.OK && settings.Count > 0)
+            if (status == NvStatus.OK && settings.Count > 0)
             {
                 _temperatures.Apply(x => x.Value = settings.Sensor[x.Index].CurrentTemp);
             }
@@ -555,8 +564,8 @@ internal sealed class NvidiaGpu : GpuBase
 
         if (_thermalSensorsMask > 0)
         {
-            NvApi.NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
-            if (status == NvApi.NvStatus.OK)
+            NvThermalSensors thermalSensors = GetThermalSensors(_thermalSensorsMask, out status);
+            if (status == NvStatus.OK)
             {
                 _hotSpotTemperature.Value = thermalSensors.Temperatures[1] / 256.0f;
                 _memoryJunctionTemperature.Value = thermalSensors.Temperatures[9] / 256.0f;
@@ -591,20 +600,20 @@ internal sealed class NvidiaGpu : GpuBase
         {
             _clockVersion = clockVersion;
 
-            NvApi.NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out var status);
-            if (status != NvApi.NvStatus.OK) continue;
+            NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out var status);
+            if (status != NvStatus.OK) continue;
             var clocks = new List<Sensor>();
             for (int i = 0; i < clockFrequencies.Clocks.Length; i++)
             {
-                NvApi.NvGpuClockFrequenciesDomain clock = clockFrequencies.Clocks[i];
-                if (!clock.IsPresent || !Enum.IsDefined(typeof(NvApi.NvGpuPublicClockId), i)) continue;
-                var clockId = (NvApi.NvGpuPublicClockId)i;
+                NvGpuClockFrequenciesDomain clock = clockFrequencies.Clocks[i];
+                if (!clock.IsPresent || !Enum.IsDefined(typeof(NvGpuPublicClockId), i)) continue;
+                var clockId = (NvGpuPublicClockId)i;
                 string name = clockId switch
                 {
-                    NvApi.NvGpuPublicClockId.Graphics => "GPU Core",
-                    NvApi.NvGpuPublicClockId.Memory => "GPU Memory",
-                    NvApi.NvGpuPublicClockId.Processor => "GPU Shader",
-                    NvApi.NvGpuPublicClockId.Video => "GPU Video",
+                    NvGpuPublicClockId.Graphics => "GPU Core",
+                    NvGpuPublicClockId.Memory => "GPU Memory",
+                    NvGpuPublicClockId.Processor => "GPU Shader",
+                    NvGpuPublicClockId.Video => "GPU Video",
                     _ => null
                 };
 
@@ -630,14 +639,14 @@ internal sealed class NvidiaGpu : GpuBase
     {
         if (_clocks is not { Length: > 0 }) return;
 
-        NvApi.NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out var status);
-        if (status != NvApi.NvStatus.OK) return;
+        NvGpuClockFrequencies clockFrequencies = GetClockFrequencies(out var status);
+        if (status != NvStatus.OK) return;
 
         int current = 0;
         for (int i = 0; i < clockFrequencies.Clocks.Length; i++)
         {
-            NvApi.NvGpuClockFrequenciesDomain clock = clockFrequencies.Clocks[i];
-            if (clock.IsPresent && Enum.IsDefined(typeof(NvApi.NvGpuPublicClockId), i))
+            NvGpuClockFrequenciesDomain clock = clockFrequencies.Clocks[i];
+            if (clock.IsPresent && Enum.IsDefined(typeof(NvGpuPublicClockId), i))
             {
                 _clocks[current++].Value = clock.Frequency / 1000f;
             }
@@ -651,14 +660,14 @@ internal sealed class NvidiaGpu : GpuBase
     private void CreateFanSensors()
     {
         // Fan coolers
-        NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out var status);
-        if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
+        NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out var status);
+        if (status == NvStatus.OK && fanCoolers.Count > 0)
         {
             _fans = new Sensor[fanCoolers.Count];
 
             for (int i = 0; i < fanCoolers.Count; i++)
             {
-                NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
+                NvFanCoolersStatusItem item = fanCoolers.Items[i];
 
                 string name = "GPU Fan" + (fanCoolers.Count > 1 ? " " + (i + 1) : string.Empty);
 
@@ -669,7 +678,7 @@ internal sealed class NvidiaGpu : GpuBase
         else
         {
             GetTachReading(out status);
-            if (status == NvApi.NvStatus.OK)
+            if (status == NvStatus.OK)
             {
                 _fans = [new Sensor("GPU", 1, SensorType.Fan, this, Settings)];
                 ActivateSensor(_fans[0]);
@@ -677,20 +686,20 @@ internal sealed class NvidiaGpu : GpuBase
         }
 
         // Fan controllers
-        NvApi.NvFanCoolerControl fanControllers = GetFanCoolersControllers(out status);
-        if (status == NvApi.NvStatus.OK && fanControllers.Count > 0 && fanCoolers.Count > 0)
+        NvFanCoolerControl fanControllers = GetFanCoolersControllers(out status);
+        if (status == NvStatus.OK && fanControllers.Count > 0 && fanCoolers.Count > 0)
         {
             _controls = new Sensor[fanControllers.Count];
             _fanControls = new Control[fanControllers.Count];
 
             for (int i = 0; i < fanControllers.Count; i++)
             {
-                NvApi.NvFanCoolerControlItem item = fanControllers.Items[i];
+                NvFanCoolerControlItem item = fanControllers.Items[i];
 
                 string name = "GPU Fan" + (fanControllers.Count > 1 ? " " + (i + 1) : string.Empty);
 
-                NvApi.NvFanCoolersStatusItem fanItem = Array.Find(fanCoolers.Items, x => x.CoolerId == item.CoolerId);
-                if (fanItem.Equals(default(NvApi.NvFanCoolersStatusItem))) continue;
+                NvFanCoolersStatusItem fanItem = Array.Find(fanCoolers.Items, x => x.CoolerId == item.CoolerId);
+                if (fanItem.Equals(default(NvFanCoolersStatusItem))) continue;
 
                 _controls[i] = new Sensor(name, (int)item.CoolerId, SensorType.Control, this, Settings);
                 ActivateSensor(_controls[i]);
@@ -705,15 +714,15 @@ internal sealed class NvidiaGpu : GpuBase
         }
         else
         {
-            NvApi.NvCoolerSettings coolerSettings = GetCoolerSettings(out status);
-            if (status != NvApi.NvStatus.OK || coolerSettings.Count <= 0) return;
+            NvCoolerSettings coolerSettings = GetCoolerSettings(out status);
+            if (status != NvStatus.OK || coolerSettings.Count <= 0) return;
 
             _controls = new Sensor[coolerSettings.Count];
             _fanControls = new Control[coolerSettings.Count];
 
             for (int i = 0; i < coolerSettings.Count; i++)
             {
-                NvApi.NvCooler cooler = coolerSettings.Cooler[i];
+                NvCooler cooler = coolerSettings.Cooler[i];
                 string name = "GPU Fan" + (coolerSettings.Count > 1 ? " " + cooler.Controller : string.Empty);
 
                 _controls[i] = new Sensor(name, i, SensorType.Control, this, Settings);
@@ -735,21 +744,21 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void UpdateFanSensors()
     {
-        NvApi.NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out var status);
+        NvFanCoolersStatus fanCoolers = GetFanCoolersStatus(out var status);
         if (_fans is { Length: > 0 })
         {
-            if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0)
+            if (status == NvStatus.OK && fanCoolers.Count > 0)
             {
                 for (int i = 0; i < fanCoolers.Count; i++)
                 {
-                    NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
+                    NvFanCoolersStatusItem item = fanCoolers.Items[i];
                     _fans[i].Value = item.CurrentRpm;
                 }
             }
             else
             {
                 int tachReading = GetTachReading(out status);
-                if (status == NvApi.NvStatus.OK)
+                if (status == NvStatus.OK)
                 {
                     _fans[0].Value = tachReading;
                 }
@@ -759,23 +768,23 @@ internal sealed class NvidiaGpu : GpuBase
         if (_controls is not { Length: > 0 }) return;
 
 
-        if (status == NvApi.NvStatus.OK && fanCoolers.Count > 0 && fanCoolers.Count == _controls.Length)
+        if (status == NvStatus.OK && fanCoolers.Count > 0 && fanCoolers.Count == _controls.Length)
         {
             for (int i = 0; i < fanCoolers.Count; i++)
             {
-                NvApi.NvFanCoolersStatusItem item = fanCoolers.Items[i];
+                NvFanCoolersStatusItem item = fanCoolers.Items[i];
 
-                if (Array.Find(_controls, c => c.Index == item.CoolerId) is { } control)
-                    control.Value = item.CurrentLevel;
+                if (Array.Find(_controls, c => c.Index == item.CoolerId) is not { } control) continue;
+                control.Value = item.CurrentLevel;
             }
         }
         else
         {
-            NvApi.NvCoolerSettings coolerSettings = GetCoolerSettings(out status);
-            if (status != NvApi.NvStatus.OK || coolerSettings.Count <= 0) return;
+            NvCoolerSettings coolerSettings = GetCoolerSettings(out status);
+            if (status != NvStatus.OK || coolerSettings.Count <= 0) return;
             for (int i = 0; i < coolerSettings.Count; i++)
             {
-                NvApi.NvCooler cooler = coolerSettings.Cooler[i];
+                NvCooler cooler = coolerSettings.Cooler[i];
                 _controls[i].Value = cooler.CurrentLevel;
             }
         }
@@ -788,15 +797,15 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void CreateLoadSensors()
     {
-        NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPStatesInfoEx(out var pStateStatus);
-        if (pStateStatus == NvApi.NvStatus.OK)
+        NvDynamicPStatesInfo pStatesInfo = GetDynamicPStatesInfoEx(out var pStateStatus);
+        if (pStateStatus == NvStatus.OK)
         {
             var loads = new List<Sensor>();
             for (int index = 0; index < pStatesInfo.Utilizations.Length; index++)
             {
-                NvApi.NvDynamicPState load = pStatesInfo.Utilizations[index];
-                if (!load.IsPresent || !Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index)) continue;
-                var utilizationDomain = (NvApi.NvUtilizationDomain)index;
+                NvDynamicPState load = pStatesInfo.Utilizations[index];
+                if (!load.IsPresent || !Enum.IsDefined(typeof(NvUtilizationDomain), index)) continue;
+                var utilizationDomain = (NvUtilizationDomain)index;
                 string name = GetUtilizationDomainName(utilizationDomain);
 
                 if (name != null)
@@ -814,20 +823,18 @@ internal sealed class NvidiaGpu : GpuBase
         else
         {
             var usages = GetUsages(out var usageStatus);
-            if (usageStatus == NvApi.NvStatus.OK)
+            if (usageStatus == NvStatus.OK)
             {
                 var loads = new List<Sensor>();
                 for (int index = 0; index < usages.Entries.Length; index++)
                 {
-                    NvApi.NvUsagesEntry load = usages.Entries[index];
-                    if (load.IsPresent <= 0 || !Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index)) continue;
-                    var utilizationDomain = (NvApi.NvUtilizationDomain)index;
+                    NvUsagesEntry load = usages.Entries[index];
+                    if (load.IsPresent <= 0 || !Enum.IsDefined(typeof(NvUtilizationDomain), index)) continue;
+                    var utilizationDomain = (NvUtilizationDomain)index;
                     string name = GetUtilizationDomainName(utilizationDomain);
 
-                    if (name != null)
-                    {
-                        loads.Add(new Sensor(name, index, SensorType.Load, this, Settings));
-                    }
+                    if (name == null) continue;
+                    loads.Add(new Sensor(name, index, SensorType.Load, this, Settings));
                 }
 
                 if (loads.Count > 0)
@@ -852,13 +859,13 @@ internal sealed class NvidiaGpu : GpuBase
     private void UpdateLoadSensors()
     {
         if (_loads is not { Length: > 0 }) return;
-        NvApi.NvDynamicPStatesInfo pStatesInfo = GetDynamicPStatesInfoEx(out var status);
-        if (status == NvApi.NvStatus.OK)
+        NvDynamicPStatesInfo pStatesInfo = GetDynamicPStatesInfoEx(out var status);
+        if (status == NvStatus.OK)
         {
             for (int index = 0; index < pStatesInfo.Utilizations.Length; index++)
             {
-                NvApi.NvDynamicPState load = pStatesInfo.Utilizations[index];
-                if (load.IsPresent && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
+                NvDynamicPState load = pStatesInfo.Utilizations[index];
+                if (load.IsPresent && Enum.IsDefined(typeof(NvUtilizationDomain), index))
                 {
                     _loads[index].Value = load.Percentage;
                 }
@@ -866,12 +873,12 @@ internal sealed class NvidiaGpu : GpuBase
         }
         else
         {
-            NvApi.NvUsages usages = GetUsages(out status);
-            if (status != NvApi.NvStatus.OK) return;
+            NvUsages usages = GetUsages(out status);
+            if (status != NvStatus.OK) return;
             for (int index = 0; index < usages.Entries.Length; index++)
             {
-                NvApi.NvUsagesEntry load = usages.Entries[index];
-                if (load.IsPresent > 0 && Enum.IsDefined(typeof(NvApi.NvUtilizationDomain), index))
+                NvUsagesEntry load = usages.Entries[index];
+                if (load.IsPresent > 0 && Enum.IsDefined(typeof(NvUtilizationDomain), index))
                 {
                     _loads[index].Value = load.Percentage;
                 }
@@ -880,8 +887,8 @@ internal sealed class NvidiaGpu : GpuBase
 
         if (_displayHandle == null) return;
 
-        NvApi.NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
-        if (status != NvApi.NvStatus.OK) return;
+        NvMemoryInfo memoryInfo = GetMemoryInfo(out status);
+        if (status != NvStatus.OK) return;
 
         uint free = memoryInfo.CurrentAvailableDedicatedVideoMemory;
         uint total = memoryInfo.DedicatedVideoMemory;
@@ -905,16 +912,16 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void CreatePowerSensors()
     {
-        NvApi.NvPowerTopology powerTopology = GetPowerTopology(out NvApi.NvStatus powerStatus);
-        if (powerStatus != NvApi.NvStatus.OK || powerTopology.Count <= 0) return;
+        NvPowerTopology powerTopology = GetPowerTopology(out NvStatus powerStatus);
+        if (powerStatus != NvStatus.OK || powerTopology.Count <= 0) return;
         _powers = new Sensor[powerTopology.Count];
         for (int i = 0; i < powerTopology.Count; i++)
         {
-            NvApi.NvPowerTopologyEntry entry = powerTopology.Entries[i];
+            NvPowerTopologyEntry entry = powerTopology.Entries[i];
             string name = entry.Domain switch
             {
-                NvApi.NvPowerTopologyDomain.Gpu => "GPU Power",
-                NvApi.NvPowerTopologyDomain.Board => "GPU Board Power",
+                NvPowerTopologyDomain.Gpu => "GPU Power",
+                NvPowerTopologyDomain.Board => "GPU Board Power",
                 _ => null
             };
 
@@ -932,12 +939,12 @@ internal sealed class NvidiaGpu : GpuBase
     {
         if (_powers is not { Length: > 0 }) return;
 
-        NvApi.NvPowerTopology powerTopology = GetPowerTopology(out var status);
-        if (status != NvApi.NvStatus.OK || powerTopology.Count <= 0) return;
+        NvPowerTopology powerTopology = GetPowerTopology(out var status);
+        if (status != NvStatus.OK || powerTopology.Count <= 0) return;
 
         for (int i = 0; i < powerTopology.Count; i++)
         {
-            NvApi.NvPowerTopologyEntry entry = powerTopology.Entries[i];
+            NvPowerTopologyEntry entry = powerTopology.Entries[i];
             _powers[i].Value = entry.PowerUsage / 1000f;
         }
     }
@@ -948,19 +955,17 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void CreateNvmlSensors()
     {
-        bool hasBusId = NvApi.NvAPI_GPU_GetBusId(_handle, out uint busId) == NvApi.NvStatus.OK;
-        if (NvidiaML.IsAvailable || NvidiaML.Initialize())
-        {
-            _nvmlDevice = hasBusId
-                ? NvidiaML.NvmlDeviceGetHandleByPciBusId($" 0000:{busId:X2}:00.0") ??
-                  NvidiaML.NvmlDeviceGetHandleByIndex(_adapterIndex)
-                : NvidiaML.NvmlDeviceGetHandleByIndex(_adapterIndex);
-            if (!_nvmlDevice.HasValue) return;
+        bool hasBusId = NvApi.NvAPI_GPU_GetBusId(_handle, out uint busId) == NvStatus.OK;
+        if (!NvidiaMl.IsAvailable && !NvidiaMl.Initialize()) return;
+        _nvmlDevice = hasBusId
+            ? NvidiaMl.NvmlDeviceGetHandleByPciBusId($" 0000:{busId:X2}:00.0") ??
+              NvidiaMl.NvmlDeviceGetHandleByIndex(_adapterIndex)
+            : NvidiaMl.NvmlDeviceGetHandleByIndex(_adapterIndex);
+        if (!_nvmlDevice.HasValue) return;
 
-            _powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, Settings);
-            _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, Settings);
-            _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, Settings);
-        }
+        _powerUsage = new Sensor("GPU Package", 0, SensorType.Power, this, Settings);
+        _pcieThroughputRx = new Sensor("GPU PCIe Rx", 0, SensorType.Throughput, this, Settings);
+        _pcieThroughputTx = new Sensor("GPU PCIe Tx", 1, SensorType.Throughput, this, Settings);
     }
 
     /// <summary>
@@ -969,9 +974,9 @@ internal sealed class NvidiaGpu : GpuBase
     /// <returns></returns>
     private void UpdateNvmlSensors()
     {
-        if (!NvidiaML.IsAvailable || !_nvmlDevice.HasValue) return;
+        if (!NvidiaMl.IsAvailable || !_nvmlDevice.HasValue) return;
 
-        int? result = NvidiaML.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
+        int? result = NvidiaMl.NvmlDeviceGetPowerUsage(_nvmlDevice.Value);
         if (result.HasValue)
         {
             _powerUsage.Value = result.Value / 1000f;
@@ -979,14 +984,14 @@ internal sealed class NvidiaGpu : GpuBase
         }
 
         // In MB/s, throughput sensors are passed as in KB/s.
-        uint? rx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.RxBytes);
+        uint? rx = NvidiaMl.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvmlPcieUtilCounter.RxBytes);
         if (rx.HasValue)
         {
             _pcieThroughputRx.Value = rx * 1024;
             ActivateSensor(_pcieThroughputRx);
         }
 
-        uint? tx = NvidiaML.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvidiaML.NvmlPcieUtilCounter.TxBytes);
+        uint? tx = NvidiaMl.NvmlDeviceGetPcieThroughput(_nvmlDevice.Value, NvmlPcieUtilCounter.TxBytes);
         if (tx.HasValue)
         {
             _pcieThroughputTx.Value = tx * 1024;
@@ -1001,7 +1006,7 @@ internal sealed class NvidiaGpu : GpuBase
     private void CreateD3dSenors()
     {
         if (Software.OperatingSystem.IsUnix || _nvmlDevice is null) return;
-        var pciInfo = NvidiaML.NvmlDeviceGetPciInfo(_nvmlDevice.Value);
+        var pciInfo = NvidiaMl.NvmlDeviceGetPciInfo(_nvmlDevice.Value);
         if (pciInfo is not { } pci) return;
 
         // Get devices

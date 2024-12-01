@@ -1,5 +1,6 @@
 ﻿using System;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Nvme;
 
@@ -107,7 +108,7 @@ public class NvmeInfo
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="data">The data.</param>
-    public NvmeInfo(int index, Kernel32.NVME_IDENTIFY_CONTROLLER_DATA data)
+    public NvmeInfo(int index, NvmeIdentifyControllerData data)
     {
         Index = index;
         VID = data.VID;

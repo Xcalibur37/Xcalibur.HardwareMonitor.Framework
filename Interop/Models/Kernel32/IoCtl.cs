@@ -1,0 +1,15 @@
+﻿namespace Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32
+{
+    public enum IoCtl : uint
+    {
+        IOCTL_SCSI_PASS_THROUGH = 0x04d004,
+        IOCTL_SCSI_MINIPORT = 0x04d008,
+        IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x04d014,
+        IOCTL_SCSI_GET_ADDRESS = 0x41018,
+        IOCTL_DISK_PERFORMANCE = 0x70020,
+        IOCTL_STORAGE_QUERY_PROPERTY = 0x2D1400,
+        IOCTL_BATTERY_QUERY_TAG = 0x294040,
+        IOCTL_BATTERY_QUERY_INFORMATION = 0x294044,
+        IOCTL_BATTERY_QUERY_STATUS = 0x29404C
+    }
+}

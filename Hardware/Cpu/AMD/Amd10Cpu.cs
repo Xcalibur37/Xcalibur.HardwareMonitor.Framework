@@ -445,7 +445,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
     {
         if (_temperatureStream == null)
         {
-            if (_miscellaneousControlAddress != Interop.Ring0.INVALID_PCI_ADDRESS)
+            if (_miscellaneousControlAddress != Interop.Ring0.InvalidPciAddress)
             {
                 bool isValueValid = _hasSmuTemperatureRegister
                     ? ReadSmuRegister(SMU_REPORTED_TEMP_CTRL_OFFSET, out uint value)

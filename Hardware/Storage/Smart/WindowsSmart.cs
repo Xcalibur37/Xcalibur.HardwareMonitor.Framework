@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using Xcalibur.HardwareMonitor.Framework.Interop;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart;
 
@@ -87,25 +88,25 @@ internal class WindowsSmart : ISmart
             throw new ObjectDisposedException(nameof(WindowsSmart));
         }
 
-        var parameter = new Kernel32.SENDCMDINPARAMS
+        var parameter = new SendCmdInParams
         {
             bDriveNumber = (byte)_driveNumber,
             irDriveRegs =
             {
-                bFeaturesReg = Kernel32.SMART_FEATURES.ENABLE_SMART,
-                bCylLowReg = Kernel32.SMART_LBA_MID,
-                bCylHighReg = Kernel32.SMART_LBA_HI,
-                bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                bFeaturesReg = SmartFeatures.EnableSmart,
+                bCylLowReg = Kernel32.SmartLbaMid,
+                bCylHighReg = Kernel32.SmartLbaHi,
+                bCommandReg = AtaCommand.AtaSmart
             }
         };
 
         return Kernel32.DeviceIoControl(
             _handle,
-            Kernel32.DFP.DFP_SEND_DRIVE_COMMAND,
+            Dfp.DFP_SEND_DRIVE_COMMAND,
             ref parameter,
             Marshal.SizeOf(parameter),
-            out Kernel32.SENDCMDOUTPARAMS _,
-            Marshal.SizeOf<Kernel32.SENDCMDOUTPARAMS>(),
+            out SendCmdOutParams _,
+            Marshal.SizeOf<SendCmdOutParams>(),
             out _,
             nint.Zero);
     }
@@ -115,26 +116,26 @@ internal class WindowsSmart : ISmart
     /// </summary>
     /// <returns></returns>
     /// <exception cref="ObjectDisposedException">WindowsSmart</exception>
-    public Kernel32.SMART_ATTRIBUTE[] ReadSmartData()
+    public Interop.Models.Kernel32.SmartAttribute[] ReadSmartData()
     {
         if (_handle.IsClosed)
         {
             throw new ObjectDisposedException(nameof(WindowsSmart));
         }
 
-        var parameter = new Kernel32.SENDCMDINPARAMS
+        var parameter = new SendCmdInParams
         {
             bDriveNumber = (byte)_driveNumber,
             irDriveRegs = {
-                bFeaturesReg = Kernel32.SMART_FEATURES.SMART_READ_DATA,
-                bCylLowReg = Kernel32.SMART_LBA_MID,
-                bCylHighReg = Kernel32.SMART_LBA_HI,
-                bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                bFeaturesReg = SmartFeatures.SmartReadData,
+                bCylLowReg = Kernel32.SmartLbaMid,
+                bCylHighReg = Kernel32.SmartLbaHi,
+                bCommandReg = AtaCommand.AtaSmart
             }
         };
 
-        var isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
-                                                out Kernel32.ATTRIBUTECMDOUTPARAMS result, Marshal.SizeOf<Kernel32.ATTRIBUTECMDOUTPARAMS>(), out _, nint.Zero);
+        var isValid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+                                                out AttributeCmdOutParams result, Marshal.SizeOf<AttributeCmdOutParams>(), out _, nint.Zero);
         return isValid ? result.Attributes : [];
     }
 
@@ -143,28 +144,28 @@ internal class WindowsSmart : ISmart
     /// </summary>
     /// <returns></returns>
     /// <exception cref="ObjectDisposedException">WindowsSmart</exception>
-    public Kernel32.SMART_THRESHOLD[] ReadSmartThresholds()
+    public SmartThreshold[] ReadSmartThresholds()
     {
         if (_handle.IsClosed)
         {
             throw new ObjectDisposedException(nameof(WindowsSmart));
         }
 
-        var parameter = new Kernel32.SENDCMDINPARAMS
+        var parameter = new SendCmdInParams
         {
             bDriveNumber = (byte)_driveNumber,
             irDriveRegs = {
-                bFeaturesReg = Kernel32.SMART_FEATURES.READ_THRESHOLDS,
-                bCylLowReg = Kernel32.SMART_LBA_MID,
-                bCylHighReg = Kernel32.SMART_LBA_HI,
-                bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                bFeaturesReg = SmartFeatures.ReadThresholds,
+                bCylLowReg = Kernel32.SmartLbaMid,
+                bCylHighReg = Kernel32.SmartLbaHi,
+                bCommandReg = AtaCommand.AtaSmart
             }
         };
 
-        bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
-                                                out Kernel32.THRESHOLDCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.THRESHOLDCMDOUTPARAMS>(), out _, nint.Zero);
+        bool isValid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+                                                out ThresholdCmdOutParams result, Marshal.SizeOf<ThresholdCmdOutParams>(), out _, nint.Zero);
 
-        return isValid ? result.Thresholds : Array.Empty<Kernel32.SMART_THRESHOLD>();
+        return isValid ? result.Thresholds : [];
     }
 
     /// <summary>
@@ -181,14 +182,14 @@ internal class WindowsSmart : ISmart
             throw new ObjectDisposedException(nameof(WindowsSmart));
         }
 
-        var parameter = new Kernel32.SENDCMDINPARAMS
+        var parameter = new SendCmdInParams
         {
             bDriveNumber = (byte)_driveNumber,
-            irDriveRegs = { bCommandReg = Kernel32.ATA_COMMAND.ATA_IDENTIFY_DEVICE }
+            irDriveRegs = { bCommandReg = AtaCommand.AtaIdentifyDevice }
         };
 
-        bool valid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
-                                              out Kernel32.IDENTIFYCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.IDENTIFYCMDOUTPARAMS>(), out _, nint.Zero);
+        bool valid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+                                              out IdentifyCmdOutParams result, Marshal.SizeOf<IdentifyCmdOutParams>(), out _, nint.Zero);
 
         if (!valid)
         {
@@ -209,28 +210,30 @@ internal class WindowsSmart : ISmart
     public bool? ReadSmartHealth()
     {
         if (_handle.IsClosed)
+        {
             throw new ObjectDisposedException(nameof(WindowsSmart));
+        }
 
-        var parameter = new Kernel32.SENDCMDINPARAMS
+        var parameter = new SendCmdInParams
         {
             bDriveNumber = (byte)_driveNumber,
             irDriveRegs = {
-                bFeaturesReg = Kernel32.SMART_FEATURES.RETURN_SMART_STATUS,
-                bCylLowReg = Kernel32.SMART_LBA_MID,
-                bCylHighReg = Kernel32.SMART_LBA_HI,
-                bCommandReg = Kernel32.ATA_COMMAND.ATA_SMART
+                bFeaturesReg = SmartFeatures.ReturnSmartStatus,
+                bCylLowReg = Kernel32.SmartLbaMid,
+                bCylHighReg = Kernel32.SmartLbaHi,
+                bCommandReg = AtaCommand.AtaSmart
             }
         };
 
-        bool isValid = Kernel32.DeviceIoControl(_handle, Kernel32.DFP.DFP_SEND_DRIVE_COMMAND, ref parameter, Marshal.SizeOf(parameter),
-                                                out Kernel32.STATUSCMDOUTPARAMS result, Marshal.SizeOf<Kernel32.STATUSCMDOUTPARAMS>(), out _, nint.Zero);
+        bool isValid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_SEND_DRIVE_COMMAND, ref parameter, Marshal.SizeOf(parameter),
+                                                out StatusCmdOutParams result, Marshal.SizeOf<StatusCmdOutParams>(), out _, nint.Zero);
         if (!isValid) return null;
 
         return result.irDriveRegs.bCylHighReg switch
         {
             // reference: https://github.com/smartmontools/smartmontools/blob/master/smartmontools/atacmds.cpp
-            Kernel32.SMART_LBA_HI when Kernel32.SMART_LBA_MID == result.irDriveRegs.bCylLowReg => true,
-            Kernel32.SMART_LBA_HI_EXCEEDED when Kernel32.SMART_LBA_MID_EXCEEDED == result.irDriveRegs.bCylLowReg =>
+            Kernel32.SmartLbaHi when Kernel32.SmartLbaMid == result.irDriveRegs.bCylLowReg => true,
+            Kernel32.SmartLbaHiExceeded when Kernel32.SmartLbaMidExceeded == result.irDriveRegs.bCylLowReg =>
                 false,
             _ => null
         };

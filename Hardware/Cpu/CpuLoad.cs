@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.NT;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu;
 
@@ -134,16 +135,16 @@ internal class CpuLoad
         idle = null;
         total = null;
 
-        //Query processor idle information
-        Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[] idleInformation = new Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION[64];
-        int idleSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_IDLE_INFORMATION));
-        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
+        // Query processor idle information
+        SystemProcessorIdleInformation[] idleInformation = new SystemProcessorIdleInformation[64];
+        int idleSize = Marshal.SizeOf(typeof(SystemProcessorIdleInformation));
+        if (Interop.NtDll.NtQuerySystemInformation(SystemInformationClass.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
             return false;
 
-        //Query processor performance information
-        Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[] perfInformation = new Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[64];
-        int perfSize = Marshal.SizeOf(typeof(Interop.NtDll.SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION));
-        if (Interop.NtDll.NtQuerySystemInformation(Interop.NtDll.SYSTEM_INFORMATION_CLASS.SystemProcessorPerformanceInformation,
+        // Query processor performance information
+        SystemProcessorPerformanceInformation[] perfInformation = new SystemProcessorPerformanceInformation[64];
+        int perfSize = Marshal.SizeOf(typeof(SystemProcessorPerformanceInformation));
+        if (Interop.NtDll.NtQuerySystemInformation(SystemInformationClass.SystemProcessorPerformanceInformation,
                                                    perfInformation,
                                                    perfInformation.Length * perfSize,
                                                    out int perfReturn) != 0)
