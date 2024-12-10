@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
 

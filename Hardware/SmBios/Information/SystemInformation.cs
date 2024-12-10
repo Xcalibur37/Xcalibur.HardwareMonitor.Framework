@@ -15,7 +15,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.SmBios.Information
         /// <param name="version">The version.</param>
         /// <param name="serialNumber">The serial number.</param>
         /// <param name="family">The family.</param>
-        /// <param name="wakeUp">The wake up.</param>
+        /// <param name="wakeUp">The wake-up.</param>
         internal SystemInformation
         (
             string manufacturerName,

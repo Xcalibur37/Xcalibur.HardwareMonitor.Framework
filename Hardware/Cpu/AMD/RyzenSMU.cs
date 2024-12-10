@@ -1,31 +1,27 @@
-﻿// ported from: https://gitlab.com/leogx9r/ryzen_smu
-// and: https://github.com/irusanov/SMUDebugTool
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
-
-// ReSharper disable InconsistentNaming
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD;
 
 /// <summary>
 /// Ryzen SMU
 /// </summary>
-internal class RyzenSMU
+internal class RyzenSmu
 {
     #region Fields
 
-    private const byte SMU_PCI_ADDR_REG = 0xC4;
-    private const byte SMU_PCI_DATA_REG = 0xC8;
-    private const uint SMU_REQ_MAX_ARGS = 6;
-    private const uint SMU_RETRIES_MAX = 8096;
+    private const byte SmuPciAddrReg = 0xC4;
+    private const byte SmuPciDataReg = 0xC8;
+    private const uint SmuReqMaxArgs = 6;
+
+    private const uint SmuRetriesMax = 8096;
     private const uint StatusOk = 0x01;
 
     private readonly CpuCodeName _cpuCodeName;
-    private readonly bool _supportedCPU;
+    private readonly bool _supportedCpu;
 
     private readonly Dictionary<uint, Dictionary<uint, SmuSensorType>> _supportedPmTableVersions = new()
     {
@@ -33,63 +29,63 @@ internal class RyzenSMU
             // Zen Raven Ridge APU.
             0x001E0004, new Dictionary<uint, SmuSensorType>
             {
-                { 7, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
-                { 11, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
-                { 66, new SmuSensorType { Name = "SoC", Type = SensorType.Current, Scale = 1 } },
-                { 67, new SmuSensorType { Name = "SoC", Type = SensorType.Power, Scale = 1 } },
-                { 108, new SmuSensorType { Name = "Core #1", Type = SensorType.Temperature, Scale = 1 } },
-                { 109, new SmuSensorType { Name = "Core #2", Type = SensorType.Temperature, Scale = 1 } },
-                { 110, new SmuSensorType { Name = "Core #3", Type = SensorType.Temperature, Scale = 1 } },
-                { 111, new SmuSensorType { Name = "Core #4", Type = SensorType.Temperature, Scale = 1 } },
-                { 150, new SmuSensorType { Name = "GFX", Type = SensorType.Voltage, Scale = 1 } },
-                { 151, new SmuSensorType { Name = "GFX", Type = SensorType.Temperature, Scale = 1 } },
-                { 154, new SmuSensorType { Name = "GFX", Type = SensorType.Clock, Scale = 1 } },
-                { 156, new SmuSensorType { Name = "GFX", Type = SensorType.Load, Scale = 1 } },
-                { 166, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
-                { 177, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
-                { 178, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
-                { 342, new SmuSensorType { Name = "Displays", Type = SensorType.Factor, Scale = 1 } }
+                { 7, new SmuSensorType { Name = CpuConstants.ZenTdc, Type = SensorType.Current, Scale = 1 } },
+                { 11, new SmuSensorType { Name = CpuConstants.ZenEdc, Type = SensorType.Current, Scale = 1 } },
+                { 66, new SmuSensorType { Name = CpuConstants.ZenSoc, Type = SensorType.Current, Scale = 1 } },
+                { 67, new SmuSensorType { Name = CpuConstants.ZenSoc, Type = SensorType.Power, Scale = 1 } },
+                { 108, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}1", Type = SensorType.Temperature, Scale = 1 } },
+                { 109, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}2", Type = SensorType.Temperature, Scale = 1 } },
+                { 110, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}3", Type = SensorType.Temperature, Scale = 1 } },
+                { 111, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}4", Type = SensorType.Temperature, Scale = 1 } },
+                { 150, new SmuSensorType { Name = CpuConstants.ZenGfx, Type = SensorType.Voltage, Scale = 1 } },
+                { 151, new SmuSensorType { Name = CpuConstants.ZenGfx, Type = SensorType.Temperature, Scale = 1 } },
+                { 154, new SmuSensorType { Name = CpuConstants.ZenGfx, Type = SensorType.Clock, Scale = 1 } },
+                { 156, new SmuSensorType { Name = CpuConstants.ZenGfx, Type = SensorType.Load, Scale = 1 } },
+                { 166, new SmuSensorType { Name = CpuConstants.ZenFabric, Type = SensorType.Clock, Scale = 1 } },
+                { 177, new SmuSensorType { Name = CpuConstants.ZenUncore, Type = SensorType.Clock, Scale = 1 } },
+                { 178, new SmuSensorType { Name = CpuConstants.ZenMemory, Type = SensorType.Clock, Scale = 1 } },
+                { 342, new SmuSensorType { Name = CpuConstants.ZenDisplays, Type = SensorType.Factor, Scale = 1 } }
             }
         },
         {
             // Zen 2.
             0x00240903, new Dictionary<uint, SmuSensorType>
             {
-                { 15, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
-                { 21, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
-                { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
-                { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
-                { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
-                { 115, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } }
+                { 15, new SmuSensorType { Name = CpuConstants.ZenTdc, Type = SensorType.Current, Scale = 1 } },
+                { 21, new SmuSensorType { Name = CpuConstants.ZenEdc, Type = SensorType.Current, Scale = 1 } },
+                { 48, new SmuSensorType { Name = CpuConstants.ZenFabric, Type = SensorType.Clock, Scale = 1 } },
+                { 50, new SmuSensorType { Name = CpuConstants.ZenUncore, Type = SensorType.Clock, Scale = 1 } },
+                { 51, new SmuSensorType { Name = CpuConstants.ZenMemory, Type = SensorType.Clock, Scale = 1 } },
+                { 115, new SmuSensorType { Name = CpuConstants.ZenSoc, Type = SensorType.Temperature, Scale = 1 } }
             }
         },
         {
             // Zen 3.
             0x00380805, new Dictionary<uint, SmuSensorType>
             {
-                { 3, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
+                { 3, new SmuSensorType { Name = CpuConstants.ZenTdc, Type = SensorType.Current, Scale = 1 } },
                 // TODO: requires some post-processing
                 // see: https://gitlab.com/leogx9r/ryzen_smu/-/blob/master/userspace/monitor_cpu.c#L577
-                { 48, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
-                { 50, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
-                { 51, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
-                { 127, new SmuSensorType { Name = "SoC", Type = SensorType.Temperature, Scale = 1 } },
-                { 268, new SmuSensorType { Name = "Core #1 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 269, new SmuSensorType { Name = "Core #2 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 270, new SmuSensorType { Name = "Core #3 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 271, new SmuSensorType { Name = "Core #4 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 272, new SmuSensorType { Name = "Core #5 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 273, new SmuSensorType { Name = "Core #6 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 274, new SmuSensorType { Name = "Core #7 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 275, new SmuSensorType { Name = "Core #8 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 276, new SmuSensorType { Name = "Core #9 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 277, new SmuSensorType { Name = "Core #10 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 278, new SmuSensorType { Name = "Core #11 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 279, new SmuSensorType { Name = "Core #12 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 280, new SmuSensorType { Name = "Core #13 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 281, new SmuSensorType { Name = "Core #14 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 282, new SmuSensorType { Name = "Core #15 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
-                { 283, new SmuSensorType { Name = "Core #16 (Effective)", Type = SensorType.Clock, Scale = 1000 } }
+                { 48, new SmuSensorType { Name = CpuConstants.ZenFabric, Type = SensorType.Clock, Scale = 1 } },
+                { 50, new SmuSensorType { Name = CpuConstants.ZenUncore, Type = SensorType.Clock, Scale = 1 } },
+                { 51, new SmuSensorType { Name = CpuConstants.ZenMemory, Type = SensorType.Clock, Scale = 1 } },
+                { 127, new SmuSensorType { Name = CpuConstants.ZenSoc, Type = SensorType.Temperature, Scale = 1 } },
+                { 268, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}1 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 269, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}2 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 270, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}3 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 271, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}4 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 272, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}5 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 273, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}6 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 274, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}7 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 275, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}8 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 276, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}9 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 277, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}10 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 278, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}11 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 279, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}12 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 280, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}13 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 281, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}14 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 282, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}15 (Effective)", Type = SensorType.Clock, Scale = 1000 } },
+                { 283, new SmuSensorType { Name = $"{CpuConstants.CoreNumber}16 (Effective)", Type = SensorType.Clock, Scale = 1000 } }
             }
         },
         {
@@ -103,13 +99,13 @@ internal class RyzenSMU
                 { 22, new SmuSensorType { Name = "Misc Power", Type = SensorType.Power, Scale = 1 } },
                 { 26, new SmuSensorType { Name = "Total Power", Type = SensorType.Power, Scale = 1 } },
                 { 47, new SmuSensorType { Name = "VDDCR", Type = SensorType.Voltage, Scale = 1 } },
-                { 48, new SmuSensorType { Name = "TDC", Type = SensorType.Current, Scale = 1 } },
-                { 49, new SmuSensorType { Name = "EDC", Type = SensorType.Current, Scale = 1 } },
+                { 48, new SmuSensorType { Name = CpuConstants.ZenTdc, Type = SensorType.Current, Scale = 1 } },
+                { 49, new SmuSensorType { Name = CpuConstants.ZenEdc, Type = SensorType.Current, Scale = 1 } },
                 { 52, new SmuSensorType { Name = "VDDCR SoC", Type = SensorType.Voltage, Scale = 1 } },
                 { 57, new SmuSensorType { Name = "VDD Misc", Type = SensorType.Voltage, Scale = 1 } },
-                { 70, new SmuSensorType { Name = "Fabric", Type = SensorType.Clock, Scale = 1 } },
-                { 74, new SmuSensorType { Name = "Uncore", Type = SensorType.Clock, Scale = 1 } },
-                { 78, new SmuSensorType { Name = "Memory", Type = SensorType.Clock, Scale = 1 } },
+                { 70, new SmuSensorType { Name = CpuConstants.ZenFabric, Type = SensorType.Clock, Scale = 1 } },
+                { 74, new SmuSensorType { Name = CpuConstants.ZenUncore, Type = SensorType.Clock, Scale = 1 } },
+                { 78, new SmuSensorType { Name = CpuConstants.ZenMemory, Type = SensorType.Clock, Scale = 1 } },
                 { 211, new SmuSensorType { Name = "IOD Hotspot", Type = SensorType.Temperature, Scale = 1 } },
                 { 539, new SmuSensorType { Name = "L3 (CCD1)", Type = SensorType.Temperature, Scale = 1 } },
                 { 540, new SmuSensorType { Name = "L3 (CCD2)", Type = SensorType.Temperature, Scale = 1 } },
@@ -132,17 +128,17 @@ internal class RyzenSMU
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RyzenSMU"/> class.
+    /// Initializes a new instance of the <see cref="RyzenSmu"/> class.
     /// </summary>
     /// <param name="family">The family.</param>
     /// <param name="model">The model.</param>
     /// <param name="packageType">Type of the package.</param>
-    public RyzenSMU(uint family, uint model, uint packageType)
+    public RyzenSmu(uint family, uint model, uint packageType)
     {
         _cpuCodeName = GetCpuCodeName(family, model, packageType);
-        _supportedCPU = Environment.Is64BitOperatingSystem == Environment.Is64BitProcess && SetAddresses(_cpuCodeName);
+        _supportedCpu = Environment.Is64BitOperatingSystem == Environment.Is64BitProcess && SetAddresses(_cpuCodeName);
 
-        if (!_supportedCPU || !InpOut.Open()) return;
+        if (!_supportedCpu || !InpOut.Open()) return;
         SetupPmTableAddrAndSize();
     }
 
@@ -166,7 +162,7 @@ internal class RyzenSMU
     /// <returns></returns>
     public float[] GetPmTable()
     {
-        if (!_supportedCPU || !TransferTableToDram()) return [0];
+        if (!_supportedCpu || !TransferTableToDram()) return [0];
 
         float[] table = ReadDramToArray();
 
@@ -315,11 +311,11 @@ internal class RyzenSMU
     {
         float[] table = new float[_pmTableSize / 4];
 
-        IntPtr pMemory = Environment.Is64BitProcess
+        var memoryPointer = Environment.Is64BitProcess
             ? new IntPtr(_dramBaseAddr | (long)_dramAddrHi << 32)
             : new IntPtr(_dramBaseAddr);
 
-        byte[] bytes = InpOut.ReadMemory(pMemory, _pmTableSize);
+        byte[] bytes = InpOut.ReadMemory(memoryPointer, _pmTableSize);
         if (bytes != null)
         {
             Buffer.BlockCopy(bytes, 0, table, 0, bytes.Length);
@@ -339,9 +335,9 @@ internal class RyzenSMU
         bool read = false;
 
         if (!Mutexes.WaitPciBus(10)) return false;
-        if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, address))
+        if (Ring0.WritePciConfig(0x00, SmuPciAddrReg, address))
         {
-            read = Ring0.ReadPciConfig(0x00, SMU_PCI_DATA_REG, out data);
+            read = Ring0.ReadPciConfig(0x00, SmuPciDataReg, out data);
         }
 
         Mutexes.ReleasePciBus();
@@ -400,7 +396,7 @@ internal class RyzenSMU
     /// <returns></returns>
     private bool SendCommand(uint msg, ref uint[] args)
     {
-        uint[] cmdArgs = new uint[SMU_REQ_MAX_ARGS];
+        uint[] cmdArgs = new uint[SmuReqMaxArgs];
         int argsLength = Math.Min(args.Length, cmdArgs.Length);
 
         for (int i = 0; i < argsLength; ++i)
@@ -414,7 +410,7 @@ internal class RyzenSMU
         // Step 1: Wait until the RSP register is non-zero.
 
         tmp = 0;
-        uint retries = SMU_RETRIES_MAX;
+        uint retries = SmuRetriesMax;
         do
         {
             if (ReadReg(_rspAddr, ref tmp)) continue;
@@ -445,7 +441,7 @@ internal class RyzenSMU
 
         // Step 5: Wait until the Response register is non-zero.
         tmp = 0;
-        retries = SMU_RETRIES_MAX;
+        retries = SmuRetriesMax;
         do
         {
             if (ReadReg(_rspAddr, ref tmp)) continue;
@@ -462,8 +458,8 @@ internal class RyzenSMU
 
         // Step 6: If the Response register contains OK, then SMU has finished processing  the message.
 
-        args = new uint[SMU_REQ_MAX_ARGS];
-        for (byte i = 0; i < SMU_REQ_MAX_ARGS; i++)
+        args = new uint[SmuReqMaxArgs];
+        for (byte i = 0; i < SmuReqMaxArgs; i++)
         {
             if (ReadReg(_argsAddr + (uint)(i * 4), ref args[i])) continue;
             Mutexes.ReleasePciBus();
@@ -747,9 +743,9 @@ internal class RyzenSMU
     private static void WriteReg(uint address, uint data)
     {
         if (!Mutexes.WaitPciBus(10)) return;
-        if (Ring0.WritePciConfig(0x00, SMU_PCI_ADDR_REG, address))
+        if (Ring0.WritePciConfig(0x00, SmuPciAddrReg, address))
         {
-            Ring0.WritePciConfig(0x00, SMU_PCI_DATA_REG, data);
+            Ring0.WritePciConfig(0x00, SmuPciDataReg, data);
         }
         Mutexes.ReleasePciBus();
     }

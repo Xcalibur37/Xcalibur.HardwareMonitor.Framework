@@ -58,20 +58,20 @@ public class SmBios
         if (Software.OperatingSystem.IsUnix)
         {
             raw = null;
-
-            string boardVendor = ReadSysFs("/sys/class/dmi/id/board_vendor");
-            string boardName = ReadSysFs("/sys/class/dmi/id/board_name");
-            string boardVersion = ReadSysFs("/sys/class/dmi/id/board_version");
+            const string dmi = "/sys/class/dmi/id";
+            string boardVendor = ReadSysFs($"{dmi}/board_vendor");
+            string boardName = ReadSysFs($"{dmi}/board_name");
+            string boardVersion = ReadSysFs($"{dmi}/board_version");
             Board = new BaseBoardInformation(boardVendor, boardName, boardVersion, null);
 
-            string systemVendor = ReadSysFs("/sys/class/dmi/id/sys_vendor");
-            string productName = ReadSysFs("/sys/class/dmi/id/product_name");
-            string productVersion = ReadSysFs("/sys/class/dmi/id/product_version");
+            string systemVendor = ReadSysFs($"{dmi}/sys_vendor");
+            string productName = ReadSysFs($"{dmi}/product_name");
+            string productVersion = ReadSysFs($"{dmi}/product_version");
             System = new SystemInformation(systemVendor, productName, productVersion, null, null);
 
-            string biosVendor = ReadSysFs("/sys/class/dmi/id/bios_vendor");
-            string biosVersion = ReadSysFs("/sys/class/dmi/id/bios_version");
-            string biosDate = ReadSysFs("/sys/class/dmi/id/bios_date");
+            string biosVendor = ReadSysFs($"{dmi}/bios_vendor");
+            string biosVersion = ReadSysFs($"{dmi}/bios_version");
+            string biosDate = ReadSysFs($"{dmi}/bios_date");
             Bios = new BiosInformation(biosVendor, biosVersion, biosDate);
 
             MemoryDevices = [];
@@ -178,11 +178,8 @@ public class SmBios
         try
         {
             if (!File.Exists(path)) return string.Empty;
-            using (StreamReader reader = new(path))
-            {
-                return reader.ReadLine();
-            }
-
+            using StreamReader reader = new(path);
+            return reader.ReadLine();
         }
         catch
         {

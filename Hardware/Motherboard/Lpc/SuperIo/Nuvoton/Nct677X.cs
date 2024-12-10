@@ -146,7 +146,9 @@ internal class Nct677X : ISuperIo
         if (!_isNuvotonVendor) return;
 
         if (index < 0 || index >= Controls.Length)
+        {
             throw new ArgumentOutOfRangeException(nameof(index));
+        }
 
         if (!Mutexes.WaitIsaBus(10)) return;
 
@@ -248,7 +250,7 @@ internal class Nct677X : ISuperIo
         if (IsNuvotonVendor()) return;
 
         _lpcPort.WinbondNuvotonFintekEnter();
-        _lpcPort.NuvotonDisableIOSpaceLock();
+        _lpcPort.NuvotonDisableIoSpaceLock();
         _lpcPort.WinbondNuvotonFintekExit();
     }
 
@@ -445,10 +447,10 @@ internal class Nct677X : ISuperIo
         Temperatures = new float?[4];
         _temperaturesSource =
         [
-            new(SourceNct610X.PECI_0, 0x027, 0, -1, 0x621),
-            new(SourceNct610X.SYSTIN, 0x018, 0x01B, 7, 0x100, 0x018),
-            new(SourceNct610X.CPUTIN, 0x019, 0x11B, 7, 0x200, 0x019),
-            new(SourceNct610X.AUXTIN, 0x01A, 0x21B, 7, 0x300, 0x01A)
+            new TemperatureSourceData(SourceNct610X.Peci0, 0x027, 0, -1, 0x621),
+            new TemperatureSourceData(SourceNct610X.SysTin, 0x018, 0x01B, 7, 0x100, 0x018),
+            new TemperatureSourceData(SourceNct610X.CpuTin, 0x019, 0x11B, 7, 0x200, 0x019),
+            new TemperatureSourceData(SourceNct610X.AuxTin, 0x01A, 0x21B, 7, 0x300, 0x01A)
         ];
     }
 
@@ -486,15 +488,15 @@ internal class Nct677X : ISuperIo
         _voltageVBatRegister = 0x551;
         _temperaturesSource =
         [
-            new(chip == Chip.NCT6771F ? SourceNct6771F.PECI_0 : SourceNct6776F.PECI_0, 0x027, 0, -1, 0x621),
-            new(chip == Chip.NCT6771F ? SourceNct6771F.CPUTIN : SourceNct6776F.CPUTIN, 0x073, 0x074, 7, 0x100),
-            new(chip == Chip.NCT6771F ? SourceNct6771F.AUXTIN : SourceNct6776F.AUXTIN, 0x075, 0x076, 7, 0x200),
-            new(chip == Chip.NCT6771F ? SourceNct6771F.SYSTIN : SourceNct6776F.SYSTIN, 0x077, 0x078, 7, 0x300),
-            new(null, 0x150, 0x151, 7, 0x622),
-            new(null, 0x250, 0x251, 7, 0x623),
-            new(null, 0x62B, 0x62E, 0, 0x624),
-            new(null, 0x62C, 0x62E, 1, 0x625),
-            new(null, 0x62D, 0x62E, 2, 0x626)
+            new TemperatureSourceData(chip == Chip.NCT6771F ? SourceNct6771F.Peci0 : SourceNct6776F.Peci0, 0x027, 0, -1, 0x621),
+            new TemperatureSourceData(chip == Chip.NCT6771F ? SourceNct6771F.CpuTin : SourceNct6776F.CpuTin, 0x073, 0x074, 7, 0x100),
+            new TemperatureSourceData(chip == Chip.NCT6771F ? SourceNct6771F.AuxTin : SourceNct6776F.AuxTin, 0x075, 0x076, 7, 0x200),
+            new TemperatureSourceData(chip == Chip.NCT6771F ? SourceNct6771F.SysTin : SourceNct6776F.SysTin, 0x077, 0x078, 7, 0x300),
+            new TemperatureSourceData(null, 0x150, 0x151, 7, 0x622),
+            new TemperatureSourceData(null, 0x250, 0x251, 7, 0x623),
+            new TemperatureSourceData(null, 0x62B, 0x62E, 0, 0x624),
+            new TemperatureSourceData(null, 0x62C, 0x62E, 1, 0x625),
+            new TemperatureSourceData(null, 0x62D, 0x62E, 2, 0x626)
         ];
 
         Temperatures = new float?[4];
@@ -520,13 +522,13 @@ internal class Nct677X : ISuperIo
         // M2_1
         _temperaturesSource =
         [
-            new(null, 0x100),
-            new(null, 0x102),
-            new(null, 0x104),
-            new(null, 0x106),
-            new(null, 0x108),
-            new(null, 0x10A),
-            new(null, 0x10C)
+            new TemperatureSourceData(null, 0x100),
+            new TemperatureSourceData(null, 0x102),
+            new TemperatureSourceData(null, 0x104),
+            new TemperatureSourceData(null, 0x106),
+            new TemperatureSourceData(null, 0x108),
+            new TemperatureSourceData(null, 0x10A),
+            new TemperatureSourceData(null, 0x10C)
         ];
 
         // VIN0 +12V
@@ -543,7 +545,7 @@ internal class Nct677X : ISuperIo
         // SIO VSB
         // SIO AVSB
         // SIO VBAT
-        _voltageRegisters = new ushort[] { 0x120, 0x122, 0x124, 0x126, 0x128, 0x12A, 0x12C, 0x12E, 0x130, 0x13A, 0x13E, 0x136, 0x138, 0x13C };
+        _voltageRegisters = [0x120, 0x122, 0x124, 0x126, 0x128, 0x12A, 0x12C, 0x12E, 0x130, 0x13A, 0x13E, 0x136, 0x138, 0x13C];
 
         // CPU Fan
         // PUMP Fan
@@ -638,59 +640,59 @@ internal class Nct677X : ISuperIo
             case Chip.NCT6799D:
                 temperaturesSources.AddRange([
                     // SYSFAN, MONITOR TEMPERATURE 1
-                    new(SourceNct67XXD.PECI_0, 0x073, 0x074, 7, 0x100),
+                    new TemperatureSourceData(SourceNct67XXD.Peci0, 0x073, 0x074, 7, 0x100),
                     // CPUFAN, MONITOR TEMPERATURE 2, Value RAM (CPUTIN)
-                    new(SourceNct67XXD.CPUTIN, 0x075, 0x076, 7, 0x200, 0x491),
+                    new TemperatureSourceData(SourceNct67XXD.CpuTin, 0x075, 0x076, 7, 0x200, 0x491),
                     // AUXFAN0, MONITOR TEMPERATURE 3, Value RAM (SYSTIN)
-                    new(SourceNct67XXD.SYSTIN, 0x077, 0x078, 7, 0x300, 0x490),
+                    new TemperatureSourceData(SourceNct67XXD.SysTin, 0x077, 0x078, 7, 0x300, 0x490),
                     // AUXFAN1, MONITOR TEMPERATURE 4, Value RAM (AUXTIN0)
-                    new(SourceNct67XXD.AUXTIN0, 0x079, 0x07A, 7, 0x800, 0x492),
+                    new TemperatureSourceData(SourceNct67XXD.AuxTin0, 0x079, 0x07A, 7, 0x800, 0x492),
                     // AUXFAN2, MONITOR TEMPERATURE 5, Value RAM (AUXTIN1)
-                    new(SourceNct67XXD.AUXTIN1, 0x07B, 0x07C, 7, 0x900, 0x493),
+                    new TemperatureSourceData(SourceNct67XXD.AuxTin1, 0x07B, 0x07C, 7, 0x900, 0x493),
                     // AUXFAN3, MONITOR TEMPERATURE 6, Value RAM (AUXTIN2)
-                    new(SourceNct67XXD.AUXTIN2, 0x07D, 0x07E, 7, 0xA00, 0x494),
+                    new TemperatureSourceData(SourceNct67XXD.AuxTin2, 0x07D, 0x07E, 7, 0xA00, 0x494),
                     // AUXFAN4, AUXFANOUT4, Value RAM (AUXTIN3)
-                    new(SourceNct67XXD.AUXTIN3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
+                    new TemperatureSourceData(SourceNct67XXD.AuxTin3, 0x4A0, 0x49E, 6, 0xB00, 0x495),
                     // SMIOVT1, SMIOVT1, Value RAM (SMIOVT1, SYSTIN)
-                    new(SourceNct67XXD.AUXTIN4, 0x027, 0, -1, 0x621),
+                    new TemperatureSourceData(SourceNct67XXD.AuxTin4, 0x027, 0, -1, 0x621),
                     // ?
-                    new(SourceNct67XXD.TSENSOR, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
+                    new TemperatureSourceData(SourceNct67XXD.Sensor, 0x4A2, 0x4A1, 7, 0xC00, 0x496),
                     // SMIOVT2, CPUTIN
-                    new(SourceNct67XXD.SMBUSMASTER0, 0x150, 0x151, 7, 0x622),
+                    new TemperatureSourceData(SourceNct67XXD.SmBusMaster0, 0x150, 0x151, 7, 0x622),
                     // SMIOVT3, AUXTIN0
-                    new(SourceNct67XXD.SMBUSMASTER1, 0x670, 0, -1, 0xC26),
+                    new TemperatureSourceData(SourceNct67XXD.SmBusMaster1, 0x670, 0, -1, 0xC26),
                     // SMIOVT4, AUXTIN1
-                    new(SourceNct67XXD.PECI_1, 0x672, 0, -1, 0xC27),
+                    new TemperatureSourceData(SourceNct67XXD.Peci1, 0x672, 0, -1, 0xC27),
                     // SMIOVT5, AUXTIN2
-                    new(SourceNct67XXD.PCH_CHIP_CPU_MAX_TEMP, 0x674, 0, -1, 0xC28, 0x400),
+                    new TemperatureSourceData(SourceNct67XXD.PchChipCpuMaxTemp, 0x674, 0, -1, 0xC28, 0x400),
                     // SMIOVT6, AUXTIN3
-                    new(SourceNct67XXD.PCH_CHIP_TEMP, 0x676, 0, -1, 0xC29, 0x401),
+                    new TemperatureSourceData(SourceNct67XXD.PchChipTemp, 0x676, 0, -1, 0xC29, 0x401),
                     // SMIOVT7, AUXTIN4
-                    new(SourceNct67XXD.PCH_CPU_TEMP,  0x678, 0, -1, 0xC2A, 0x402),
+                    new TemperatureSourceData(SourceNct67XXD.PchCpuTemp,  0x678, 0, -1, 0xC2A, 0x402),
                     // SMIOVT8, CPUTIN
-                    new(SourceNct67XXD.PCH_MCH_TEMP, 0x67A, 0, -1, 0xC2B, 0x404),
-                    new(SourceNct67XXD.AGENT0_DIMM0, 0),
-                    new(SourceNct67XXD.AGENT0_DIMM1, 0),
-                    new(SourceNct67XXD.AGENT1_DIMM0,0),
-                    new(SourceNct67XXD.AGENT1_DIMM1, 0),
-                    new(SourceNct67XXD.BYTE_TEMP0, 0),
-                    new(SourceNct67XXD.BYTE_TEMP1, 0),
-                    new(SourceNct67XXD.PECI_0_CAL, 0),
-                    new(SourceNct67XXD.PECI_1_CAL, 0),
-                    new(SourceNct67XXD.VIRTUAL_TEMP, 0)
+                    new(SourceNct67XXD.PchMchTemp, 0x67A, 0, -1, 0xC2B, 0x404),
+                    new(SourceNct67XXD.Agent0Dimm0, 0),
+                    new(SourceNct67XXD.Agent0Dimm1, 0),
+                    new(SourceNct67XXD.Agent1Dimm0,0),
+                    new(SourceNct67XXD.Agent1Dimm1, 0),
+                    new(SourceNct67XXD.ByteTemp0, 0),
+                    new(SourceNct67XXD.ByteTemp1, 0),
+                    new(SourceNct67XXD.Peci0Cal, 0),
+                    new(SourceNct67XXD.Peci1Cal, 0),
+                    new(SourceNct67XXD.VirtualTemp, 0)
                 ]);
                 break;
 
             default:
                 temperaturesSources.AddRange(new TemperatureSourceData[]
                 {
-                    new(SourceNct67XXD.PECI_0, 0x027, 0, -1, 0x621),
-                    new(SourceNct67XXD.CPUTIN, 0x073, 0x074, 7, 0x100, 0x491),
-                    new(SourceNct67XXD.SYSTIN, 0x075, 0x076, 7, 0x200, 0x490),
-                    new(SourceNct67XXD.AUXTIN0, 0x077, 0x078, 7, 0x300, 0x492),
-                    new(SourceNct67XXD.AUXTIN1, 0x079, 0x07A, 7, 0x800, 0x493),
-                    new(SourceNct67XXD.AUXTIN2, 0x07B, 0x07C, 7, 0x900, 0x494),
-                    new(SourceNct67XXD.AUXTIN3, 0x150, 0x151, 7, 0x622, 0x495)
+                    new(SourceNct67XXD.Peci0, 0x027, 0, -1, 0x621),
+                    new(SourceNct67XXD.CpuTin, 0x073, 0x074, 7, 0x100, 0x491),
+                    new(SourceNct67XXD.SysTin, 0x075, 0x076, 7, 0x200, 0x490),
+                    new(SourceNct67XXD.AuxTin0, 0x077, 0x078, 7, 0x300, 0x492),
+                    new(SourceNct67XXD.AuxTin1, 0x079, 0x07A, 7, 0x800, 0x493),
+                    new(SourceNct67XXD.AuxTin2, 0x07B, 0x07C, 7, 0x900, 0x494),
+                    new(SourceNct67XXD.AuxTin3, 0x150, 0x151, 7, 0x622, 0x495)
                 });
                 break;
         }
@@ -880,10 +882,8 @@ internal class Nct677X : ISuperIo
 
                     for (int j = 0; j < Temperatures.Length; j++)
                     {
-                        if ((SourceNct67XXD)_temperaturesSource[j].Source == source)
-                        {
-                            Temperatures[j] = temperature;
-                        }
+                        if ((SourceNct67XXD)_temperaturesSource[j].Source != source) continue;
+                        Temperatures[j] = temperature;
                     }
                     break;
             }

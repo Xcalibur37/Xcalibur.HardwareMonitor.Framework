@@ -3,7 +3,7 @@
 /// <summary>
 /// GPU Base
 /// </summary>
-/// <seealso cref="Xcalibur.HardwareMonitor.Framework.Hardware.Hardware" />
+/// <seealso cref="Hardware" />
 public abstract class GpuBase : Hardware
 {
     /// <summary>

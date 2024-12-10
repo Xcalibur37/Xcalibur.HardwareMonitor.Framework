@@ -1,7 +1,6 @@
 ﻿#if DEBUG
 
 using System;
-using Xcalibur.HardwareMonitor.Framework.Interop;
 using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
@@ -14,7 +13,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
     /// <seealso cref="ISmart" />
     internal class DebugSmart : ISmart
     {
-        private readonly Drive[] _drives = {
+        private readonly Drive[] _drives =
+        [
             new("KINGSTON SNV425S264GB", null, 16,
                 @" 01 000000000000 100 100      
                 02 000000000000 100 100      
@@ -313,7 +313,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
                 C7 020000000000 99  99  0  
                 EB 690000000000 99  99  0  
                 F1 A56AA1F60200 99  99  0")
-        };
+        ];
 
         private int _driveNumber;
 

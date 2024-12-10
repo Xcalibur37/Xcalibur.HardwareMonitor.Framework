@@ -32,7 +32,7 @@ internal class SsdPlextor : AtaStorage
         : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings) { }
 
     /// <summary>
-    /// Raws to gb.
+    /// Converts raw data to GB.
     /// </summary>
     /// <param name="rawValue">The raw value.</param>
     /// <param name="value">The value.</param>

@@ -1,11 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
 /// <summary>
 /// Chip types.
 /// </summary>
-[SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum Chip : ushort
 {
     Unknown = 0,
@@ -75,5 +72,5 @@ public enum Chip : ushort
     W83667HGB = 0xB350,
     W83687THF = 0x8541,
 
-    IPMI = 0x4764,
+    Ipmi = 0x4764,
 }

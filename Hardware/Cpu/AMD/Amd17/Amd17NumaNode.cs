@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Xcalibur.Extensions.V2;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
@@ -41,7 +42,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <param name="id">The identifier.</param>
         public Amd17NumaNode(Amd17Cpu cpu, int id)
         {
-            Cores = new List<Amd17Core>();
+            Cores = [];
             NodeId = id;
             _cpu = cpu;
         }
@@ -54,11 +55,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         public void AppendThread(CpuId thread, int coreId)
         {
             Amd17Core core = null;
-            foreach (Amd17Core c in Cores)
-            {
-                if (c.CoreId == coreId)
-                    core = c;
-            }
+            Cores
+                .Where(a => a.CoreId == coreId)
+                .Apply(b => core = b);
 
             if (core == null)
             {
@@ -66,8 +65,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                 Cores.Add(core);
             }
 
-            if (thread != null)
-                core.Threads.Add(thread);
+            if (thread == null) return;
+            core.Threads.Add(thread);
         }
 
         /// <summary>

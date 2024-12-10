@@ -47,7 +47,7 @@ public sealed class Network : Hardware
     /// <param name="networkInterface">The network interface.</param>
     /// <param name="settings">The settings.</param>
     public Network(NetworkInterface networkInterface, ISettings settings)
-        : base(networkInterface.Name, new Identifier("nic", networkInterface.Id), settings)
+        : base(networkInterface.Name, new Identifier(HardwareConstants.NicIdentifier, networkInterface.Id), settings)
     {
         NetworkInterface = networkInterface;
         

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
@@ -31,7 +30,7 @@ internal class NvmeWindows : INvmeDrive
         if (hDevice?.IsInvalid != false) return false;
 
         bool result = false;
-        StorageQueryBuffer nptwb = Kernel32.CreateStruct<StorageQueryBuffer>();
+        var nptwb = Kernel32.CreateStruct<StorageQueryBuffer>();
         nptwb.ProtocolSpecific.ProtocolType = StorageProtocolType.ProtocolTypeNvme;
         nptwb.ProtocolSpecific.DataType = (uint)StorageProtocolNvmeDataType.NvMeDataTypeIdentify;
         nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)StorageProtocolNvmeProtocolDataRequestValue.NvMeIdentifyCnsController;
@@ -43,7 +42,7 @@ internal class NvmeWindows : INvmeDrive
         int length = Marshal.SizeOf<StorageQueryBuffer>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(nptwb, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlStorageQueryProperty, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
             // Map NVME_IDENTIFY_CONTROLLER_DATA to nptwb.Buffer
@@ -73,7 +72,7 @@ internal class NvmeWindows : INvmeDrive
         if (hDevice?.IsInvalid != false) return false;
 
         bool result = false;
-        StorageQueryBuffer nptwb = Kernel32.CreateStruct<StorageQueryBuffer>();
+        var nptwb = Kernel32.CreateStruct<StorageQueryBuffer>();
         nptwb.ProtocolSpecific.ProtocolType = StorageProtocolType.ProtocolTypeNvme;
         nptwb.ProtocolSpecific.DataType = (uint)StorageProtocolNvmeDataType.NvMeDataTypeLogPage;
         nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)NvmeLogPages.NvmeLogPageHealthInfo;
@@ -85,7 +84,7 @@ internal class NvmeWindows : INvmeDrive
         int length = Marshal.SizeOf<StorageQueryBuffer>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(nptwb, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlStorageQueryProperty, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
             // Map NVME_HEALTH_INFO_LOG to nptwb.Buffer
@@ -113,7 +112,7 @@ internal class NvmeWindows : INvmeDrive
         SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
         if (handle?.IsInvalid != false) return null;
 
-        StorageQueryBuffer nptwb = Kernel32.CreateStruct<StorageQueryBuffer>();
+        var nptwb = Kernel32.CreateStruct<StorageQueryBuffer>();
         nptwb.ProtocolSpecific.ProtocolType = StorageProtocolType.ProtocolTypeNvme;
         nptwb.ProtocolSpecific.DataType = (uint)StorageProtocolNvmeDataType.NvMeDataTypeIdentify;
         nptwb.ProtocolSpecific.ProtocolDataRequestValue = (uint)StorageProtocolNvmeProtocolDataRequestValue.NvMeIdentifyCnsController;
@@ -125,18 +124,12 @@ internal class NvmeWindows : INvmeDrive
         int length = Marshal.SizeOf<StorageQueryBuffer>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(nptwb, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IOCTL_STORAGE_QUERY_PROPERTY, buffer, length, buffer, length, out _, nint.Zero);
-        if (validTransfer)
-        {
-            Marshal.FreeHGlobal(buffer);
-        }
-        else
-        {
-            Marshal.FreeHGlobal(buffer);
-            handle.Close();
-            handle = null;
-        }
 
-        return handle;
+        bool validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IoctlStorageQueryProperty, buffer, length, buffer, length, out _, nint.Zero);
+        Marshal.FreeHGlobal(buffer);
+        if (validTransfer) return handle;
+        handle.Close();
+        handle.Dispose();
+        return null;
     }
 }

@@ -77,21 +77,16 @@ public class WindowsEmbeddedControllerIo : IEmbeddedControllerIo
     /// <param name="data">The data.</param>
     public void Read(ushort[] registers, byte[] data)
     {
-        Trace.Assert(registers.Length <= data.Length, 
-                     "data buffer length has to be greater or equal to the registers array length");
-
         byte bank = 0;
         byte prevBank = SwitchBank(bank);
 
-        // oops... somebody else is working with the EC too
-        Trace.WriteLineIf(prevBank != 0, "Concurrent access to the ACPI EC detected.\nRace condition possible.");
-
-        // read registers minimizing bank switches.
+        // Read registers minimizing bank switches.
         for (int i = 0; i < registers.Length; i++)
         {
             byte regBank = (byte)(registers[i] >> 8);
             byte regIndex = (byte)(registers[i] & 0xFF);
-            // registers are sorted by bank
+            
+            // Registers are sorted by bank
             if (regBank > bank)
             {
                 bank = SwitchBank(regBank);
@@ -140,10 +135,8 @@ public class WindowsEmbeddedControllerIo : IEmbeddedControllerIo
         TResult result = new();
         for (int i = 0; i < MaxRetries; i++)
         {
-            if (op(register, out result))
-            {
-                return result;
-            }
+            if (!op(register, out result)) continue;
+            return result;
         }
         return result;
     }

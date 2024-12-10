@@ -133,6 +133,7 @@ internal class NetworkGroup : IGroup, IHardwareChanged
             {
                 var key = networkInterfacePair.Key;
                 _networks.Add(key, new Network(networkInterfacePair.Value, settings));
+
                 var adapter = _networks[key];
                 _hardware.Add(adapter);
                 HardwareAdded?.Invoke(adapter);

@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3D;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Intel;
 
 /// <summary>
 /// Intel GPU Group
 /// </summary>
-/// <seealso cref="Xcalibur.HardwareMonitor.Framework.Hardware.IGroup" />
+/// <seealso cref="IGroup" />
 internal class IntelGpuGroup : IGroup
 {
     private readonly List<Hardware> _hardware = [];
@@ -29,7 +29,7 @@ internal class IntelGpuGroup : IGroup
         if (Software.OperatingSystem.IsUnix || intelCpus.Length == 0) return;
         foreach (var deviceId in D3dDisplayDevice.GetDeviceIdentifiers())
         {
-            var isIntel = deviceId.IndexOf("VEN_8086", StringComparison.Ordinal) != -1;
+            var isIntel = deviceId.IndexOf(GpuConstants.IntelManagementEngineInterface, StringComparison.Ordinal) != -1;
             if (!isIntel || 
                 !D3dDisplayDevice.GetDeviceInfoByIdentifier(deviceId, out var deviceInfo) || 
                 !deviceInfo.Integrated) continue;

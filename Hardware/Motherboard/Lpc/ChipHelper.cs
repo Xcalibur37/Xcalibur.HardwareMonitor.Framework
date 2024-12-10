@@ -72,7 +72,7 @@
                 Chip.W83667HG => "Winbond W83667HG",
                 Chip.W83667HGB => "Winbond W83667HG-B",
                 Chip.W83687THF => "Winbond W83687THF",
-                Chip.IPMI => "IPMI",
+                Chip.Ipmi => "IPMI",
                 _ => "Unknown"
             };
     }

@@ -3,7 +3,7 @@
     /// <summary>
     /// Embedded Controller Sensor
     /// </summary>
-    public enum ECSensor
+    public enum EcSensor
     {
         /// <summary>
         /// Chipset temperature [℃]
@@ -13,12 +13,12 @@
         /// <summary>
         /// CPU temperature [℃]
         /// </summary>
-        TempCPU,
+        TempCpu,
 
         /// <summary>
         /// motherboard temperature [℃]
         /// </summary>
-        TempMB,
+        TempMb,
 
         /// <summary>
         /// "T_Sensor" temperature sensor reading [℃]
@@ -38,17 +38,17 @@
         /// <summary>
         /// CPU Core voltage [mV]
         /// </summary>
-        VoltageCPU,
+        VoltageCpu,
 
         /// <summary>
         /// CPU_Opt fan [RPM]
         /// </summary>
-        FanCPUOpt,
+        FanCpuOpt,
 
         /// <summary>
         /// VRM heat sink fan [RPM]
         /// </summary>
-        FanVrmHS,
+        FanVrmHs,
 
         /// <summary>
         /// Chipset fan [RPM]
@@ -68,7 +68,7 @@
         /// <summary>
         /// CPU current [A]
         /// </summary>
-        CurrCPU,
+        CurrCpu,
 
         /// <summary>
         /// "Water_In" temperature sensor reading [℃]

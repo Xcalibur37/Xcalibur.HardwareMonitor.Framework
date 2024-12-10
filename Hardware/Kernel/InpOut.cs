@@ -69,8 +69,8 @@ internal static class InpOut
             _libraryHandle = Kernel32.LoadLibrary(_filePath);
             if (_libraryHandle != IntPtr.Zero)
             {
-                IntPtr mapPhysToLinAddress = Kernel32.GetProcAddress(_libraryHandle, "MapPhysToLin");
-                IntPtr unmapPhysicalMemoryAddress = Kernel32.GetProcAddress(_libraryHandle, "UnmapPhysicalMemory");
+                var mapPhysToLinAddress = Kernel32.GetProcAddress(_libraryHandle, "MapPhysToLin");
+                var unmapPhysicalMemoryAddress = Kernel32.GetProcAddress(_libraryHandle, "UnmapPhysicalMemory");
 
                 if (mapPhysToLinAddress != IntPtr.Zero)
                 {
@@ -118,7 +118,7 @@ internal static class InpOut
     public static byte[] ReadMemory(IntPtr baseAddress, uint size)
     {
         if (_mapPhysToLin == null || _unmapPhysicalMemory == null) return null;
-        IntPtr pdwLinAddr = _mapPhysToLin(baseAddress, size, out IntPtr pPhysicalMemoryHandle);
+        var pdwLinAddr = _mapPhysToLin(baseAddress, size, out IntPtr pPhysicalMemoryHandle);
         if (pdwLinAddr == IntPtr.Zero) return null;
 
         byte[] bytes = new byte[size];
@@ -147,7 +147,7 @@ internal static class InpOut
     {
         if (_mapPhysToLin == null || _unmapPhysicalMemory == null) return false;
 
-        IntPtr pdwLinAddr = _mapPhysToLin(baseAddress, 1, out IntPtr pPhysicalMemoryHandle);
+        var pdwLinAddr = _mapPhysToLin(baseAddress, 1, out var pPhysicalMemoryHandle);
         if (pdwLinAddr == IntPtr.Zero) return false;
 
         Marshal.WriteByte(pdwLinAddr, value);

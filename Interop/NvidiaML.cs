@@ -31,9 +31,25 @@ internal static class NvidiaMl
     private static WindowsNvmlGetPowerUsageDelegate _windowsNvmlDeviceGetPowerUsage;
     private static WindowsNvmlDelegate _windowsNvmlInit;
     private static WindowsNvmlDelegate _windowsNvmlShutdown;
-    
+
+    private delegate NvmlReturn WindowsNvmlDelegate();
+
+    private delegate NvmlReturn WindowsNvmlGetHandleDelegate(int index, out NvmlDevice device);
+
+    private delegate NvmlReturn WindowsNvmlGetHandleByPciBusIdDelegate([MarshalAs(UnmanagedType.LPStr)] string pciBusId, out NvmlDevice device);
+
+    private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
+
+    private delegate NvmlReturn WindowsNvmlDeviceGetPcieThroughputDelegate(NvmlDevice device, NvmlPcieUtilCounter counter, out uint value);
+
+    private delegate NvmlReturn WindowsNvmlDeviceGetPciInfo(NvmlDevice device, ref NvmlPciInfo pci);
+
     public static bool IsAvailable { get; private set; }
 
+    /// <summary>
+    /// Initializes this instance.
+    /// </summary>
+    /// <returns></returns>
     public static bool Initialize()
     {
         lock (_syncRoot)
@@ -86,12 +102,22 @@ internal static class NvidiaMl
         }
     }
 
+    /// <summary>
+    /// Determines whether [is NVML compatible windows version].
+    /// </summary>
+    /// <returns>
+    ///   <c>true</c> if [is NVML compatible windows version]; otherwise, <c>false</c>.
+    /// </returns>
     private static bool IsNvmlCompatibleWindowsVersion() => 
         Software.OperatingSystem.Is64Bit && 
         (Environment.OSVersion.Version.Major > 6 || 
             (Environment.OSVersion.Version.Major == 6 && 
              Environment.OSVersion.Version.Minor >= 1));
 
+    /// <summary>
+    /// Initialises the delegates.
+    /// </summary>
+    /// <returns></returns>
     private static bool InitialiseDelegates()
     {
         IntPtr nvmlInit = Kernel32.GetProcAddress(_windowsDll, "nvmlInit_v2");
@@ -184,27 +210,33 @@ internal static class NvidiaMl
         return true;
     }
 
+    /// <summary>
+    /// Closes this instance.
+    /// </summary>
     public static void Close()
     {
         lock (_syncRoot)
         {
-            if (IsAvailable)
+            if (!IsAvailable) return;
+            if (Software.OperatingSystem.IsUnix)
             {
-                if (Software.OperatingSystem.IsUnix)
-                {
-                    nvmlShutdown();
-                }
-                else if (_windowsDll != IntPtr.Zero)
-                {
-                    _windowsNvmlShutdown();
-                    Kernel32.FreeLibrary(_windowsDll);
-                }
-
-                IsAvailable = false;
+                nvmlShutdown();
             }
+            else if (_windowsDll != IntPtr.Zero)
+            {
+                _windowsNvmlShutdown();
+                Kernel32.FreeLibrary(_windowsDll);
+            }
+
+            IsAvailable = false;
         }
     }
 
+    /// <summary>
+    /// Get handle by index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <returns></returns>
     public static NvmlDevice? NvmlDeviceGetHandleByIndex(int index)
     {
         if (!IsAvailable) return null;
@@ -244,6 +276,11 @@ internal static class NvidiaMl
         return null;
     }
 
+    /// <summary>
+    /// Get handle by PCI bus identifier.
+    /// </summary>
+    /// <param name="pciBusId">The pci bus identifier.</param>
+    /// <returns></returns>
     public static NvmlDevice? NvmlDeviceGetHandleByPciBusId(string pciBusId)
     {
         if (!IsAvailable) return null;
@@ -272,6 +309,11 @@ internal static class NvidiaMl
         return null;
     }
 
+    /// <summary>
+    /// Get power usage.
+    /// </summary>
+    /// <param name="nvmlDevice">The NVML device.</param>
+    /// <returns></returns>
     public static int? NvmlDeviceGetPowerUsage(NvmlDevice nvmlDevice)
     {
         if (!IsAvailable) return null;
@@ -301,6 +343,12 @@ internal static class NvidiaMl
         return null;
     }
 
+    /// <summary>
+    /// Gets PCI-E throughput.
+    /// </summary>
+    /// <param name="nvmlDevice">The NVML device.</param>
+    /// <param name="counter">The counter.</param>
+    /// <returns></returns>
     public static uint? NvmlDeviceGetPcieThroughput(NvmlDevice nvmlDevice, NvmlPcieUtilCounter counter)
     {
         if (!IsAvailable) return null;
@@ -316,8 +364,7 @@ internal static class NvidiaMl
         {
             try
             {
-                if (_windowsNvmlDeviceGetPcieThroughputDelegate(nvmlDevice, counter, out pcieThroughput) ==
-                    NvmlReturn.Success)
+                if (_windowsNvmlDeviceGetPcieThroughputDelegate(nvmlDevice, counter, out pcieThroughput) == NvmlReturn.Success)
                 {
                     return pcieThroughput;
                 }
@@ -331,6 +378,11 @@ internal static class NvidiaMl
         return null;
     }
 
+    /// <summary>
+    /// Get PCI information.
+    /// </summary>
+    /// <param name="nvmlDevice">The NVML device.</param>
+    /// <returns></returns>
     public static NvmlPciInfo? NvmlDeviceGetPciInfo(NvmlDevice nvmlDevice)
     {
         if (!IsAvailable) return null;
@@ -387,16 +439,4 @@ internal static class NvidiaMl
 
     [DllImport(LinuxDllName, EntryPoint = "nvmlDeviceGetPciInfo_v2")]
     private static extern NvmlReturn nvmlDeviceGetPciInfo(NvmlDevice device, ref NvmlPciInfo pci);
-
-    private delegate NvmlReturn WindowsNvmlDelegate();
-
-    private delegate NvmlReturn WindowsNvmlGetHandleDelegate(int index, out NvmlDevice device);
-
-    private delegate NvmlReturn WindowsNvmlGetHandleByPciBusIdDelegate([MarshalAs(UnmanagedType.LPStr)] string pciBusId, out NvmlDevice device);
-
-    private delegate NvmlReturn WindowsNvmlGetPowerUsageDelegate(NvmlDevice device, out int power);
-
-    private delegate NvmlReturn WindowsNvmlDeviceGetPcieThroughputDelegate(NvmlDevice device, NvmlPcieUtilCounter counter, out uint value);
-
-    private delegate NvmlReturn WindowsNvmlDeviceGetPciInfo(NvmlDevice device, ref NvmlPciInfo pci);
 }

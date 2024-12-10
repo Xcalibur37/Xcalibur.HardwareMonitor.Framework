@@ -3,53 +3,47 @@ using System.Linq;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.Gigabyte;
 
-// ReSharper disable once InconsistentNaming
-
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Ite;
 
 /// <summary>
 /// ITE 87XX
 /// </summary>
 /// <seealso cref="ISuperIo" />
-internal class IT87XX : ISuperIo
+internal class It87Xx : ISuperIo
 {
     #region Fields
 
-    // ReSharper disable InconsistentNaming
-#pragma warning disable IDE1006 // Naming Styles
+    private const byte AddressRegisterOffset = 0x05;
 
-    private const byte ADDRESS_REGISTER_OFFSET = 0x05;
+    private const byte ConfigurationRegister = 0x00;
+    private const byte DataRegisterOffset = 0x06;
+    private const byte BankRegister = 0x06; // bit 5-6 define selected bank
+    private const byte FanTachometer16BitRegister = 0x0C;
+    private const byte FanTachometerDivisorRegister = 0x0B;
 
-    private const byte CONFIGURATION_REGISTER = 0x00;
-    private const byte DATA_REGISTER_OFFSET = 0x06;
-    private const byte BANK_REGISTER = 0x06; // bit 5-6 define selected bank
-    private const byte FAN_TACHOMETER_16BIT_REGISTER = 0x0C;
-    private const byte FAN_TACHOMETER_DIVISOR_REGISTER = 0x0B;
+    private readonly byte[] _iteVendorIds = [0x90, 0x7F];
 
-    private readonly byte[] ITE_VENDOR_IDS = [0x90, 0x7F];
+    private const byte TemperatureBaseReg = 0x29;
+    private const byte VendorIdRegister = 0x58;
+    private const byte VoltageBaseReg = 0x20;
 
-    private const byte TEMPERATURE_BASE_REG = 0x29;
-    private const byte VENDOR_ID_REGISTER = 0x58;
-    private const byte VOLTAGE_BASE_REG = 0x20;
-
-    private byte[] FAN_PWM_CTRL_REG;
-    private readonly byte[] FAN_PWM_CTRL_EXT_REG = [0x63, 0x6b, 0x73, 0x7b, 0xa3, 0xab];
-    private readonly byte[] FAN_TACHOMETER_EXT_REG = [0x18, 0x19, 0x1a, 0x81, 0x83, 0x4d];
-    private readonly byte[] FAN_TACHOMETER_REG = [0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c];
+    private byte[] _fanPwmCtrlReg;
+    private readonly byte[] _fanPwmCtrlExtReg = [0x63, 0x6b, 0x73, 0x7b, 0xa3, 0xab];
+    private readonly byte[] _fanTachometerExtReg = [0x18, 0x19, 0x1a, 0x81, 0x83, 0x4d];
+    private readonly byte[] _fanTachometerReg = [0x0d, 0x0e, 0x0f, 0x80, 0x82, 0x4c];
 
     // Address of the Fan Controller Main Control Register.
     // No need for the 2nd control register (bit 7 of 0x15 0x16 0x17),
     // as PWM value will set it to manual mode when new value is set.
-    private const byte FAN_MAIN_CTRL_REG = 0x13;
-
-#pragma warning restore IDE1006 // Naming Styles
-    // ReSharper restore InconsistentNaming
+    private const byte FanMainCtrlReg = 0x13;
 
     private readonly ushort _addressReg;
     private readonly ushort _dataReg;
     private readonly ushort _gpioAddress;
-    private readonly bool[] _initialFanOutputModeEnabled = new bool[3]; // Initial Fan Controller Main Control Register value. 
-    private readonly byte[] _initialFanPwmControl = new byte[MaxFanHeaders]; // This will also store the 2nd control register value.
+    // Initial Fan Controller Main Control Register value. 
+    private readonly bool[] _initialFanOutputModeEnabled = new bool[3]; 
+    // This will also store the 2nd control register value.
+    private readonly byte[] _initialFanPwmControl = new byte[MaxFanHeaders]; 
     private readonly byte[] _initialFanPwmControlExt = new byte[MaxFanHeaders];
     private readonly bool[] _restoreDefaultFanPwmControlRequired = new bool[MaxFanHeaders];
     private readonly byte _version;
@@ -61,7 +55,8 @@ internal class IT87XX : ISuperIo
     private int _bankCount;
     private bool[] _fansDisabled = [];
     private readonly IGigabyteController _gigabyteController;
-    private bool _requiresBankSelect;  // Fix #780 Set to true for those chips that need a SelectBank(0) to fix dodgy temps and fan speeds
+    // Fix #780 Set to true for those chips that need a SelectBank(0) to fix dodgy temps and fan speeds
+    private bool _requiresBankSelect;  
 
     #endregion
 
@@ -112,18 +107,18 @@ internal class IT87XX : ISuperIo
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="IT87XX" /> class.
+    /// Initializes a new instance of the <see cref="It87Xx" /> class.
     /// </summary>
     /// <param name="chip">The chip.</param>
     /// <param name="address">The address.</param>
     /// <param name="gpioAddress">The gpio address.</param>
     /// <param name="version">The version.</param>
     /// <param name="gigabyteController">The gigabyte controller.</param>
-    public IT87XX(Chip chip, ushort address, ushort gpioAddress, byte version, IGigabyteController gigabyteController)
+    public It87Xx(Chip chip, ushort address, ushort gpioAddress, byte version, IGigabyteController gigabyteController)
     {
         _version = version;
-        _addressReg = (ushort)(address + ADDRESS_REGISTER_OFFSET);
-        _dataReg = (ushort)(address + DATA_REGISTER_OFFSET);
+        _addressReg = (ushort)(address + AddressRegisterOffset);
+        _dataReg = (ushort)(address + DataRegisterOffset);
         _gpioAddress = gpioAddress;
         _gigabyteController = gigabyteController;
         _requiresBankSelect = false;
@@ -172,18 +167,18 @@ internal class IT87XX : ISuperIo
 
             if (index < 3 && !_initialFanOutputModeEnabled[index])
             {
-                WriteByte(FAN_MAIN_CTRL_REG, (byte)(ReadByte(FAN_MAIN_CTRL_REG, out _) | 1 << index));
+                WriteByte(FanMainCtrlReg, (byte)(ReadByte(FanMainCtrlReg, out _) | 1 << index));
             }
 
             if (_hasExtReg)
             {
                 byte fanByte = (Chip == Chip.IT8689E) ? (byte)0x7F : (byte)(_initialFanPwmControl[index] & 0x7F);
-                WriteByte(FAN_PWM_CTRL_REG[index], fanByte);
-                WriteByte(FAN_PWM_CTRL_EXT_REG[index], value.Value);
+                WriteByte(_fanPwmCtrlReg[index], fanByte);
+                WriteByte(_fanPwmCtrlExtReg[index], value.Value);
             }
             else
             {
-                WriteByte(FAN_PWM_CTRL_REG[index], (byte)(value.Value >> 1));
+                WriteByte(_fanPwmCtrlReg[index], (byte)(value.Value >> 1));
             }
         }
         else
@@ -211,14 +206,14 @@ internal class IT87XX : ISuperIo
 
         for (int i = 0; i < Voltages.Length; i++)
         {
-            float value = _voltageGain * ReadByte((byte)(VOLTAGE_BASE_REG + i), out bool valid);
+            float value = _voltageGain * ReadByte((byte)(VoltageBaseReg + i), out bool valid);
             if (!valid) continue;
             Voltages[i] = value > 0 ? value : null;
         }
 
         for (int i = 0; i < Temperatures.Length; i++)
         {
-            sbyte value = (sbyte)ReadByte((byte)(TEMPERATURE_BASE_REG + i), out bool valid);
+            sbyte value = (sbyte)ReadByte((byte)(TemperatureBaseReg + i), out bool valid);
             if (!valid) continue;
             Temperatures[i] = value is < sbyte.MaxValue and > 0 ? value : null;
         }
@@ -229,10 +224,10 @@ internal class IT87XX : ISuperIo
             {
                 if (_fansDisabled[i]) continue;
 
-                int value = ReadByte(FAN_TACHOMETER_REG[i], out bool valid);
+                int value = ReadByte(_fanTachometerReg[i], out bool valid);
                 if (!valid) continue;
 
-                value |= ReadByte(FAN_TACHOMETER_EXT_REG[i], out valid) << 8;
+                value |= ReadByte(_fanTachometerExtReg[i], out valid) << 8;
                 if (!valid) continue;
 
                 Fans[i] = value > 0x3f ? value < 0xffff ? 1.35e6f / (value * 2) : 0 : null;
@@ -242,12 +237,12 @@ internal class IT87XX : ISuperIo
         {
             for (int i = 0; i < Fans.Length; i++)
             {
-                int value = ReadByte(FAN_TACHOMETER_REG[i], out bool valid);
+                int value = ReadByte(_fanTachometerReg[i], out bool valid);
                 if (!valid) continue;
                 int divisor = 2;
                 if (i < 2)
                 {
-                    int divisors = ReadByte(FAN_TACHOMETER_DIVISOR_REGISTER, out valid);
+                    int divisors = ReadByte(FanTachometerDivisorRegister, out valid);
                     if (!valid) continue;
                     divisor = 1 << (divisors >> 3 * i & 0x7);
                 }
@@ -258,7 +253,7 @@ internal class IT87XX : ISuperIo
 
         for (int i = 0; i < Controls.Length; i++)
         {
-            byte value = ReadByte(FAN_PWM_CTRL_REG[i], out bool valid);
+            byte value = ReadByte(_fanPwmCtrlReg[i], out bool valid);
             if (!valid) continue;
 
             if ((value & 0x80) > 0)
@@ -271,7 +266,7 @@ internal class IT87XX : ISuperIo
                 // Software operation.
                 if (_hasExtReg)
                 {
-                    value = ReadByte(FAN_PWM_CTRL_EXT_REG[i], out valid);
+                    value = ReadByte(_fanPwmCtrlExtReg[i], out valid);
                     if (!valid) continue;
                     Controls[i] = (float)Math.Round(value * 100.0f / 0xFF);
                 }
@@ -310,11 +305,11 @@ internal class IT87XX : ISuperIo
 
         // hard cap SelectBank to 2 bit values. If we ever have chips with more bank bits rewrite this method.
         bankIndex &= 0x3;
-        byte value = ReadByte(BANK_REGISTER, out bool valid);
+        byte value = ReadByte(BankRegister, out bool valid);
         if (!valid) return;
         value &= 0x9F;
         value |= (byte)(bankIndex << 5);
-        WriteByte(BANK_REGISTER, value);
+        WriteByte(BankRegister, value);
     }
 
     /// <summary>
@@ -325,11 +320,11 @@ internal class IT87XX : ISuperIo
     private void SetRegisters(Chip chip)
     {
         // Check vendor id
-        byte vendorId = ReadByte(VENDOR_ID_REGISTER, out bool valid);
+        byte vendorId = ReadByte(VendorIdRegister, out bool valid);
         if (!valid) return;
 
         bool hasMatchingVendorId = false;
-        foreach (byte iteVendorId in ITE_VENDOR_IDS)
+        foreach (byte iteVendorId in _iteVendorIds)
         {
             if (iteVendorId != vendorId) continue;
             hasMatchingVendorId = true;
@@ -339,10 +334,10 @@ internal class IT87XX : ISuperIo
         if (!hasMatchingVendorId) return;
 
         // Bit 0x10 of the configuration register should always be 1
-        byte configuration = ReadByte(CONFIGURATION_REGISTER, out valid);
+        byte configuration = ReadByte(ConfigurationRegister, out valid);
         if (!valid || (configuration & 0x10) == 0 && chip != Chip.IT8655E && chip != Chip.IT8665E) return;
 
-        FAN_PWM_CTRL_REG = chip switch
+        _fanPwmCtrlReg = chip switch
         {
             Chip.IT8665E or Chip.IT8625E => [0x15, 0x16, 0x17, 0x1e, 0x1f, 0x92],
             Chip.IT8792E => [0x15, 0x16, 0x17],
@@ -483,7 +478,7 @@ internal class IT87XX : ISuperIo
         // Disable any fans that aren't set with 16-bit fan counters
         if (_has16BitFanCounter)
         {
-            int modes = ReadByte(FAN_TACHOMETER_16BIT_REGISTER, out valid);
+            int modes = ReadByte(FanTachometer16BitRegister, out valid);
 
             if (!valid) return;
 
@@ -547,13 +542,18 @@ internal class IT87XX : ISuperIo
     {
         if (!_restoreDefaultFanPwmControlRequired[index])
         {
-            _initialFanPwmControl[index] = ReadByte(FAN_PWM_CTRL_REG[index], out bool _);
+            _initialFanPwmControl[index] = ReadByte(_fanPwmCtrlReg[index], out bool _);
 
             if (index < 3)
-                _initialFanOutputModeEnabled[index] = ReadByte(FAN_MAIN_CTRL_REG, out bool _) != 0; // Save default control reg value.
+            {
+                // Save default control reg value.
+                _initialFanOutputModeEnabled[index] = ReadByte(FanMainCtrlReg, out bool _) != 0; 
+            }
 
             if (_hasExtReg)
-                _initialFanPwmControlExt[index] = ReadByte(FAN_PWM_CTRL_EXT_REG[index], out _);
+            {
+                _initialFanPwmControlExt[index] = ReadByte(_fanPwmCtrlExtReg[index], out _);
+            }
         }
 
         _restoreDefaultFanPwmControlRequired[index] = true;
@@ -567,21 +567,21 @@ internal class IT87XX : ISuperIo
     private void RestoreDefaultFanPwmControl(int index)
     {
         if (!_restoreDefaultFanPwmControlRequired[index]) return;
-        WriteByte(FAN_PWM_CTRL_REG[index], _initialFanPwmControl[index]);
+        WriteByte(_fanPwmCtrlReg[index], _initialFanPwmControl[index]);
 
         if (index < 3)
         {
-            byte value = ReadByte(FAN_MAIN_CTRL_REG, out _);
+            byte value = ReadByte(FanMainCtrlReg, out _);
             bool isEnabled = (value & 1 << index) != 0;
             if (isEnabled != _initialFanOutputModeEnabled[index])
             {
-                WriteByte(FAN_MAIN_CTRL_REG, (byte)(value ^ 1 << index));
+                WriteByte(FanMainCtrlReg, (byte)(value ^ 1 << index));
             }
         }
 
         if (_hasExtReg)
         {
-            WriteByte(FAN_PWM_CTRL_EXT_REG[index], _initialFanPwmControlExt[index]);
+            WriteByte(_fanPwmCtrlExtReg[index], _initialFanPwmControlExt[index]);
         }
 
         _restoreDefaultFanPwmControlRequired[index] = false;

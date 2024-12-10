@@ -262,14 +262,15 @@ public abstract class AbstractStorage : Hardware
     /// <returns></returns>
     private void UpdatePerformanceSensors()
     {
-        if (!Kernel32.DeviceIoControl(_storageInfo.Handle,
-                                      IoCtl.IOCTL_DISK_PERFORMANCE,
-                                      IntPtr.Zero,
-                                      0,
-                                      out DiskPerformance diskPerformance,
-                                      Marshal.SizeOf<DiskPerformance>(),
-                                      out _,
-                                      IntPtr.Zero)) return;
+        if (!Kernel32.DeviceIoControl(
+                _storageInfo.Handle,
+                IoCtl.IoctlDiskPerformance,
+                IntPtr.Zero,
+                0,
+                out DiskPerformance diskPerformance,
+                Marshal.SizeOf<DiskPerformance>(),
+                out _,
+                IntPtr.Zero)) return;
 
         _perfRead.Update(diskPerformance.ReadTime, diskPerformance.QueryTime);
         _sensorDiskReadActivity.Value = (float)_perfRead.Result;

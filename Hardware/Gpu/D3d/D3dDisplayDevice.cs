@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 using Xcalibur.HardwareMonitor.Framework.Interop.Models.D3D;
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3D;
 
 /// <summary>
 /// D3D Display Device
@@ -140,12 +140,13 @@ internal static class D3dDisplayDevice
     private static string GetNodeEngineTypeString(D3DkmtNodemetadata nodeMetaData) =>
         nodeMetaData.NodeData.EngineType switch
         {
-            DxgkEngineType.DxgkEngineTypeOther => 
-                "D3D " + (!string.IsNullOrWhiteSpace(nodeMetaData.NodeData.FriendlyName) 
-                    ? nodeMetaData.NodeData.FriendlyName : "Other"),
+            DxgkEngineType.DxgkEngineTypeOther =>
+                $"D3D {(!string.IsNullOrWhiteSpace(nodeMetaData.NodeData.FriendlyName)
+                    ? nodeMetaData.NodeData.FriendlyName 
+                    : "Other")}",
             DxgkEngineType.DxgkEngineType3D => "D3D 3D",
             DxgkEngineType.DxgkEngineTypeVideoDecode => "D3D Video Decode",
-            DxgkEngineType.DxgkEngineTypeVideoEncode => "D3D Video Encode",
+            DxgkEngineType.DxgkEngineTypeVideoEncode => "D3D Video Encode", 
             DxgkEngineType.DxgkEngineTypeVideoProcessing => "D3D Video Processing",
             DxgkEngineType.DxgkEngineTypeSceneAssembly => "D3D Scene Assembly",
             DxgkEngineType.DxgkEngineTypeCopy => "D3D Copy",

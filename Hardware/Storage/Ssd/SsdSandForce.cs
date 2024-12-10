@@ -35,7 +35,7 @@ internal class SsdSandForce : AtaStorage
             0,
             SmartNames.Temperature,
             true,
-            new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0) }),
+            [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0)]),
         new(0xC3, SmartNames.UnrecoverableEcc),
         new(0xC4, SmartNames.ReallocationEventCount, RawToInt),
         new(0xE7, SmartNames.RemainingLife, null, SensorType.Level, 0, SmartNames.RemainingLife),

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
-using Control = Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models.Control;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fintek
 {
@@ -26,7 +25,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fi
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             switch (manufacturer)
             {
@@ -34,7 +33,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fi
                     voltages.Add(new Voltage(SuperIoConstants.Vcc3vVolts, 0, 150, 150));
                     switch (model)
                     {
-                        case MotherboardModel.X58_SLI_Classified: // F71882
+                        case MotherboardModel.X58SliClassified: // F71882
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 1, 47, 100));
                             voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 2, 47, 100));
@@ -56,7 +55,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fi
                             fans.Add(new Fan(SuperIoConstants.ChassisFan, 2));
                             break;
 
-                        case MotherboardModel.X58_3X_SLI: // F71882
+                        case MotherboardModel.X583XSli: // F71882
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 1, 47, 100));
                             voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 2, 47, 100));
@@ -79,10 +78,10 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fi
                             fans.Add(new Fan(SuperIoConstants.ChipsetFan, 3));
 
                             // Controls
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 0));
-                            controls.Add(new Models.Control(SuperIoConstants.PowerFan, 1));
-                            controls.Add(new Models.Control(SuperIoConstants.ChassisFan, 2));
-                            controls.Add(new Models.Control(SuperIoConstants.ChipsetFan, 3));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(SuperIoConstants.PowerFan, 1));
+                            controls.Add(new Control(SuperIoConstants.ChassisFan, 2));
+                            controls.Add(new Control(SuperIoConstants.ChipsetFan, 3));
                             break;
 
                         default:
@@ -114,8 +113,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fi
                 case Manufacturer.MSI:
                     switch (model)
                     {
-                        case MotherboardModel.Z77_MS7751: // F71889AD
-                        case MotherboardModel.Z68_MS7672: // F71889AD
+                        case MotherboardModel.Z77Ms7751: // F71889AD
+                        case MotherboardModel.Z68Ms7672: // F71889AD
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.Vcc3vVolts, 0, 150, 150));
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 1));
@@ -140,10 +139,10 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fi
                             }
 
                             // Controls
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
                             for (int i = 1; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control(string.Format(SuperIoConstants.FanControlNumber, i), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanControlNumber, i), i));
                             }
                             break;
 
@@ -172,7 +171,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Fi
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             // Voltages
             voltages.Add(new Voltage(SuperIoConstants.Vcc3vVolts, 0, 150, 150));

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
@@ -57,7 +57,7 @@ internal sealed class SuperIoHardware : Hardware
     /// <param name="settings">The settings.</param>
     /// <param name="index">The index.</param>
     public SuperIoHardware(Motherboard motherboard, ISuperIo superIo, Manufacturer manufacturer, MotherboardModel model, ISettings settings, int index)
-        : base(ChipHelper.GetName(superIo.Chip), new Identifier("lpc", superIo.Chip.ToString().ToLowerInvariant(), index.ToString()), settings)
+        : base(ChipHelper.GetName(superIo.Chip), new Identifier(HardwareConstants.LpcIdentifier, superIo.Chip.ToString().ToLowerInvariant(), index.ToString()), settings)
     {
         _motherboard = motherboard;
         _superIo = superIo;
@@ -67,10 +67,10 @@ internal sealed class SuperIoHardware : Hardware
             superIo,
             manufacturer,
             model,
-            out IList<Voltage> voltages,
-            out IList<Temperature> temps,
-            out IList<Fan> fans,
-            out IList<Models.Control> controls,
+            out var voltages,
+            out var temps,
+            out var fans,
+            out var controls,
             out _readVoltage,
             out _readTemperature,
             out _readFan,
@@ -123,7 +123,7 @@ internal sealed class SuperIoHardware : Hardware
     /// </summary>
     /// <param name="control">The control.</param>
     /// <returns></returns>
-    private static byte GetSoftwareValueAsByte(Control control)
+    private static byte GetSoftwareValueAsByte(ControlSensor control)
     {
         const float percentToByteRatio = 2.55f;
         float value = control.SoftwareValue * percentToByteRatio;
@@ -153,7 +153,7 @@ internal sealed class SuperIoHardware : Hardware
         out IList<Voltage> voltages,
         out IList<Temperature> temps,
         out IList<Fan> fans,
-        out IList<Models.Control> controls,
+        out IList<Control> controls,
         out SuperIoDelegates.ReadValueDelegate readVoltage,
         out SuperIoDelegates.ReadValueDelegate readTemperature,
         out SuperIoDelegates.ReadValueDelegate readFan,
@@ -170,7 +170,7 @@ internal sealed class SuperIoHardware : Hardware
         voltages = new List<Voltage>();
         temps = new List<Temperature>();
         fans = new List<Fan>();
-        controls = new List<Models.Control>();
+        controls = new List<Control>();
 
         // Get board configuration by chip
         GetBoardConfigurationByChip(
@@ -205,7 +205,7 @@ internal sealed class SuperIoHardware : Hardware
         ref IList<Voltage> voltages,
         ref IList<Temperature> temps,
         ref IList<Fan> fans,
-        ref IList<Models.Control> controls,
+        ref IList<Control> controls,
         ref SuperIoDelegates.ReadValueDelegate readFan,
         ref SuperIoDelegates.UpdateDelegate postUpdate)
     {
@@ -284,8 +284,8 @@ internal sealed class SuperIoHardware : Hardware
                 WinbondConfigurations.GetW83627ChipConfiguration(voltages, temps, fans);
                 
                 // Controls
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.FanNumber, "1"), 0));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.FanNumber, "2"), 1));
+                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, "1"), 0));
+                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, "2"), 1));
                 break;
 
             case Chip.W83627THF:
@@ -294,9 +294,9 @@ internal sealed class SuperIoHardware : Hardware
                 WinbondConfigurations.GetW83627ChipConfiguration(voltages, temps, fans);
                 
                 // Controls
-                controls.Add(new Models.Control(SuperIoConstants.SystemFan, 0));
-                controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
-                controls.Add(new Models.Control(SuperIoConstants.AuxiliaryFan, 2));
+                controls.Add(new Control(SuperIoConstants.SystemFan, 0));
+                controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                controls.Add(new Control(SuperIoConstants.AuxiliaryFan, 2));
                 break;
 
             case Chip.NCT6771F:
@@ -351,7 +351,7 @@ internal sealed class SuperIoHardware : Hardware
                 GetBoardSpecificConfigurationNct6687D(manufacturer, model, ref voltages, ref temps, ref fans, ref controls);
                 break;
 
-            case Chip.IPMI:
+            case Chip.Ipmi:
                 Ipmi ipmi = (Ipmi)superIo;
 
                 // Voltages
@@ -373,7 +373,7 @@ internal sealed class SuperIoHardware : Hardware
                 }
 
                 // Controls
-                foreach (Models.Control control in ipmi.GetControls())
+                foreach (Control control in ipmi.GetControls())
                 {
                     controls.Add(control);
                 }
@@ -401,11 +401,11 @@ internal sealed class SuperIoHardware : Hardware
         ref IList<Voltage> voltages,
         ref IList<Temperature> temps,
         ref IList<Fan> fans,
-        ref IList<Models.Control> controls)
+        ref IList<Control> controls)
     {
         switch (manufacturer)
         {
-            case Manufacturer.ASRock when model == MotherboardModel.Z790_Taichi:
+            case Manufacturer.ASRock when model == MotherboardModel.Z790Taichi:
                 // Temps
                 temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
                 temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
@@ -420,15 +420,15 @@ internal sealed class SuperIoHardware : Hardware
                 fans.Add(new Fan(string.Format(SuperIoConstants.MosFanNumber, "4"), 5));
 
                 // Controls
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 0));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 1));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 3));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 4));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.MosFanNumber, "4"), 5));
+                controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 0));
+                controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 1));
+                controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2));
+                controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 3));
+                controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 4));
+                controls.Add(new Control(string.Format(SuperIoConstants.MosFanNumber, "4"), 5));
                 break;
 
-            case Manufacturer.MSI when model == MotherboardModel.B550A_PRO:
+            case Manufacturer.MSI when model == MotherboardModel.B550APro:
                 // Voltages
                 voltages.Add(new Voltage(SuperIoConstants.V120Volts, 0));
                 voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -462,14 +462,14 @@ internal sealed class SuperIoHardware : Hardware
                 fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, "6"), 7));
 
                 // Controls
-                controls.Add(new Models.Control(SuperIoConstants.CpuFan, 0));
-                controls.Add(new Models.Control(SuperIoConstants.PumpFan, 1));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 2));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 3));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "3"), 4));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "4"), 5));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "5"), 6));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "6"), 7));
+                controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                controls.Add(new Control(SuperIoConstants.PumpFan, 1));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 2));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 3));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "3"), 4));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "4"), 5));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "5"), 6));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "6"), 7));
                 break;
 
             default:
@@ -509,14 +509,14 @@ internal sealed class SuperIoHardware : Hardware
                 fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, "6"), 7));
 
                 // Controls
-                controls.Add(new Models.Control(SuperIoConstants.CpuFan, 0));
-                controls.Add(new Models.Control(SuperIoConstants.PumpFan, 1));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 2));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 3));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "3"), 4));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "4"), 5));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "5"), 6));
-                controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "6"), 7));
+                controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                controls.Add(new Control(SuperIoConstants.PumpFan, 1));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 2));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 3));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "3"), 4));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "4"), 5));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "5"), 6));
+                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "6"), 7));
                 break;
         }
     }
@@ -534,7 +534,7 @@ internal sealed class SuperIoHardware : Hardware
         IList<Voltage> voltages,
         IList<Temperature> temps,
         IList<Fan> fans,
-        ICollection<Models.Control> controls)
+        ICollection<Control> controls)
     {
         DefaultConfigurations.GetVoltages(superIo, voltages);
         DefaultConfigurations.GetTemps(superIo, temps);
@@ -550,25 +550,25 @@ internal sealed class SuperIoHardware : Hardware
     /// <param name="superIo">The super io.</param>
     /// <param name="settings">The settings.</param>
     /// <param name="controls">The controls.</param>
-    private void CreateControlSensors(ISuperIo superIo, ISettings settings, IList<Models.Control> controls)
+    private void CreateControlSensors(ISuperIo superIo, ISettings settings, IList<Control> controls)
     {
         foreach (var ctrl in controls)
         {
             int index = ctrl.Index;
             if (index >= superIo.Controls.Length) continue;
             var sensor = new Sensor(ctrl.Name, index, SensorType.Control, this, settings);
-            var control = new Control(sensor, settings, 0, 100);
+            var control = new ControlSensor(sensor, settings, 0, 100);
             control.ControlModeChanged += cc =>
             {
                 switch (cc.ControlMode)
                 {
-                    case ControlMode.Default:
+                    case ControlSensorMode.Default:
                         superIo.SetControl(index, null);
                         break;
-                    case ControlMode.Software:
+                    case ControlSensorMode.Software:
                         superIo.SetControl(index, GetSoftwareValueAsByte(cc));
                         break;
-                    case ControlMode.Undefined:
+                    case ControlSensorMode.Undefined:
                     default:
                         return;
                 }
@@ -576,19 +576,19 @@ internal sealed class SuperIoHardware : Hardware
 
             control.SoftwareControlValueChanged += cc =>
             {
-                if (cc.ControlMode != ControlMode.Software) return;
+                if (cc.ControlMode != ControlSensorMode.Software) return;
                 superIo.SetControl(index, GetSoftwareValueAsByte(cc));
             };
 
             switch (control.ControlMode)
             {
-                case ControlMode.Default:
+                case ControlSensorMode.Default:
                     superIo.SetControl(index, null);
                     break;
-                case ControlMode.Software:
+                case ControlSensorMode.Software:
                     superIo.SetControl(index, GetSoftwareValueAsByte(control));
                     break;
-                case ControlMode.Undefined:
+                case ControlSensorMode.Undefined:
                 default:
                     break;
             }

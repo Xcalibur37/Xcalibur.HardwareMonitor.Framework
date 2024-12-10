@@ -19,7 +19,7 @@ internal class Sensor : ISensor
     private readonly Hardware _hardware;
     private readonly ISettings _settings;
     private readonly bool _trackMinMax;
-    private readonly List<SensorValue> _values = new();
+    private readonly List<SensorValue> _values = [];
     private int _count;
     private float? _currentValue;
     private string _name;
@@ -113,7 +113,7 @@ internal class Sensor : ISensor
     /// <value>
     /// The control.
     /// </value>
-    public IControl Control { get; internal set; }
+    public IControlSensor Control { get; internal set; }
 
     /// <summary>
     ///   <inheritdoc cref="IHardware" />
@@ -300,7 +300,9 @@ internal class Sensor : ISensor
     /// <param name="time">The time.</param>
     private void AppendValue(float value, DateTime time)
     {
-        if (_values.Count >= 2 && _values[_values.Count - 1].Value == value && _values[_values.Count - 2].Value == value)
+        if (_values.Count >= 2 && 
+            _values[^1].Value.Equals(value) && 
+            _values[^2].Value.Equals(value))
         {
             _values[^1] = new SensorValue(value, time);
             return;
@@ -340,8 +342,7 @@ internal class Sensor : ISensor
                     {
                         t += reader.ReadInt64();
                         DateTime time = DateTime.FromBinary(t);
-                        if (time > now)
-                            break;
+                        if (time > now) break;
 
                         float value = reader.ReadSingle();
                         AppendValue(value, time);

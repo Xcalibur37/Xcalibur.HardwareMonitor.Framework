@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
-// ReSharper disable once InconsistentNaming
-
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 
 /// <summary>
 /// LM Sensors
 /// </summary>
-internal class LMSensors
+internal class LmSensors
 {
     private const string HwMonPath = "/sys/class/hwmon/";
     private readonly List<ISuperIo> _superIOs = [];
@@ -24,9 +22,9 @@ internal class LMSensors
     public IReadOnlyList<ISuperIo> SuperIo => _superIOs;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LMSensors"/> class.
+    /// Initializes a new instance of the <see cref="LmSensors"/> class.
     /// </summary>
-    public LMSensors()
+    public LmSensors()
     {
         if (!Directory.Exists(HwMonPath)) return;
 

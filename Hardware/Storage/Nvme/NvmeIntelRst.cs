@@ -1,9 +1,4 @@
-﻿
-
-
-
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
@@ -31,7 +26,7 @@ internal class NvmeIntelRst : INvmeDrive
 
         bool result = false;
 
-        NvmePassThroughIoctl passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
+        var passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
         passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<SrbIoControl>();
         passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNvMeMiniPortSignature2);
         passThrough.srb.Timeout = 10;
@@ -51,7 +46,7 @@ internal class NvmeIntelRst : INvmeDrive
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlScsiMiniport, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
             nint offset = Marshal.OffsetOf<NvmePassThroughIoctl>(nameof(NvmePassThroughIoctl.DataBuffer));
@@ -88,7 +83,7 @@ internal class NvmeIntelRst : INvmeDrive
 
         bool result = false;
 
-        NvmePassThroughIoctl passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
+        var passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
         passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<SrbIoControl>();
         passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNvMeMiniPortSignature2);
         passThrough.srb.Timeout = 10;
@@ -108,7 +103,7 @@ internal class NvmeIntelRst : INvmeDrive
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlScsiMiniport, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
             nint offset = Marshal.OffsetOf<NvmePassThroughIoctl>(nameof(NvmePassThroughIoctl.DataBuffer));
@@ -142,7 +137,7 @@ internal class NvmeIntelRst : INvmeDrive
         SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.Scsi);
         if (handle?.IsInvalid != false) return null;
 
-        NvmePassThroughIoctl passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
+        var passThrough = Kernel32.CreateStruct<NvmePassThroughIoctl>();
         passThrough.srb.HeaderLenght = (uint)Marshal.SizeOf<SrbIoControl>();
         passThrough.srb.Signature = Encoding.ASCII.GetBytes(Kernel32.IntelNvMeMiniPortSignature2);
         passThrough.srb.Timeout = 10;
@@ -162,7 +157,7 @@ internal class NvmeIntelRst : INvmeDrive
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(passThrough, buffer, false);
 
-        bool validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IOCTL_SCSI_MINIPORT, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IoctlScsiMiniport, buffer, length, buffer, length, out _, nint.Zero);
         Marshal.FreeHGlobal(buffer);
 
         if (validTransfer) { }

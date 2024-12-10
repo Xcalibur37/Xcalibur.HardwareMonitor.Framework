@@ -31,7 +31,7 @@ internal static class OpCode
     //   *edx = info[3];
     // }
     private static readonly byte[] CpuId32 =
-    {
+    [
         0x55, // push ebp
         0x8B,
         0xEC, // mov ebp, esp
@@ -100,13 +100,13 @@ internal static class OpCode
         0xC2,
         0x18,
         0x00 // ret 18h
-    };
+    ];
 
     /// <summary>
     /// The cpu id64 linux
     /// </summary>
     private static readonly byte[] CpuId64Linux =
-    {
+    [
         0x49,
         0x89,
         0xD2, // mov r10, rdx
@@ -134,13 +134,13 @@ internal static class OpCode
         0x11, // mov dword ptr [r9], edx
         0x5B, // pop rbx
         0xC3 // ret
-    };
+    ];
 
     /// <summary>
     /// The cpu id64 windows
     /// </summary>
     private static readonly byte[] CpuId64Windows =
-    {
+    [
         0x48,
         0x89,
         0x5C,
@@ -178,7 +178,7 @@ internal static class OpCode
         0x89,
         0x10, // mov dword ptr [rax], edx
         0xC3 // ret
-    };
+    ];
 
     // unsigned __int64 __stdcall rdtsc() {
     //   return __rdtsc();
@@ -188,17 +188,17 @@ internal static class OpCode
     /// The RDTSC32
     /// </summary>
     private static readonly byte[] Rdtsc32 =
-    {
+    [
         0x0F,
         0x31, // rdtsc
         0xC3 // ret
-    };
+    ];
 
     /// <summary>
     /// The RDTSC64
     /// </summary>
     private static readonly byte[] Rdtsc64 =
-    {
+    [
         0x0F,
         0x31, // rdtsc
         0x48,
@@ -209,7 +209,7 @@ internal static class OpCode
         0x0B,
         0xC2, // or rax, rdx
         0xC3 // ret
-    };
+    ];
 
     /// <summary>
     /// Cpuid Delegate
@@ -248,8 +248,8 @@ internal static class OpCode
 #endif
 
             Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
-            MethodInfo method = sysCall.GetMethod("munmap");
-            method?.Invoke(null, new object[] { _codeBuffer, _size });
+            MethodInfo method = sysCall?.GetMethod("munmap");
+            method?.Invoke(null, [_codeBuffer, _size]);
         }
         else
         {
@@ -310,34 +310,44 @@ internal static class OpCode
             Assembly assembly = Assembly.Load("Mono.Posix.NETStandard, Version=1.0.0.0, Culture=neutral");
 #endif
 
-            Type sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
+            var sysCall = assembly.GetType("Mono.Unix.Native.Syscall");
             MethodInfo mmap = sysCall.GetMethod("mmap");
 
             Type mmapProts = assembly.GetType("Mono.Unix.Native.MmapProts");
-            object mmapProtsParam = Enum.ToObject(mmapProts,
-                                                  (int)mmapProts.GetField("PROT_READ").GetValue(null) |
-                                                  (int)mmapProts.GetField("PROT_WRITE").GetValue(null) |
-                                                  (int)mmapProts.GetField("PROT_EXEC").GetValue(null));
+            if (mmapProts is null) return;
+            
+            object mmapProtsParam = Enum.ToObject(
+                mmapProts,
+                (int)mmapProts.GetField("PROT_READ")!.GetValue(null)! |
+                (int)mmapProts.GetField("PROT_WRITE")!.GetValue(null)! |
+                (int)mmapProts.GetField("PROT_EXEC")!.GetValue(null)!);
 
             Type mmapFlags = assembly.GetType("Mono.Unix.Native.MmapFlags");
-            object mmapFlagsParam = Enum.ToObject(mmapFlags,
-                                                  (int)mmapFlags.GetField("MAP_ANONYMOUS").GetValue(null) |
-                                                  (int)mmapFlags.GetField("MAP_PRIVATE").GetValue(null));
+            if (mmapFlags is null) return;
+            
+            object mmapFlagsParam = Enum.ToObject(
+                mmapFlags,
+                (int)mmapFlags.GetField("MAP_ANONYMOUS")!.GetValue(null)! |
+                (int)mmapFlags.GetField("MAP_PRIVATE")!.GetValue(null)!);
 
             if (mmap != null)
-                _codeBuffer = (IntPtr)mmap.Invoke(null, new[] { IntPtr.Zero, _size, mmapProtsParam, mmapFlagsParam, -1, 0 });
+            {
+                _codeBuffer = (IntPtr)mmap.Invoke(null, [IntPtr.Zero, _size, mmapProtsParam, mmapFlagsParam, -1, 0])!;
+            }
         }
         else
         {
-            _codeBuffer = Interop.Kernel32.VirtualAlloc(IntPtr.Zero,
-                                                        (UIntPtr)_size,
-                                                        Mem.MemCommit | Mem.MemReserve,
-                                                        Page.PageExecuteReadwrite);
+            _codeBuffer = Interop.Kernel32.VirtualAlloc(
+                IntPtr.Zero,
+                (UIntPtr)_size,
+                Mem.MemCommit | Mem.MemReserve,
+                Page.PageExecuteReadwrite);
         }
 
         Marshal.Copy(rdTscCode, 0, _codeBuffer, rdTscCode.Length);
         Rdtsc = Marshal.GetDelegateForFunctionPointer(_codeBuffer, typeof(RdtscDelegate)) as RdtscDelegate;
-        IntPtr cpuidAddress = (IntPtr)((long)_codeBuffer + rdTscCode.Length);
+        
+        var cpuidAddress = (IntPtr)((long)_codeBuffer + rdTscCode.Length);
         Marshal.Copy(cpuidCode, 0, cpuidAddress, cpuidCode.Length);
         CpuId = Marshal.GetDelegateForFunctionPointer(cpuidAddress, typeof(CpuidDelegate)) as CpuidDelegate;
     }

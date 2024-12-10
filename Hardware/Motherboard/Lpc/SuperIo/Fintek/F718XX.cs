@@ -1,10 +1,4 @@
-﻿
-
-
-
-
-
-using System;
+﻿using System;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 
 // ReSharper disable once InconsistentNaming
@@ -19,21 +13,15 @@ internal class F718XX : ISuperIo
 {
     #region Fields
 
-    // ReSharper disable InconsistentNaming
-#pragma warning disable IDE1006 // Naming Styles
+    private const byte AddressRegisterOffset = 0x05;
+    private const byte DataRegisterOffset = 0x06;
+    private const byte PwmValuesOffset = 0x2D;
+    private const byte TemperatureBaseReg = 0x70;
+    private const byte TemperatureConfigReg = 0x69;
 
-    private const byte ADDRESS_REGISTER_OFFSET = 0x05;
-    private const byte DATA_REGISTER_OFFSET = 0x06;
-    private const byte PWM_VALUES_OFFSET = 0x2D;
-    private const byte TEMPERATURE_BASE_REG = 0x70;
-    private const byte TEMPERATURE_CONFIG_REG = 0x69;
-
-    private const byte VOLTAGE_BASE_REG = 0x20;
-    private readonly byte[] FAN_PWM_REG = { 0xA3, 0xB3, 0xC3, 0xD3 };
-    private readonly byte[] FAN_TACHOMETER_REG = { 0xA0, 0xB0, 0xC0, 0xD0 };
-
-    // ReSharper restore InconsistentNaming
-#pragma warning restore IDE1006 // Naming Styles
+    private const byte VoltageBaseReg = 0x20;
+    private readonly byte[] _fanPwmReg = { 0xA3, 0xB3, 0xC3, 0xD3 };
+    private readonly byte[] _fanTachometerReg = { 0xA0, 0xB0, 0xC0, 0xD0 };
 
     private readonly ushort _address;
     private readonly byte[] _initialFanPwmControl = new byte[4];
@@ -100,7 +88,12 @@ internal class F718XX : ISuperIo
         Voltages = new float?[chip == Chip.F71858 ? 3 : 9];
         Temperatures = new float?[chip == Chip.F71808E ? 2 : 3];
         Fans = new float?[chip is Chip.F71882 or Chip.F71858 ? 4 : 3];
-        Controls = new float?[chip == Chip.F71878AD || chip == Chip.F71889AD ? 3 : chip == Chip.F71882 ? 4 : 0];
+        Controls = new float?[chip switch
+        {
+            Chip.F71878AD or Chip.F71889AD => 3,
+            Chip.F71882 => 4,
+            _ => 0
+        }];
     }
 
     #endregion
@@ -130,15 +123,16 @@ internal class F718XX : ISuperIo
     public void SetControl(int index, byte? value)
     {
         if (index < 0 || index >= Controls.Length)
+        {
             throw new ArgumentOutOfRangeException(nameof(index));
+        }
 
         if (!Mutexes.WaitIsaBus(10)) return;
 
         if (value.HasValue)
         {
             SaveDefaultFanPwmControl(index);
-
-            WriteByte(FAN_PWM_REG[index], value.Value);
+            WriteByte(_fanPwmReg[index], value.Value);
         }
         else
         {
@@ -157,16 +151,10 @@ internal class F718XX : ISuperIo
 
         for (int i = 0; i < Voltages.Length; i++)
         {
-            if (Chip == Chip.F71808E && i == 6)
-            {
-                // 0x26 is reserved on F71808E
-                Voltages[i] = 0;
-            }
-            else
-            {
-                int value = ReadByte((byte)(VOLTAGE_BASE_REG + i));
-                Voltages[i] = 0.008f * value;
-            }
+            // 0x26 is reserved on F71808E
+            Voltages[i] = Chip == Chip.F71808E && i == 6 
+                ? 0 
+                : 0.008f * ReadByte((byte)(VoltageBaseReg + i));
         }
 
         for (int i = 0; i < Temperatures.Length; i++)
@@ -175,9 +163,9 @@ internal class F718XX : ISuperIo
             {
                 case Chip.F71858:
                     {
-                        int tableMode = 0x3 & ReadByte(TEMPERATURE_CONFIG_REG);
-                        int high = ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * i));
-                        int low = ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * i + 1));
+                        int tableMode = 0x3 & ReadByte(TemperatureConfigReg);
+                        int high = ReadByte((byte)(TemperatureBaseReg + 2 * i));
+                        int low = ReadByte((byte)(TemperatureBaseReg + 2 * i + 1));
                         if (high is not 0xbb and not 0xcc)
                         {
                             int bits = 0;
@@ -210,7 +198,7 @@ internal class F718XX : ISuperIo
                     break;
                 default:
                     {
-                        sbyte value = (sbyte)ReadByte((byte)(TEMPERATURE_BASE_REG + 2 * (i + 1)));
+                        sbyte value = (sbyte)ReadByte((byte)(TemperatureBaseReg + 2 * (i + 1)));
                         Temperatures[i] = value is < sbyte.MaxValue and > 0 ? value : null;
                     }
                     break;
@@ -219,16 +207,16 @@ internal class F718XX : ISuperIo
 
         for (int i = 0; i < Fans.Length; i++)
         {
-            int value = ReadByte(FAN_TACHOMETER_REG[i]) << 8;
-            value |= ReadByte((byte)(FAN_TACHOMETER_REG[i] + 1));
+            int value = ReadByte(_fanTachometerReg[i]) << 8;
+            value |= ReadByte((byte)(_fanTachometerReg[i] + 1));
             Fans[i] = value > 0 ? value < 0x0fff ? 1.5e6f / value : 0 : null;
         }
 
         for (int i = 0; i < Controls.Length; i++)
         {
             Controls[i] = Chip == Chip.F71882 || Chip == Chip.F71889AD
-                ? ReadByte(FAN_PWM_REG[i]) * 100.0f / 0xFF
-                : ReadByte((byte)(PWM_VALUES_OFFSET + i)) * 100.0f / 0xFF;
+                ? ReadByte(_fanPwmReg[i]) * 100.0f / 0xFF
+                : ReadByte((byte)(PwmValuesOffset + i)) * 100.0f / 0xFF;
         }
 
         Mutexes.ReleaseIsaBus();
@@ -241,7 +229,7 @@ internal class F718XX : ISuperIo
     private void SaveDefaultFanPwmControl(int index)
     {
         if (_restoreDefaultFanPwmControlRequired[index]) return;
-        _initialFanPwmControl[index] = ReadByte(FAN_PWM_REG[index]);
+        _initialFanPwmControl[index] = ReadByte(_fanPwmReg[index]);
         _restoreDefaultFanPwmControlRequired[index] = true;
     }
 
@@ -252,7 +240,7 @@ internal class F718XX : ISuperIo
     private void RestoreDefaultFanPwmControl(int index)
     {
         if (!_restoreDefaultFanPwmControlRequired[index]) return;
-        WriteByte(FAN_PWM_REG[index], _initialFanPwmControl[index]);
+        WriteByte(_fanPwmReg[index], _initialFanPwmControl[index]);
         _restoreDefaultFanPwmControlRequired[index] = false;
     }
 
@@ -263,8 +251,8 @@ internal class F718XX : ISuperIo
     /// <returns></returns>
     private byte ReadByte(byte register)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        return Ring0.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
+        Ring0.WriteIoPort((ushort)(_address + AddressRegisterOffset), register);
+        return Ring0.ReadIoPort((ushort)(_address + DataRegisterOffset));
     }
 
     /// <summary>
@@ -274,8 +262,8 @@ internal class F718XX : ISuperIo
     /// <param name="value">The value.</param>
     private void WriteByte(byte register, byte value)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
+        Ring0.WriteIoPort((ushort)(_address + AddressRegisterOffset), register);
+        Ring0.WriteIoPort((ushort)(_address + DataRegisterOffset), value);
     }
 
     #endregion

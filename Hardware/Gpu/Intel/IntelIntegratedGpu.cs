@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3D;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
@@ -11,7 +11,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.Intel;
 /// <summary>
 /// Intel Integrated GPU
 /// </summary>
-/// <seealso cref="Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.GpuBase" />
+/// <seealso cref="GpuBase" />
 internal sealed class IntelIntegratedGpu : GpuBase
 {
     #region Fields
@@ -56,7 +56,7 @@ internal sealed class IntelIntegratedGpu : GpuBase
     /// <param name="settings">The settings.</param>
     public IntelIntegratedGpu(IntelCpu intelCpu, string deviceId, D3dDeviceInfo deviceInfo, ISettings settings)
         : base(GetName(deviceId),
-               new Identifier("gpu-intel-integrated", deviceId.ToString(CultureInfo.InvariantCulture)), settings)
+               new Identifier(HardwareConstants.GpuIntelIdentifier, deviceId.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _deviceId = deviceId;
 

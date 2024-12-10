@@ -1,5 +1,4 @@
 ﻿using System;
-using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart;
 

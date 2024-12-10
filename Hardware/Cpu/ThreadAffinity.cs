@@ -32,6 +32,7 @@ internal static class ThreadAffinity
             return GroupAffinity.Undefined;
         }
 
+        // Unix only
         if (Software.OperatingSystem.IsUnix)
         {
             if (affinity.Group > 0)
@@ -39,14 +40,16 @@ internal static class ThreadAffinity
                 throw new ArgumentOutOfRangeException(nameof(affinity));
             }
 
+            // Get processor affinity
             ulong result = 0;
-            if (LibC.sched_getaffinity(0, (IntPtr)8, ref result) != 0)
+            if (LibC.sched_getaffinity(0, 8, ref result) != 0)
             {
                 return GroupAffinity.Undefined;
             }
 
+            // Set processor affinity
             ulong mask = affinity.Mask;
-            return LibC.sched_setaffinity(0, (IntPtr)8, ref mask) != 0
+            return LibC.sched_setaffinity(0, 8, ref mask) != 0
                 ? GroupAffinity.Undefined
                 : new GroupAffinity(0, result);
         }
@@ -57,14 +60,13 @@ internal static class ThreadAffinity
             throw new ArgumentOutOfRangeException(nameof(affinity));
         }
 
+        // Processor group affinity
         var groupAffinity = new Interop.Models.Kernel32.GroupAffinity
         {
             Group = affinity.Group, 
             Mask = (UIntPtr)affinity.Mask
         };
-
         IntPtr currentThread = Kernel32.GetCurrentThread();
-
         return Kernel32.SetThreadGroupAffinity(currentThread, ref groupAffinity, out Interop.Models.Kernel32.GroupAffinity previousGroupAffinity)
             ? new GroupAffinity(previousGroupAffinity.Group, (ulong)previousGroupAffinity.Mask)
             : GroupAffinity.Undefined;

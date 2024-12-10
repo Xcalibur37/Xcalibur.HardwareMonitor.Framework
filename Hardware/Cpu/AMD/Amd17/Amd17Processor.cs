@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
@@ -74,24 +75,16 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <param name="coreId">The core identifier.</param>
         public void AppendThread(CpuId thread, int numaId, int coreId)
         {
-            Amd17NumaNode node = null;
-            foreach (Amd17NumaNode n in Nodes)
-            {
-                if (n.NodeId != numaId) continue;
-                node = n;
-                break;
-            }
+            Amd17NumaNode node = Nodes.FirstOrDefault(n => n.NodeId == numaId);
 
-            if (node == null)
+            if (node is null)
             {
                 node = new Amd17NumaNode(_cpu, numaId);
                 Nodes.Add(node);
             }
 
-            if (thread != null)
-            {
-                node.AppendThread(thread, coreId);
-            }
+            if (thread is null) return;
+            node.AppendThread(thread, coreId);
         }
 
         /// <summary>
@@ -112,7 +105,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <returns></returns>
         private double GetTimeStampCounterMultiplier()
         {
-            Ring0.ReadMsr(Amd17Constants.MSR_PSTATE_0, out uint eax, out _);
+            Ring0.ReadMsr(Amd17Constants.MsrPstate0, out uint eax, out _);
             uint cpuDfsId = eax >> 8 & 0x3f;
             uint cpuFid = eax & 0xff;
             return 2.0 * cpuFid / cpuDfsId;
@@ -124,17 +117,17 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <returns></returns>
         private void CreateTemperatureSensors()
         {
-            _coreTemperatureTctl = new Sensor("Core (Tctl)",
+            _coreTemperatureTctl = new Sensor(SuperIoConstants.CoreTempCtrlTemp,
                 _cpu.SensorTypeIndex[SensorType.Temperature]++,
                 SensorType.Temperature,
                 _cpu,
                 _cpu.Settings);
-            _coreTemperatureTdie = new Sensor("Core (Tdie)",
+            _coreTemperatureTdie = new Sensor(SuperIoConstants.CoreTempDieTemp,
                 _cpu.SensorTypeIndex[SensorType.Temperature]++,
                 SensorType.Temperature,
                 _cpu,
                 _cpu.Settings);
-            _coreTemperatureTctlTdie = new Sensor("Core (Tctl/Tdie)",
+            _coreTemperatureTctlTdie = new Sensor(SuperIoConstants.CoreTempCtrlDieTemp,
                 _cpu.SensorTypeIndex[SensorType.Temperature]++,
                 SensorType.Temperature,
                 _cpu,
@@ -163,15 +156,15 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
 
             // THM_TCON_CUR_TMP
             // CUR_TEMP [31:21]
-            Ring0.WritePciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER, Amd17Constants.F17H_M01H_THM_TCON_CUR_TMP);
-            Ring0.ReadPciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint temperature);
+            Ring0.WritePciConfig(0x00, Amd17Constants.Family17HPciControlRegister, Amd17Constants.F17HM01HThmTconCurTmp);
+            Ring0.ReadPciConfig(0x00, Amd17Constants.Family17HPciControlRegister + 4, out uint temperature);
 
             // Restore thread affinity
             ThreadAffinity.Set(previousAffinity);
 
             // current temp Bit [31:21]
             // If bit 19 of the Temperature Control register is set, there is an additional offset of 49 degrees C.
-            bool tempOffsetFlag = (temperature & Amd17Constants.F17H_TEMP_OFFSET_FLAG) != 0;
+            bool tempOffsetFlag = (temperature & Amd17Constants.F17HTempOffsetFlag) != 0;
             temperature = (temperature >> 21) * 125;
             float offset = 0.0f;
 
@@ -227,10 +220,10 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                 {
                     // Raphael or GraniteRidge
                     uint f17HCcdValue = cpuId.Model is 0x61 or 0x44
-                        ? Amd17Constants.F17H_M61H_CCD1_TEMP
-                        : Amd17Constants.F17H_M70H_CCD1_TEMP;
-                    Ring0.WritePciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER, f17HCcdValue + i * 0x4);
-                    Ring0.ReadPciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER + 4, out uint ccdRawTemp);
+                        ? Amd17Constants.F17HM61HCcd1Temp
+                        : Amd17Constants.F17HM70HCcd1Temp;
+                    Ring0.WritePciConfig(0x00, Amd17Constants.Family17HPciControlRegister, f17HCcdValue + i * 0x4);
+                    Ring0.ReadPciConfig(0x00, Amd17Constants.Family17HPciControlRegister + 4, out uint ccdRawTemp);
 
 
                     // Zen 2 reports 95 degrees C max, but it might exceed that.
@@ -240,7 +233,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                     if (_ccdTemperatures[i] == null)
                     {
                         _cpu.ActivateSensor(_ccdTemperatures[i] =
-                            new Sensor($"CCD{i + 1} (Tdie)",
+                            new Sensor($"{SuperIoConstants.CcdTemp}{i + 1} (Tdie)",
                                 _cpu.SensorTypeIndex[SensorType.Temperature]++,
                                 SensorType.Temperature,
                                 _cpu,
@@ -258,7 +251,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                     if (_ccdsMaxTemperature == null)
                     {
                         _cpu.ActivateSensor(_ccdsMaxTemperature =
-                            new Sensor("CCDs Max (Tdie)",
+                            new Sensor(SuperIoConstants.CcdMaxTemp,
                                 _cpu.SensorTypeIndex[SensorType.Temperature]++,
                                 SensorType.Temperature,
                                 _cpu,
@@ -270,7 +263,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                     if (_ccdsAverageTemperature == null)
                     {
                         _cpu.ActivateSensor(_ccdsAverageTemperature =
-                            new Sensor("CCDs Average (Tdie)",
+                            new Sensor(SuperIoConstants.CcdAverageTemp,
                                 _cpu.SensorTypeIndex[SensorType.Temperature]++,
                                 SensorType.Temperature,
                                 _cpu,
@@ -290,7 +283,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <returns></returns>
         private void CreateClockSensors()
         {
-            _busClock = new Sensor("Bus Speed",
+            _busClock = new Sensor(CpuConstants.BusSpeed,
                 _cpu.SensorTypeIndex[SensorType.Clock]++,
                 SensorType.Clock,
                 _cpu,
@@ -316,12 +309,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <returns></returns>
         private void CreateVoltageSensors()
         {
-            _coreVoltage = new Sensor("Core (SVI2 TFN)",
+            _coreVoltage = new Sensor(SuperIoConstants.CoreSvi2Volts,
                 _cpu.SensorTypeIndex[SensorType.Voltage]++,
                 SensorType.Voltage,
                 _cpu,
                 _cpu.Settings);
-            _socVoltage = new Sensor("SoC (SVI2 TFN)",
+            _socVoltage = new Sensor(SuperIoConstants.SocSvi2Volts,
                 _cpu.SensorTypeIndex[SensorType.Voltage]++,
                 SensorType.Voltage,
                 _cpu,
@@ -351,10 +344,10 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             if (Mutexes.WaitPciBus(10))
             {
                 // SVI0_TFN_PLANE0 [0]
-                Ring0.WritePciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER, Amd17Constants.F17H_M01H_SVI + 0x8);
+                Ring0.WritePciConfig(0x00, Amd17Constants.Family17HPciControlRegister, Amd17Constants.F17HM01HSvi + 0x8);
 
                 // SVI0_TFN_PLANE1 [1]
-                Ring0.ReadPciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0Tfn);
+                Ring0.ReadPciConfig(0x00, Amd17Constants.Family17HPciControlRegister + 4, out smuSvi0Tfn);
 
                 // TODO: find a better way because these will probably keep changing in the future.
                 uint sviPlane0Offset;
@@ -362,39 +355,39 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
                 switch (cpuId.Model)
                 {
                     case 0x31: // Threadripper 3000.
-                        sviPlane0Offset = Amd17Constants.F17H_M01H_SVI + 0x14;
-                        sviPlane1Offset = Amd17Constants.F17H_M01H_SVI + 0x10;
+                        sviPlane0Offset = Amd17Constants.F17HM01HSvi + 0x14;
+                        sviPlane1Offset = Amd17Constants.F17HM01HSvi + 0x10;
                         break;
 
                     case 0x71: // Zen 2.
                     case 0x21: // Zen 3.
-                        sviPlane0Offset = Amd17Constants.F17H_M01H_SVI + 0x10;
-                        sviPlane1Offset = Amd17Constants.F17H_M01H_SVI + 0xC;
+                        sviPlane0Offset = Amd17Constants.F17HM01HSvi + 0x10;
+                        sviPlane1Offset = Amd17Constants.F17HM01HSvi + 0xC;
                         break;
 
                     case 0x61: // Zen 4
                     case 0x44: // Zen 5
-                        sviPlane0Offset = Amd17Constants.F17H_M01H_SVI + 0x10;
-                        sviPlane1Offset = Amd17Constants.F17H_M01H_SVI + 0xC;
+                        sviPlane0Offset = Amd17Constants.F17HM01HSvi + 0x10;
+                        sviPlane1Offset = Amd17Constants.F17HM01HSvi + 0xC;
                         break;
 
                     default: // Zen and Zen+.
-                        sviPlane0Offset = Amd17Constants.F17H_M01H_SVI + 0xC;
-                        sviPlane1Offset = Amd17Constants.F17H_M01H_SVI + 0x10;
+                        sviPlane0Offset = Amd17Constants.F17HM01HSvi + 0xC;
+                        sviPlane1Offset = Amd17Constants.F17HM01HSvi + 0x10;
                         break;
                 }
 
                 // SVI0_PLANE0_VDDCOR [24:16]
-                Ring0.WritePciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane0Offset);
+                Ring0.WritePciConfig(0x00, Amd17Constants.Family17HPciControlRegister, sviPlane0Offset);
 
                 // SVI0_PLANE0_IDDCOR [7:0]
-                Ring0.ReadPciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane0);
+                Ring0.ReadPciConfig(0x00, Amd17Constants.Family17HPciControlRegister + 4, out smuSvi0TelPlane0);
 
                 // SVI0_PLANE1_VDDCOR [24:16]
-                Ring0.WritePciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER, sviPlane1Offset);
+                Ring0.WritePciConfig(0x00, Amd17Constants.Family17HPciControlRegister, sviPlane1Offset);
 
                 // SVI0_PLANE1_IDDCOR [7:0]
-                Ring0.ReadPciConfig(0x00, Amd17Constants.FAMILY_17H_PCI_CONTROL_REGISTER + 4, out smuSvi0TelPlane1);
+                Ring0.ReadPciConfig(0x00, Amd17Constants.Family17HPciControlRegister + 4, out smuSvi0TelPlane1);
 
                 // Restore thread affinity
                 ThreadAffinity.Set(previousAffinity);
@@ -434,7 +427,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         /// <returns></returns>
         private void CreatePowerSensors()
         {
-            _packagePower = new Sensor("Package",
+            _packagePower = new Sensor(SuperIoConstants.PackageVolts,
                 _cpu.SensorTypeIndex[SensorType.Power]++,
                 SensorType.Power,
                 _cpu,
@@ -457,12 +450,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment
             // PU [3:0]
-            Ring0.ReadMsr(Amd17Constants.MSR_PWR_UNIT, out uint _, out uint _);
+            Ring0.ReadMsr(Amd17Constants.MsrPwrUnit, out uint _, out uint _);
 
             // MSRC001_029B
             // total_energy [31:0]
             DateTime sampleTime = DateTime.Now;
-            Ring0.ReadMsr(Amd17Constants.MSR_PKG_ENERGY_STAT, out uint eax, out _);
+            Ring0.ReadMsr(Amd17Constants.MsrPkgEnergyStat, out uint eax, out _);
             uint totalEnergy = eax;
 
             // Block

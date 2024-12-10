@@ -102,7 +102,7 @@ internal class WindowsSmart : ISmart
 
         return Kernel32.DeviceIoControl(
             _handle,
-            Dfp.DFP_SEND_DRIVE_COMMAND,
+            Dfp.DfpSendDriveCommand,
             ref parameter,
             Marshal.SizeOf(parameter),
             out SendCmdOutParams _,
@@ -134,7 +134,7 @@ internal class WindowsSmart : ISmart
             }
         };
 
-        var isValid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+        var isValid = Kernel32.DeviceIoControl(_handle, Dfp.DfpReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
                                                 out AttributeCmdOutParams result, Marshal.SizeOf<AttributeCmdOutParams>(), out _, nint.Zero);
         return isValid ? result.Attributes : [];
     }
@@ -162,7 +162,7 @@ internal class WindowsSmart : ISmart
             }
         };
 
-        bool isValid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+        bool isValid = Kernel32.DeviceIoControl(_handle, Dfp.DfpReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
                                                 out ThresholdCmdOutParams result, Marshal.SizeOf<ThresholdCmdOutParams>(), out _, nint.Zero);
 
         return isValid ? result.Thresholds : [];
@@ -188,7 +188,7 @@ internal class WindowsSmart : ISmart
             irDriveRegs = { bCommandReg = AtaCommand.AtaIdentifyDevice }
         };
 
-        bool valid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_RECEIVE_DRIVE_DATA, ref parameter, Marshal.SizeOf(parameter),
+        bool valid = Kernel32.DeviceIoControl(_handle, Dfp.DfpReceiveDriveData, ref parameter, Marshal.SizeOf(parameter),
                                               out IdentifyCmdOutParams result, Marshal.SizeOf<IdentifyCmdOutParams>(), out _, nint.Zero);
 
         if (!valid)
@@ -225,7 +225,7 @@ internal class WindowsSmart : ISmart
             }
         };
 
-        bool isValid = Kernel32.DeviceIoControl(_handle, Dfp.DFP_SEND_DRIVE_COMMAND, ref parameter, Marshal.SizeOf(parameter),
+        bool isValid = Kernel32.DeviceIoControl(_handle, Dfp.DfpSendDriveCommand, ref parameter, Marshal.SizeOf(parameter),
                                                 out StatusCmdOutParams result, Marshal.SizeOf<StatusCmdOutParams>(), out _, nint.Zero);
         if (!isValid) return null;
 

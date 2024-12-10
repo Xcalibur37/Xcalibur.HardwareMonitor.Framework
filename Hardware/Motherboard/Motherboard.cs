@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
@@ -18,7 +19,7 @@ public class Motherboard : IHardware
 {
     #region Fields
 
-    private readonly LMSensors _lmSensors;
+    private readonly LmSensors _lmSensors;
     private readonly string _name;
     private readonly ISettings _settings;
     private string _customName;
@@ -31,7 +32,7 @@ public class Motherboard : IHardware
     public HardwareType HardwareType => HardwareType.Motherboard;
 
     /// <inheritdoc />
-    public Identifier Identifier => new("motherboard");
+    public Identifier Identifier => new(HardwareConstants.MotherboardIdentifier);
 
     /// <summary>
     /// Gets the <see cref="Models.Manufacturer" />.
@@ -113,7 +114,7 @@ public class Motherboard : IHardware
         IReadOnlyList<ISuperIo> superIo;
         if (OperatingSystem.IsUnix)
         {
-            _lmSensors = new LMSensors();
+            _lmSensors = new LmSensors();
             superIo = _lmSensors.SuperIo;
         }
         else
@@ -178,10 +179,7 @@ public class Motherboard : IHardware
     /// <inheritdoc />
     public void Traverse(IVisitor visitor)
     {
-        foreach (IHardware hardware in SubHardware)
-        {
-            hardware.Accept(visitor);
-        }
+        SubHardware.Apply(x => x.Accept(visitor));
     }
 
     /// <summary>

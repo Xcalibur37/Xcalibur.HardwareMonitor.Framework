@@ -14,13 +14,11 @@ internal sealed class Amd0FCpu : AmdCpuBase
 {
     #region Fields
 
-    // ReSharper disable InconsistentNaming
-    private const uint FIDVID_STATUS = 0xC0010042;
-    private const ushort MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1103;
-    private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
-    private const uint THERMTRIP_STATUS_REGISTER = 0xE4;
-    // ReSharper restore InconsistentNaming
-
+    private const uint FidVidStatus = 0xC0010042;
+    private const ushort MiscellaneousControlDeviceId = 0x1103;
+    private const byte MiscellaneousControlFunction = 3;
+    private const uint ThermTripStatusRegister = 0xE4;
+    
     private readonly uint _miscellaneousControlAddress;
 
     private Sensor _busClock;
@@ -43,7 +41,7 @@ internal sealed class Amd0FCpu : AmdCpuBase
     public Amd0FCpu(int processorIndex, CpuId[][] cpuId, ISettings settings) : base(processorIndex, cpuId, settings)
     {
         // Set Misc Control Address
-        _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, MISCELLANEOUS_CONTROL_DEVICE_ID);
+        _miscellaneousControlAddress = GetPciAddress(MiscellaneousControlFunction, MiscellaneousControlDeviceId);
 
         // Sensors
         CreateTemperatureSensors();
@@ -78,7 +76,7 @@ internal sealed class Amd0FCpu : AmdCpuBase
     /// Gets the MSRS.
     /// </summary>
     /// <returns></returns>
-    protected override uint[] GetMsrs() => [FIDVID_STATUS];
+    protected override uint[] GetMsrs() => [FidVidStatus];
 
     /// <summary>
     /// Create CPU temperature sensors.
@@ -115,14 +113,11 @@ internal sealed class Amd0FCpu : AmdCpuBase
             _coreTemperatures = new Sensor[CoreCount];
             for (int i = 0; i < CoreCount; i++)
             {
-                _coreTemperatures[i] = new Sensor("Core #" + (i + 1),
+                _coreTemperatures[i] = new Sensor(CpuConstants.CoreNumber + (i + 1),
                     i,
                     SensorType.Temperature,
                     this,
-                    [
-                        new ParameterDescription("Offset [°C]",
-                            "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", offset)
-                    ],
+                    [],
                     Settings);
             }
         }
@@ -146,13 +141,13 @@ internal sealed class Amd0FCpu : AmdCpuBase
             for (uint i = 0; i < _coreTemperatures.Length; i++)
             {
                 if (!Ring0.WritePciConfig(_miscellaneousControlAddress,
-                        THERMTRIP_STATUS_REGISTER,
+                        ThermTripStatusRegister,
                         i > 0 ? _thermSenseCoreSelCpu1 : _thermSenseCoreSelCpu0))
                 {
                     continue;
                 }
 
-                if (Ring0.ReadPciConfig(_miscellaneousControlAddress, THERMTRIP_STATUS_REGISTER, out uint value))
+                if (Ring0.ReadPciConfig(_miscellaneousControlAddress, ThermTripStatusRegister, out uint value))
                 {
                     _coreTemperatures[i].Value = ((value >> 16) & 0xFF) + _coreTemperatures[i].Parameters[0].Value;
                     ActivateSensor(_coreTemperatures[i]);
@@ -174,7 +169,7 @@ internal sealed class Amd0FCpu : AmdCpuBase
     /// <returns></returns>
     private void CreateClockSensors()
     {
-        _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, Settings);
+        _busClock = new Sensor(CpuConstants.BusSpeed, 0, SensorType.Clock, this, Settings);
         _coreClocks = new Sensor[CoreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
@@ -198,7 +193,7 @@ internal sealed class Amd0FCpu : AmdCpuBase
         {
             Thread.Sleep(1);
 
-            if (Ring0.ReadMsr(FIDVID_STATUS, out uint eax, out uint _, CpuId[i][0].Affinity))
+            if (Ring0.ReadMsr(FidVidStatus, out uint eax, out uint _, CpuId[i][0].Affinity))
             {
                 // CurrFID can be found in eax bits 0-5, MaxFID in 16-21
                 // 8-13 hold StartFID, we don't use that here.

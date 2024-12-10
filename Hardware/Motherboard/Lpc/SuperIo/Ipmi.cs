@@ -1,8 +1,3 @@
-
-
-
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,34 +17,32 @@ internal class Ipmi : ISuperIo
 {
     #region Fields
 
-    // ReSharper disable InconsistentNaming
-    private const byte COMMAND_FAN_LEVEL = 0x70;
-    private const byte COMMAND_FAN_MODE = 0x45;
-    private const byte COMMAND_GET_SDR = 0x23;
-    private const byte COMMAND_GET_SDR_REPOSITORY_INFO = 0x20;
-    private const byte COMMAND_GET_SENSOR_READING = 0x2d;
+    private const byte CommandFanLevel = 0x70;
+    private const byte CommandFanMode = 0x45;
+    private const byte CommandGetSdr = 0x23;
+    private const byte CommandGetSdrRepositoryInfo = 0x20;
+    private const byte CommandGetSensorReading = 0x2d;
 
-    private const byte FAN_MODE_FULL = 0x01;
-    private const byte FAN_MODE_OPTIMAL = 0x02;
+    private const byte FanModeFull = 0x01;
+    private const byte FanModeOptimal = 0x02;
 
-    private const byte NETWORK_FUNCTION_SENSOR_EVENT = 0x04;
-    private const byte NETWORK_FUNCTION_STORAGE = 0x0a;
-    private const byte NETWORK_FUNCTION_SUPERMICRO = 0x30;
-    // ReSharper restore InconsistentNaming
-
-    private readonly List<string> _controlNames = new();
-    private readonly List<float> _controls = new();
-    private readonly List<string> _fanNames = new();
-    private readonly List<float> _fans = new();
+    private const byte NetworkFunctionSensorEvent = 0x04;
+    private const byte NetworkFunctionStorage = 0x0a;
+    private const byte NetworkFunctionSuperMicro = 0x30;
+    
+    private readonly List<string> _controlNames = [];
+    private readonly List<float> _controls = [];
+    private readonly List<string> _fanNames = [];
+    private readonly List<float> _fans = [];
 
     private readonly ManagementObject _ipmi;
     private readonly Manufacturer _manufacturer;
 
-    private readonly List<Sdr> _sdrs = new();
-    private readonly List<string> _temperatureNames = new();
-    private readonly List<float> _temperatures = new();
-    private readonly List<string> _voltageNames = new();
-    private readonly List<float> _voltages = new();
+    private readonly List<Sdr> _sdrs = [];
+    private readonly List<string> _temperatureNames = [];
+    private readonly List<float> _temperatures = [];
+    private readonly List<string> _voltageNames = [];
+    private readonly List<float> _voltages = [];
 
     private bool _touchedFans;
 
@@ -128,7 +121,7 @@ internal class Ipmi : ISuperIo
     /// <param name="manufacturer">The manufacturer.</param>
     public Ipmi(Manufacturer manufacturer)
     {
-        Chip = Chip.IPMI;
+        Chip = Chip.Ipmi;
         _manufacturer = manufacturer;
 
 #pragma warning disable CA1416
@@ -142,11 +135,11 @@ internal class Ipmi : ISuperIo
         }
 #pragma warning restore CA1416
 
-        // Fan control is exposed for Supermicro only as it differs between IPMI implementations
+        // Fan control is exposed for SuperMicro only as it differs between IPMI implementations
         if (_manufacturer == Manufacturer.Supermicro)
         {
-            _controlNames.Add("CPU Fan");
-            _controlNames.Add("System Fan");
+            _controlNames.Add(SuperIoConstants.CpuFan);
+            _controlNames.Add(SuperIoConstants.SystemFan);
         }
 
         // Perform an early update to count the number of sensors and get their names
@@ -177,16 +170,18 @@ internal class Ipmi : ISuperIo
 
             if (value == null)
             {
-                RunIpmiCommand(COMMAND_FAN_MODE, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x01 /* Set */, FAN_MODE_OPTIMAL });
+                RunIpmiCommand(CommandFanMode, NetworkFunctionSuperMicro, new byte[] { 0x01 /* Set */, FanModeOptimal });
             }
             else
             {
-                byte[] fanMode = RunIpmiCommand(COMMAND_FAN_MODE, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x00 });
-                if (fanMode == null || fanMode.Length < 2 || fanMode[0] != 0 || fanMode[1] != FAN_MODE_FULL)
-                    RunIpmiCommand(COMMAND_FAN_MODE, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x01 /* Set */, FAN_MODE_FULL });
+                byte[] fanMode = RunIpmiCommand(CommandFanMode, NetworkFunctionSuperMicro, new byte[] { 0x00 });
+                if (fanMode == null || fanMode.Length < 2 || fanMode[0] != 0 || fanMode[1] != FanModeFull)
+                {
+                    RunIpmiCommand(CommandFanMode, NetworkFunctionSuperMicro, new byte[] { 0x01 /* Set */, FanModeFull });
+                }
 
                 float speed = (float)value / 255.0f * 100.0f;
-                RunIpmiCommand(COMMAND_FAN_LEVEL, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x66, 0x01 /* Set */, (byte)index, (byte)speed });
+                RunIpmiCommand(CommandFanLevel, NetworkFunctionSuperMicro, new byte[] { 0x66, 0x01 /* Set */, (byte)index, (byte)speed });
             }
         }
         else
@@ -216,7 +211,7 @@ internal class Ipmi : ISuperIo
 
         if (_sdrs.Count == 0 || stringBuilder != null)
         {
-            byte[] sdrInfo = RunIpmiCommand(COMMAND_GET_SDR_REPOSITORY_INFO, NETWORK_FUNCTION_STORAGE, new byte[] { });
+            byte[] sdrInfo = RunIpmiCommand(CommandGetSdrRepositoryInfo, NetworkFunctionStorage, new byte[] { });
             if (sdrInfo?[0] == 0)
             {
                 int recordCount = sdrInfo[3] * 256 + sdrInfo[2];
@@ -225,18 +220,16 @@ internal class Ipmi : ISuperIo
                 byte recordUpper = 0;
                 for (int i = 0; i < recordCount; ++i)
                 {
-                    byte[] sdrRaw = RunIpmiCommand(COMMAND_GET_SDR, NETWORK_FUNCTION_STORAGE, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
+                    byte[] sdrRaw = RunIpmiCommand(CommandGetSdr, NetworkFunctionStorage, new byte[] { 0, 0, recordLower, recordUpper, 0, 0xff });
                     if (!(sdrRaw?.Length >= 3) || sdrRaw[0] != 0) break;
                     recordLower = sdrRaw[1];
                     recordUpper = sdrRaw[2];
 
                     fixed (byte* pSdr = sdrRaw)
                     {
-                        Sdr sdr =
-                            (Sdr)Marshal.PtrToStructure((nint)pSdr + 3, typeof(Sdr));
+                        Sdr sdr = (Sdr)Marshal.PtrToStructure((nint)pSdr + 3, typeof(Sdr))!;
                         _sdrs.Add(sdr);
-                        stringBuilder?.AppendLine("IPMI sensor " + i + " num: " + sdr.sens_num + " info: " +
-                                                  BitConverter.ToString(sdrRaw).Replace("-", ""));
+                        stringBuilder?.AppendLine($"IPMI sensor {i} num: {sdr.sens_num} info: {BitConverter.ToString(sdrRaw).Replace("-", "")}");
                     }
                 }
             }
@@ -246,7 +239,7 @@ internal class Ipmi : ISuperIo
         {
             if (sdr.rectype != 1) continue;
 
-            byte[] reading = RunIpmiCommand(COMMAND_GET_SENSOR_READING, NETWORK_FUNCTION_SENSOR_EVENT, [sdr.sens_num]);
+            byte[] reading = RunIpmiCommand(CommandGetSensorReading, NetworkFunctionSensorEvent, [sdr.sens_num]);
             if (!(reading?.Length > 1) || reading[0] != 0) continue;
 
             switch (sdr.sens_type)
@@ -276,14 +269,15 @@ internal class Ipmi : ISuperIo
                     break;
             }
 
-            stringBuilder?.AppendLine("IPMI sensor num: " + sdr.sens_num + " reading: " + BitConverter.ToString(reading).Replace("-", ""));
+            stringBuilder?.AppendLine(
+                $"IPMI sensor num: {sdr.sens_num} reading: {BitConverter.ToString(reading).Replace("-", "")}");
         }
 
         if (_manufacturer == Manufacturer.Supermicro)
         {
             for (int i = 0; i < _controlNames.Count; ++i)
             {
-                byte[] fanLevel = RunIpmiCommand(COMMAND_FAN_LEVEL, NETWORK_FUNCTION_SUPERMICRO, new byte[] { 0x66, 0x00 /* Get */, (byte)i });
+                byte[] fanLevel = RunIpmiCommand(CommandFanLevel, NetworkFunctionSuperMicro, new byte[] { 0x66, 0x00 /* Get */, (byte)i });
                 if (!(fanLevel?.Length >= 2) || fanLevel[0] != 0) continue;
                 _controls.Add(fanLevel[1]);
 
@@ -410,7 +404,7 @@ internal class Ipmi : ISuperIo
 
     /// <summary>
     /// Ported from ipmiutil
-    /// Bare minimum to read Supermicro X13 IPMI sensors, may need expanding for other boards
+    /// Bare minimum to read SuperMicro X13 IPMI sensors, may need expanding for other boards
     /// </summary>
     /// <param name="sensorReading">The sensor reading.</param>
     /// <param name="sdr">The SDR.</param>

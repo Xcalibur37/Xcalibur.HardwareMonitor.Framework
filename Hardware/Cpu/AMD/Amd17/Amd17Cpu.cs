@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17;
@@ -35,7 +36,7 @@ internal sealed class Amd17Cpu : AmdCpuBase
     /// <value>
     /// The smu.
     /// </value>
-    public RyzenSMU SMU { get; }
+    public RyzenSmu SMU { get; }
 
     #endregion
 
@@ -58,7 +59,7 @@ internal sealed class Amd17Cpu : AmdCpuBase
         SensorTypeIndex[SensorType.Load] = Active.Count(x => x.SensorType == SensorType.Load);
 
         // Get SMU
-        SMU = new RyzenSMU(Family, Model, PackageType);
+        SMU = new RyzenSmu(Family, Model, PackageType);
 
         // Add all numa nodes.
         // Register ..1E_2, [10:8] + 1
@@ -109,11 +110,11 @@ internal sealed class Amd17Cpu : AmdCpuBase
     /// <returns></returns>
     protected override uint[] GetMsrs() =>
     [
-        Amd17Constants.PERF_CTL_0,
-        Amd17Constants.PERF_CTR_0,
-        Amd17Constants.HWCR,
-        Amd17Constants.MSR_PSTATE_0,
-        Amd17Constants.COFVID_STATUS
+        Amd17Constants.PerfCtl0,
+        Amd17Constants.PerfCtr0,
+        Amd17Constants.Hwcr,
+        Amd17Constants.MsrPstate0,
+        Amd17Constants.CofvidStatus
     ];
 
     /// <summary>
@@ -127,12 +128,8 @@ internal sealed class Amd17Cpu : AmdCpuBase
         // Update processor sensors
         Processor.UpdateSensors();
 
-        // Evaluate Numa Nodes
-        foreach (Amd17NumaNode node in Processor.Nodes)
-        {
-            // Update Numa Node
-            node.UpdateSensors();
-        }
+        // Update Numa Nodes
+        Processor.Nodes.Apply(x => x.UpdateSensors());
     }
 
 

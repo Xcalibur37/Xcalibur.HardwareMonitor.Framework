@@ -109,14 +109,15 @@ internal class KernelDriver
     {
         if (_device == null) return false;
         object boxedOutBuffer = outBuffer;
-        bool b = Kernel32.DeviceIoControl(_device,
-                                          ioControlCode,
-                                          inBuffer,
-                                          inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
-                                          boxedOutBuffer,
-                                          (uint)Marshal.SizeOf(boxedOutBuffer),
-                                          out uint _,
-                                          nint.Zero);
+        bool b = Kernel32.DeviceIoControl(
+            _device,
+            ioControlCode,
+            inBuffer,
+            inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
+            boxedOutBuffer,
+            (uint)Marshal.SizeOf(boxedOutBuffer),
+            out uint _,
+            nint.Zero);
 
         outBuffer = (T)boxedOutBuffer;
         return b;
@@ -134,14 +135,15 @@ internal class KernelDriver
     {
         if (_device == null) return false;
         object boxedOutBuffer = outBuffer;
-        bool b = Kernel32.DeviceIoControl(_device,
-                                          ioControlCode,
-                                          inBuffer,
-                                          inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
-                                          boxedOutBuffer,
-                                          (uint)(Marshal.SizeOf(typeof(T)) * outBuffer.Length),
-                                          out uint _,
-                                          nint.Zero);
+        bool b = Kernel32.DeviceIoControl(
+            _device,
+            ioControlCode,
+            inBuffer,
+            inBuffer == null ? 0 : (uint)Marshal.SizeOf(inBuffer),
+            boxedOutBuffer,
+            (uint)(Marshal.SizeOf(typeof(T)) * outBuffer.Length),
+            out uint _,
+            nint.Zero);
 
         outBuffer = (T[])boxedOutBuffer;
         return b;
@@ -164,19 +166,20 @@ internal class KernelDriver
             return false;
         }
 
-        var service = AdvApi32.CreateService(manager,
-                                                _serviceName,
-                                                _serviceName,
-                                                ServiceAccessMask.ServiceAllAccess,
-                                                ServiceType.ServiceKernelDriver,
-                                                ServiceStart.ServiceDemandStart,
-                                                ServiceError.ServiceErrorNormal,
-                                                path,
-                                                null,
-                                                null,
-                                                null,
-                                                null,
-                                                null);
+        var service = AdvApi32.CreateService(
+            manager,
+            _serviceName,
+            _serviceName,
+            ServiceAccessMask.ServiceAllAccess,
+            ServiceType.ServiceKernelDriver,
+            ServiceStart.ServiceDemandStart,
+            ServiceError.ServiceErrorNormal,
+            path,
+            null,
+            null,
+            null,
+            null,
+            null);
 
         if (service == nint.Zero)
         {

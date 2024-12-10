@@ -61,7 +61,7 @@ internal static class Ring0
     }
     
     /// <summary>
-    /// Gets the pci address.
+    /// Gets the PCI address.
     /// </summary>
     /// <param name="bus">The bus.</param>
     /// <param name="device">The device.</param>
@@ -173,7 +173,7 @@ internal static class Ring0
     }
 
     /// <summary>
-    /// Reads the pci configuration.
+    /// Reads the PCI configuration.
     /// </summary>
     /// <param name="pciAddress">The pci address.</param>
     /// <param name="regAddress">The reg address.</param>

@@ -11,26 +11,24 @@ internal class W836XX : ISuperIo
 {
     #region Fields
 
-    // ReSharper disable InconsistentNaming
-    private const byte ADDRESS_REGISTER_OFFSET = 0x05;
-    private const byte BANK_SELECT_REGISTER = 0x4E;
-    private const byte DATA_REGISTER_OFFSET = 0x06;
-    private const byte HIGH_BYTE = 0x80;
-    private const byte TEMPERATURE_SOURCE_SELECT_REG = 0x49;
-    private const byte VENDOR_ID_REGISTER = 0x4F;
-    private const byte VOLTAGE_VBAT_REG = 0x51;
+    private const byte AddressRegisterOffset = 0x05;
+    private const byte BankSelectRegister = 0x4E;
+    private const byte DataRegisterOffset = 0x06;
+    private const byte HighByte = 0x80;
+    private const byte TemperatureSourceSelectReg = 0x49;
+    private const byte VendorIdRegister = 0x4F;
+    private const byte VoltageVbatReg = 0x51;
 
-    private const ushort WINBOND_VENDOR_ID = 0x5CA3;
+    private const ushort WinbondVendorId = 0x5CA3;
 
-    private readonly byte[] FAN_BIT_REG = { 0x47, 0x4B, 0x4C, 0x59, 0x5D };
-    private readonly byte[] FAN_DIV_BIT0 = { 36, 38, 30, 8, 10 };
-    private readonly byte[] FAN_DIV_BIT1 = { 37, 39, 31, 9, 11 };
-    private readonly byte[] FAN_DIV_BIT2 = { 5, 6, 7, 23, 15 };
-    private readonly byte[] FAN_TACHO_BANK = { 0, 0, 0, 0, 5 };
-    private readonly byte[] FAN_TACHO_REG = { 0x28, 0x29, 0x2A, 0x3F, 0x53 };
-    private readonly byte[] TEMPERATURE_BANK = { 1, 2, 0 };
-    private readonly byte[] TEMPERATURE_REG = { 0x50, 0x50, 0x27 };
-    // ReSharper restore InconsistentNaming
+    private readonly byte[] _fanBitReg = [0x47, 0x4B, 0x4C, 0x59, 0x5D];
+    private readonly byte[] _fanDivBit0 = [36, 38, 30, 8, 10];
+    private readonly byte[] _fanDivBit1 = [37, 39, 31, 9, 11];
+    private readonly byte[] _fanDivBit2 = [5, 6, 7, 23, 15];
+    private readonly byte[] _fanTachoBank = [0, 0, 0, 0, 5];
+    private readonly byte[] _fanTachoReg = [0x28, 0x29, 0x2A, 0x3F, 0x53];
+    private readonly byte[] _temperatureBank = { 1, 2, 0 };
+    private readonly byte[] _temperatureReg = [0x50, 0x50, 0x27];
 
     private readonly ushort _address;
     private readonly bool[] _peciTemperature = [];
@@ -209,8 +207,8 @@ internal class W836XX : ISuperIo
     /// </returns>
     private bool IsWinbondVendor()
     {
-        ushort vendorId = (ushort)(ReadByte(HIGH_BYTE, VENDOR_ID_REGISTER) << 8 | ReadByte(0, VENDOR_ID_REGISTER));
-        return vendorId == WINBOND_VENDOR_ID;
+        var vendorId = (ushort)(ReadByte(HighByte, VendorIdRegister) << 8 | ReadByte(0, VendorIdRegister));
+        return vendorId == WinbondVendorId;
     }
 
     /// <summary>
@@ -221,10 +219,10 @@ internal class W836XX : ISuperIo
     /// <returns></returns>
     private byte ReadByte(byte bank, byte register)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        return Ring0.ReadIoPort((ushort)(_address + DATA_REGISTER_OFFSET));
+        Ring0.WriteIoPort((ushort)(_address + AddressRegisterOffset), BankSelectRegister);
+        Ring0.WriteIoPort((ushort)(_address + DataRegisterOffset), bank);
+        Ring0.WriteIoPort((ushort)(_address + AddressRegisterOffset), register);
+        return Ring0.ReadIoPort((ushort)(_address + DataRegisterOffset));
     }
 
     /// <summary>
@@ -308,9 +306,7 @@ internal class W836XX : ISuperIo
     /// <param name="value">The value.</param>
     /// <returns></returns>
     /// <exception cref="System.ArgumentException">
-    /// Value must be one bit only.
-    /// or
-    /// Bit out of range.
+    /// Value must be one "bit only" or "bit out of range."
     /// </exception>
     private static ulong SetBit(ulong target, int bit, int value)
     {
@@ -397,7 +393,7 @@ internal class W836XX : ISuperIo
     private void SetRegistersW83627Dhgp()
     {
         // note temperature sensor registers that read PECI
-        byte sel = ReadByte(0, TEMPERATURE_SOURCE_SELECT_REG);
+        byte sel = ReadByte(0, TemperatureSourceSelectReg);
         _peciTemperature[0] = (sel & 0x07) != 0;
         _peciTemperature[1] = (sel & 0x70) != 0;
         _peciTemperature[2] = false;
@@ -423,7 +419,7 @@ internal class W836XX : ISuperIo
     private void SetRegistersW83667Hgb()
     {
         // note temperature sensor registers that read PECI
-        byte flag = ReadByte(0, TEMPERATURE_SOURCE_SELECT_REG);
+        byte flag = ReadByte(0, TemperatureSourceSelectReg);
         _peciTemperature[0] = (flag & 0x04) != 0;
         _peciTemperature[1] = (flag & 0x40) != 0;
         _peciTemperature[2] = false;
@@ -504,7 +500,7 @@ internal class W836XX : ISuperIo
     {
         for (int i = 0; i < Voltages.Length; i++)
         {
-            if (_voltageRegister[i] != VOLTAGE_VBAT_REG)
+            if (_voltageRegister[i] != VoltageVbatReg)
             {
                 // two special VCore measurement modes for W83627THF
                 float fValue;
@@ -530,7 +526,7 @@ internal class W836XX : ISuperIo
             {
                 // Battery voltage
                 bool valid = (ReadByte(0, 0x5D) & 0x01) > 0;
-                Voltages[i] = valid ? _voltageGain * ReadByte(5, VOLTAGE_VBAT_REG) : null;
+                Voltages[i] = valid ? _voltageGain * ReadByte(5, VoltageVbatReg) : null;
             }
         }
     }
@@ -542,10 +538,10 @@ internal class W836XX : ISuperIo
     {
         for (int i = 0; i < Temperatures.Length; i++)
         {
-            int value = (sbyte)ReadByte(TEMPERATURE_BANK[i], TEMPERATURE_REG[i]) << 1;
-            if (TEMPERATURE_BANK[i] > 0)
+            int value = (sbyte)ReadByte(_temperatureBank[i], _temperatureReg[i]) << 1;
+            if (_temperatureBank[i] > 0)
             {
-                value |= ReadByte(TEMPERATURE_BANK[i], (byte)(TEMPERATURE_REG[i] + 1)) >> 7;
+                value |= ReadByte(_temperatureBank[i], (byte)(_temperatureReg[i] + 1)) >> 7;
             }
             float temperature = value / 2.0f;
             Temperatures[i] = temperature is <= 125 and >= -55 && !_peciTemperature[i] ? temperature : null;
@@ -559,7 +555,7 @@ internal class W836XX : ISuperIo
     private void UpdateFans()
     {
         ulong bits = 0;
-        foreach (byte t in FAN_BIT_REG)
+        foreach (byte t in _fanBitReg)
         {
             bits = bits << 8 | ReadByte(0, t);
         }
@@ -567,13 +563,13 @@ internal class W836XX : ISuperIo
         ulong newBits = bits;
         for (int i = 0; i < Fans.Length; i++)
         {
-            int count = ReadByte(FAN_TACHO_BANK[i], FAN_TACHO_REG[i]);
+            int count = ReadByte(_fanTachoBank[i], _fanTachoReg[i]);
 
             // assemble fan divisor
             int divisorBits = (int)(
-                (bits >> FAN_DIV_BIT2[i] & 1) << 2 |
-                (bits >> FAN_DIV_BIT1[i] & 1) << 1 |
-                bits >> FAN_DIV_BIT0[i] & 1);
+                (bits >> _fanDivBit2[i] & 1) << 2 |
+                (bits >> _fanDivBit1[i] & 1) << 1 |
+                bits >> _fanDivBit0[i] & 1);
 
             int divisor = 1 << divisorBits;
 
@@ -590,9 +586,9 @@ internal class W836XX : ISuperIo
                     break;
             }
 
-            newBits = SetBit(newBits, FAN_DIV_BIT2[i], divisorBits >> 2 & 1);
-            newBits = SetBit(newBits, FAN_DIV_BIT1[i], divisorBits >> 1 & 1);
-            newBits = SetBit(newBits, FAN_DIV_BIT0[i], divisorBits & 1);
+            newBits = SetBit(newBits, _fanDivBit2[i], divisorBits >> 2 & 1);
+            newBits = SetBit(newBits, _fanDivBit1[i], divisorBits >> 1 & 1);
+            newBits = SetBit(newBits, _fanDivBit0[i], divisorBits & 1);
         }
     }
 
@@ -616,10 +612,10 @@ internal class W836XX : ISuperIo
     /// <param name="value">The value.</param>
     private void WriteByte(byte bank, byte register, byte value)
     {
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), BANK_SELECT_REGISTER);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), bank);
-        Ring0.WriteIoPort((ushort)(_address + ADDRESS_REGISTER_OFFSET), register);
-        Ring0.WriteIoPort((ushort)(_address + DATA_REGISTER_OFFSET), value);
+        Ring0.WriteIoPort((ushort)(_address + AddressRegisterOffset), BankSelectRegister);
+        Ring0.WriteIoPort((ushort)(_address + DataRegisterOffset), bank);
+        Ring0.WriteIoPort((ushort)(_address + AddressRegisterOffset), register);
+        Ring0.WriteIoPort((ushort)(_address + DataRegisterOffset), value);
     }
 
     #endregion

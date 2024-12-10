@@ -25,7 +25,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             switch (manufacturer)
             {
@@ -34,8 +34,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                     switch (model)
                     {
                         case MotherboardModel.P8P67: // NCT6776F
-                        case MotherboardModel.P8P67_EVO: // NCT6776F
-                        case MotherboardModel.P8P67_PRO: // NCT6776F
+                        case MotherboardModel.P8P67Evo: // NCT6776F
+                        case MotherboardModel.P8P67Pro: // NCT6776F
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 1, 11, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 34, 34));
@@ -56,12 +56,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 3));
 
                             // Controls
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 0));
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 0));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 2));
                             break;
 
-                        case MotherboardModel.P8P67_M_PRO: // NCT6776F
+                        case MotherboardModel.P8P67MPro: // NCT6776F
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 1, 11, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 34, 34));
@@ -84,7 +84,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(SuperIoConstants.AuxiliaryFan, 4));
                             break;
 
-                        case MotherboardModel.P8Z68_V_PRO: // NCT6776F
+                        case MotherboardModel.P8Z68VPro: // NCT6776F
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 1, 11, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 34, 34));
@@ -154,7 +154,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                 case Manufacturer.ASRock:
                     switch (model)
                     {
-                        case MotherboardModel.H61M_DGS: // NCT6776F
+                        case MotherboardModel.H61MDgs: // NCT6776F
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 1, 28, 5));
@@ -176,11 +176,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
 
                             // Controls
-                            controls.Add(new Models.Control(SuperIoConstants.ChassisFan, 0));
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Control(SuperIoConstants.ChassisFan, 0));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
                             break;
 
-                        case MotherboardModel.B85M_DGS:
+                        case MotherboardModel.B85MDgs:
                             {
                                 // Voltages
                                 voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 1, 1));
@@ -204,9 +204,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                                 fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 3));
 
                                 // Controls
-                                controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 0));
-                                controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
-                                controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 2));
+                                controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 0));
+                                controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                                controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 2));
                             }
                             break;
 
@@ -262,7 +262,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             switch (manufacturer)
             {
@@ -270,7 +270,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                     voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 10, 10));
                     switch (model)
                     {
-                        case MotherboardModel.A320M_HDV: // NCT6779D
+                        case MotherboardModel.A320MHdv: // NCT6779D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.Chipset105Volts, 1, 0, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 10, 10));
@@ -287,15 +287,15 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             temps.Add(new Temperature(SuperIoConstants.AuxiliaryTemp, 5));
                             break;
 
-                        case MotherboardModel.AB350_Pro4: // NCT6779D
-                        case MotherboardModel.AB350M_Pro4:
-                        case MotherboardModel.AB350M:
-                        case MotherboardModel.Fatal1ty_AB350_Gaming_K4:
-                        case MotherboardModel.AB350M_HDV:
-                        case MotherboardModel.B450_Steel_Legend:
-                        case MotherboardModel.B450M_Steel_Legend:
-                        case MotherboardModel.B450_Pro4:
-                        case MotherboardModel.B450M_Pro4:
+                        case MotherboardModel.Ab350Pro4: // NCT6779D
+                        case MotherboardModel.Ab350MPro4:
+                        case MotherboardModel.Ab350M:
+                        case MotherboardModel.Fatal1TyAb350GamingK4:
+                        case MotherboardModel.Ab350MHdv:
+                        case MotherboardModel.B450SteelLegend:
+                        case MotherboardModel.B450MSteelLegend:
+                        case MotherboardModel.B450Pro4:
+                        case MotherboardModel.B450MPro4:
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 10, 10));
                             voltages.Add(new Voltage(SuperIoConstants.V33Volts, 3, 10, 10));
@@ -316,7 +316,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             temps.Add(new Temperature(string.Format(SuperIoConstants.AuxTinTempNumber, "2"), 5));
                             break;
 
-                        case MotherboardModel.X399_Phantom_Gaming_6: // NCT6779D
+                        case MotherboardModel.X399PhantomGaming6: // NCT6779D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.Chipset105Volts, 1, 0, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 10, 10));
@@ -377,7 +377,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                     string[] fanControlNames;
                     switch (model)
                     {
-                        case MotherboardModel.P8Z77_V: // NCT6779D
+                        case MotherboardModel.P8Z77V: // NCT6779D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "2"), 1, true));
@@ -416,11 +416,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_X_APEX: // NCT6793D
+                        case MotherboardModel.RogMaximusXApex: // NCT6793D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 2, 2));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1));
@@ -464,11 +464,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.Z170_A: // NCT6793D
+                        case MotherboardModel.Z170A: // NCT6793D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 2, 2));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1));
@@ -515,12 +515,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.B150M_C: // NCT6791D
-                        case MotherboardModel.B150M_C_D3: // NCT6791D
+                        case MotherboardModel.B150MC: // NCT6791D
+                        case MotherboardModel.B150MCD3: // NCT6791D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 2, 2));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1));
@@ -542,12 +542,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, "2"), 2));
 
                             // Controls
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 0));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 2));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 2));
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_X_HERO_WIFI_AC: // NCT6793D
+                        case MotherboardModel.RogMaximusXHeroWifiAc: // NCT6793D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 2, 2));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1));
@@ -593,7 +593,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
@@ -637,7 +637,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                     voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                     switch (model)
                     {
-                        case MotherboardModel.Z270_PC_MATE: // NCT6795D
+                        case MotherboardModel.Z270PcMate: // NCT6795D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 34, 34));
@@ -676,7 +676,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
@@ -768,7 +768,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             switch (manufacturer)
             {
@@ -776,7 +776,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                     string[] fanControlNames;
                     switch (model)
                     {
-                        case MotherboardModel.X570_Taichi:
+                        case MotherboardModel.X570Taichi:
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 10, 10));
                             voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "2"), 1, true));
@@ -818,11 +818,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.X570_Phantom_Gaming_ITX:
+                        case MotherboardModel.X570PhantomGamingItx:
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -860,11 +860,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.Z690_Extreme:
+                        case MotherboardModel.Z690Extreme:
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 20, 10));
@@ -892,20 +892,20 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6));
 
                             // Controls
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2)); // CPU_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 0)); // CHA_FAN3/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 5)); // CHA_FAN4/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6)); // CHA_FAN5/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2)); // CPU_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 0)); // CHA_FAN3/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 5)); // CHA_FAN4/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6)); // CHA_FAN5/WP
 
                             // Temps
                             temps.Add(new Temperature(SuperIoConstants.CpuCoreTemp, 0));
                             temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 2));
                             break;
 
-                        case MotherboardModel.Z690_Steel_Legend:
+                        case MotherboardModel.Z690SteelLegend:
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 20, 10));
@@ -933,13 +933,13 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6));
 
                             // Controls
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2)); // CPU_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 0)); // CHA_FAN3/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 5)); // CHA_FAN4/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6)); // CHA_FAN5/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2)); // CPU_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 0)); // CHA_FAN3/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 5)); // CHA_FAN4/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6)); // CHA_FAN5/WP
 
                             // Temps
                             temps.Add(new Temperature(SuperIoConstants.CpuCoreTemp, 0));
@@ -947,7 +947,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 2));
                             break;
 
-                        case MotherboardModel.Z790_Pro_RS:
+                        case MotherboardModel.Z790ProRs:
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 20, 10));
@@ -975,20 +975,20 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6));
 
                             // Controls
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2)); // CPU_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 0)); // CHA_FAN3/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 5)); // CHA_FAN4/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6)); // CHA_FAN5/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 2)); // CPU_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 0)); // CHA_FAN3/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 5)); // CHA_FAN4/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 6)); // CHA_FAN5/WP
 
                             // Temps
                             temps.Add(new Temperature(SuperIoConstants.CpuCoreTemp, 0));
                             temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 2));
                             break;
 
-                        case MotherboardModel.X570_Phantom_Gaming_4: // NCT6796D (-R?)
+                        case MotherboardModel.X570PhantomGaming4: // NCT6796D (-R?)
                             // Voltages                              
                             // internal on NCT6796D have a 1/2 voltage divider (by way of two 34kOhm resistors)
                             // "Six internal signals connected to the power supplies (CPUVCORE, AVSB, VBAT, VTT, 3VSB, 3VCC)"
@@ -1035,11 +1035,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.Z790_Taichi:
+                        case MotherboardModel.Z790Taichi:
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V18Volts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.Chipset082Volts, 1));
@@ -1053,12 +1053,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 6));
 
                             // Controls
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 0));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 1));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 6));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 6));
                             break;
 
-                        case MotherboardModel.B650M_C: // NCT6799D
+                        case MotherboardModel.B650MC: // NCT6799D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V120Volts, 1, 56, 10));
@@ -1086,11 +1086,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 6)); // CHA_FAN3/WP
 
                             // Controls
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 0)); // CPU_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 6)); // CHA_FAN3/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "1"), 1)); // CPU_FAN1
+                            controls.Add(new Control(string.Format(SuperIoConstants.CpuFanNumber, "2"), 0)); // CPU_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 3)); // CHA_FAN1/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 4)); // CHA_FAN2/WP
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 6)); // CHA_FAN3/WP
                             break;
 
                         default:
@@ -1132,7 +1132,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                 case Manufacturer.ASUS:
                     switch (model)
                     {
-                        case MotherboardModel.TUF_GAMING_X570_PLUS_WIFI: // NCT6798D
+                        case MotherboardModel.TufGamingX570PlusWifi: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1158,16 +1158,16 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(SuperIoConstants.AioPumpFan, 5));
 
                             // Controls
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
-                            controls.Add(new Models.Control(SuperIoConstants.CpuOptionalFan, 6));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 0));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 3));
-                            controls.Add(new Models.Control(SuperIoConstants.ChipsetFan, 4));
-                            controls.Add(new Models.Control(SuperIoConstants.AioPumpFan, 5));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 6));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 3));
+                            controls.Add(new Control(SuperIoConstants.ChipsetFan, 4));
+                            controls.Add(new Control(SuperIoConstants.AioPumpFan, 5));
                             break;
 
-                        case MotherboardModel.TUF_GAMING_B550M_PLUS_WIFI: // NCT6798D
+                        case MotherboardModel.TufGamingB550MPlusWifi: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "2"), 1, true));
@@ -1218,10 +1218,10 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             DefaultConfigurations.GetControls(superIo, controls);
                             break;
 
-                        case MotherboardModel.ROG_CROSSHAIR_VIII_HERO: // NCT6798D
-                        case MotherboardModel.ROG_CROSSHAIR_VIII_HERO_WIFI: // NCT6798D
-                        case MotherboardModel.ROG_CROSSHAIR_VIII_DARK_HERO: // NCT6798D
-                        case MotherboardModel.ROG_CROSSHAIR_VIII_FORMULA: // NCT6798D
+                        case MotherboardModel.RogCrosshairViiiHero: // NCT6798D
+                        case MotherboardModel.RogCrosshairViiiHeroWifi: // NCT6798D
+                        case MotherboardModel.RogCrosshairViiiDarkHero: // NCT6798D
+                        case MotherboardModel.RogCrosshairViiiFormula: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "2"), 1, true));
@@ -1284,11 +1284,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_XI_FORMULA: // NC6798D
+                        case MotherboardModel.RogMaximusXiFormula: // NC6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1333,11 +1333,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_XII_Z490_FORMULA: // NCT6798D
+                        case MotherboardModel.RogMaximusXiiZ490Formula: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1385,11 +1385,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_Z690_FORMULA: // NCT6798D
+                        case MotherboardModel.RogMaximusZ690Formula: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1437,11 +1437,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_Z690_HERO: // NCT6798D
+                        case MotherboardModel.RogMaximusZ690Hero: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1486,11 +1486,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_Z690_EXTREME_GLACIAL: // NCT6798D
+                        case MotherboardModel.RogMaximusZ690ExtremeGlacial: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1538,11 +1538,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_Z790_HERO: // NCT6798D
+                        case MotherboardModel.RogMaximusZ790Hero: // NCT6798D
                             // Temps
                             temps.Add(new Temperature(SuperIoConstants.CpuPackageTemp, 0));
                             temps.Add(new Temperature(SuperIoConstants.VrmTemp, 1));
@@ -1569,7 +1569,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             DefaultConfigurations.GetControls(superIo, controls);
                             break;
 
-                        case MotherboardModel.ROG_MAXIMUS_Z790_DARK_HERO: // NCT6798D
+                        case MotherboardModel.RogMaximusZ790DarkHero: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1614,11 +1614,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_STRIX_Z790_E_GAMING_WIFI: // NCT6798D
+                        case MotherboardModel.RogStrixZ790EGamingWifi: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1663,11 +1663,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.ROG_STRIX_B550_I_GAMING: // NCT6798D
+                        case MotherboardModel.RogStrixB550IGaming: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 10, 10));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1)); //Probably not updating properly
@@ -1716,19 +1716,19 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                                 switch (i)
                                 {
                                     case 0:
-                                        controls.Add(new Models.Control(SuperIoConstants.ChassisFan, 0));
+                                        controls.Add(new Control(SuperIoConstants.ChassisFan, 0));
                                         break;
                                     case 1:
-                                        controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+                                        controls.Add(new Control(SuperIoConstants.CpuFan, 1));
                                         break;
                                     case 4:
-                                        controls.Add(new Models.Control(SuperIoConstants.AioPumpFan, 4));
+                                        controls.Add(new Control(SuperIoConstants.AioPumpFan, 4));
                                         break;
                                 }
                             }
                             break;
 
-                        case MotherboardModel.ROG_ZENITH_II_EXTREME: // NCT6798D
+                        case MotherboardModel.RogZenithIiExtreme: // NCT6798D
                             // Voltages
                             // Voltage = value + (value - Vf) * Ri / Rf.
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
@@ -1775,22 +1775,22 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                                 switch (i)
                                 {
                                     case 0:
-                                        controls.Add(new Models.Control(SuperIoConstants.ChassisFan, 0));
+                                        controls.Add(new Control(SuperIoConstants.ChassisFan, 0));
                                         break;
                                     case 1:
-                                        controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+                                        controls.Add(new Control(SuperIoConstants.CpuFan, 1));
                                         break;
                                     case 2:
-                                        controls.Add(new Models.Control(SuperIoConstants.CpuOptionalFan, 2));
+                                        controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 2));
                                         break;
                                     case 4:
-                                        controls.Add(new Models.Control(SuperIoConstants.AioPumpFan, 4));
+                                        controls.Add(new Control(SuperIoConstants.AioPumpFan, 4));
                                         break;
                                 }
                             }
                             break;
 
-                        case MotherboardModel.ROG_STRIX_X570_I_GAMING: // NCT6798D
+                        case MotherboardModel.RogStrixX570IGaming: // NCT6798D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 10, 10));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1)); //Probably not updating properly
@@ -1834,19 +1834,19 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                                 switch (i)
                                 {
                                     case 0:
-                                        controls.Add(new Models.Control(SuperIoConstants.ChassisFan, 0));
+                                        controls.Add(new Control(SuperIoConstants.ChassisFan, 0));
                                         break;
                                     case 1:
-                                        controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
+                                        controls.Add(new Control(SuperIoConstants.CpuFan, 1));
                                         break;
                                     case 4:
-                                        controls.Add(new Models.Control(SuperIoConstants.AioPumpFan, 4));
+                                        controls.Add(new Control(SuperIoConstants.AioPumpFan, 4));
                                         break;
                                 }
                             }
                             break;
 
-                        case MotherboardModel.ROG_STRIX_B550_F_GAMING_WIFI: // NCT6798D-R
+                        case MotherboardModel.RogStrixB550FGamingWifi: // NCT6798D-R
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1874,7 +1874,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             DefaultConfigurations.GetControls(superIo, controls);
                             break;
 
-                        case MotherboardModel.PRIME_B650_PLUS: // NCT6799D
+                        case MotherboardModel.PrimeB650Plus: // NCT6799D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1902,15 +1902,15 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(SuperIoConstants.AioPumpFan, 5));
 
                             // Controls
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 0));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 3));
-                            controls.Add(new Models.Control(SuperIoConstants.AioPumpFan, 5));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 3));
+                            controls.Add(new Control(SuperIoConstants.AioPumpFan, 5));
 
                             break;
 
-                        case MotherboardModel.ROG_CROSSHAIR_X670E_GENE: // NCT6799D
+                        case MotherboardModel.RogCrosshairX670EGene: // NCT6799D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1946,8 +1946,8 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             DefaultConfigurations.GetControls(superIo, controls);
                             break;
 
-                        case MotherboardModel.ROG_STRIX_X670E_E_GAMING_WIFI: // NCT6799D
-                        case MotherboardModel.ROG_STRIX_X670E_F_GAMING_WIFI: // NCT6799D
+                        case MotherboardModel.RogStrixX670EEGamingWifi: // NCT6799D
+                        case MotherboardModel.RogStrixX670EFGamingWifi: // NCT6799D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -1983,7 +1983,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             DefaultConfigurations.GetControls(superIo, controls);
                             break;
 
-                        case MotherboardModel.PROART_X670E_CREATOR_WIFI: // NCT6799D
+                        case MotherboardModel.ProartX670ECreatorWifi: // NCT6799D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1));
@@ -2018,7 +2018,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                     voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                     switch (model)
                     {
-                        case MotherboardModel.B360M_PRO_VDH: // NCT6797D
+                        case MotherboardModel.B360MProVdh: // NCT6797D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 34, 34));
@@ -2043,12 +2043,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, "2"), 3));
 
                             // Controls
-                            controls.Add(new Models.Control(SuperIoConstants.CpuFan, 1));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 2));
-                            controls.Add(new Models.Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "1"), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, "2"), 3));
                             break;
 
-                        case MotherboardModel.B450A_PRO: // NCT6797D
+                        case MotherboardModel.B450APro: // NCT6797D
                             // Voltages
                             voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 4, 1));
                             voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 2, 34, 34));
@@ -2085,11 +2085,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
-                        case MotherboardModel.X570_Gaming_Plus:
+                        case MotherboardModel.X570GamingPlus:
                             // NCT6797D
                             // NCT771x : PCIE 1, M.2 1, not supported
                             // RF35204 : VRM not supported
@@ -2131,7 +2131,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
                             // Controls
                             for (int i = 0; i < fanControlNames.Length; i++)
                             {
-                                controls.Add(new Models.Control(fanControlNames[i], i));
+                                controls.Add(new Control(fanControlNames[i], i));
                             }
                             break;
 
@@ -2160,7 +2160,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             // Voltages
             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
@@ -2199,7 +2199,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             // Voltages
             voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));

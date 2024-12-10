@@ -28,8 +28,8 @@ internal sealed class StorageGeneric : AbstractStorage
     /// <returns></returns>
     public static AbstractStorage CreateInstance(StorageInfo info, ISettings settings)
     {
-        string name = string.IsNullOrEmpty(info.Name) ? "Generic Hard Disk" : info.Name;
-        string firmwareRevision = string.IsNullOrEmpty(info.Revision) ? "Unknown" : info.Revision;
+        var name = string.IsNullOrEmpty(info.Name) ? "Generic Hard Disk" : info.Name;
+        var firmwareRevision = string.IsNullOrEmpty(info.Revision) ? "Unknown" : info.Revision;
         return new StorageGeneric(info, name, firmwareRevision, info.Index, settings);
     }
 

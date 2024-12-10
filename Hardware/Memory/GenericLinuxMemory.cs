@@ -24,24 +24,24 @@ internal sealed class GenericLinuxMemory : Hardware
     /// </summary>
     /// <param name="name">The name.</param>
     /// <param name="settings">The settings.</param>
-    public GenericLinuxMemory(string name, ISettings settings) : base(name, new Identifier("ram"), settings)
+    public GenericLinuxMemory(string name, ISettings settings) : base(name, new Identifier(HardwareConstants.RamIdentifier), settings)
     {
-        _physicalMemoryUsed = new Sensor("Memory Used", 0, SensorType.Data, this, settings);
+        _physicalMemoryUsed = new Sensor(MemoryConstants.MemoryUsed, 0, SensorType.Data, this, settings);
         ActivateSensor(_physicalMemoryUsed);
 
-        _physicalMemoryAvailable = new Sensor("Memory Available", 1, SensorType.Data, this, settings);
+        _physicalMemoryAvailable = new Sensor(MemoryConstants.MemoryAvailable, 1, SensorType.Data, this, settings);
         ActivateSensor(_physicalMemoryAvailable);
 
-        _physicalMemoryLoad = new Sensor("Memory", 0, SensorType.Load, this, settings);
+        _physicalMemoryLoad = new Sensor(MemoryConstants.Memory, 0, SensorType.Load, this, settings);
         ActivateSensor(_physicalMemoryLoad);
 
-        _virtualMemoryUsed = new Sensor("Virtual Memory Used", 2, SensorType.Data, this, settings);
+        _virtualMemoryUsed = new Sensor(MemoryConstants.VirtualMemoryUsed, 2, SensorType.Data, this, settings);
         ActivateSensor(_virtualMemoryUsed);
 
-        _virtualMemoryAvailable = new Sensor("Virtual Memory Available", 3, SensorType.Data, this, settings);
+        _virtualMemoryAvailable = new Sensor(MemoryConstants.VirtualMemoryAvailable, 3, SensorType.Data, this, settings);
         ActivateSensor(_virtualMemoryAvailable);
 
-        _virtualMemoryLoad = new Sensor("Virtual Memory", 1, SensorType.Load, this, settings);
+        _virtualMemoryLoad = new Sensor(MemoryConstants.VirtualMemory, 1, SensorType.Load, this, settings);
         ActivateSensor(_virtualMemoryLoad);
     }
 
@@ -55,10 +55,9 @@ internal sealed class GenericLinuxMemory : Hardware
             string[] memoryInfo = File.ReadAllLines("/proc/meminfo");
 
             {
-                float totalMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
-                float freeMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
-                float cachedMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("Cached:"))) / 1024.0f / 1024.0f;
-
+                float totalMemoryGb = GetMemInfoValue(memoryInfo.First(x => x.StartsWith("MemTotal:"))) / 1024.0f / 1024.0f;
+                float freeMemoryGb = GetMemInfoValue(memoryInfo.First(x => x.StartsWith("MemFree:"))) / 1024.0f / 1024.0f;
+                float cachedMemoryGb = GetMemInfoValue(memoryInfo.First(x => x.StartsWith("Cached:"))) / 1024.0f / 1024.0f;
                 float usedMemoryGb = totalMemoryGb - freeMemoryGb - cachedMemoryGb;
 
                 _physicalMemoryUsed.Value = usedMemoryGb;
@@ -66,8 +65,8 @@ internal sealed class GenericLinuxMemory : Hardware
                 _physicalMemoryLoad.Value = 100.0f * (usedMemoryGb / totalMemoryGb);
             }
             {
-                float totalSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
-                float freeSwapMemoryGb = GetMemInfoValue(memoryInfo.First(entry => entry.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
+                float totalSwapMemoryGb = GetMemInfoValue(memoryInfo.First(x => x.StartsWith("SwapTotal"))) / 1024.0f / 1024.0f;
+                float freeSwapMemoryGb = GetMemInfoValue(memoryInfo.First(x => x.StartsWith("SwapFree"))) / 1024.0f / 1024.0f;
                 float usedSwapMemoryGb = totalSwapMemoryGb - freeSwapMemoryGb;
 
                 _virtualMemoryUsed.Value = usedSwapMemoryGb;

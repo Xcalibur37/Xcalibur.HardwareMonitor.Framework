@@ -1,4 +1,4 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware;
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 /// <summary>
 /// Abstract parent with logic for the abstract class that stores data.

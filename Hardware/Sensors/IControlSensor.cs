@@ -1,13 +1,9 @@
-﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
-
-namespace Xcalibur.HardwareMonitor.Framework.Hardware;
-
-
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
 /// <summary>
-/// Control Interface
+/// Control Sensor: Interface
 /// </summary>
-public interface IControl
+public interface IControlSensor
 {
     /// <summary>
     /// Gets the control mode.
@@ -15,7 +11,7 @@ public interface IControl
     /// <value>
     /// The control mode.
     /// </value>
-    ControlMode ControlMode { get; }
+    ControlSensorMode ControlMode { get; }
 
     /// <summary>
     /// Gets the identifier.

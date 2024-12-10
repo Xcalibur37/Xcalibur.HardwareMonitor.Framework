@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using Xcalibur.HardwareMonitor.Framework.Interop;
 using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;

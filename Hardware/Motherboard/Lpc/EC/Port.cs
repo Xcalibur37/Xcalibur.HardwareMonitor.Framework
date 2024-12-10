@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
 {
     /// <summary>
     /// EC Port

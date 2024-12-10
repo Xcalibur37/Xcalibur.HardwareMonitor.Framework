@@ -1,10 +1,46 @@
 ﻿using System;
-using Xcalibur.HardwareMonitor.Framework.Interop;
+using System.Collections.Generic;
+using Xcalibur.HardwareMonitor.Framework.Interop.Models.Kernel32;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
 {
+    /// <summary>
+    /// Drive
+    /// </summary>
     public class Drive
     {
+        /// <summary>
+        /// Gets the drive attribute values.
+        /// </summary>
+        /// <value>
+        /// The drive attribute values.
+        /// </value>
+        public Interop.Models.Kernel32.SmartAttribute[] DriveAttributeValues { get; }
+
+        /// <summary>
+        /// Gets the drive threshold values.
+        /// </summary>
+        /// <value>
+        /// The drive threshold values.
+        /// </value>
+        public SmartThreshold[] DriveThresholdValues { get; }
+
+        /// <summary>
+        /// Gets the firmware version.
+        /// </summary>
+        /// <value>
+        /// The firmware version.
+        /// </value>
+        public string FirmwareVersion { get; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Drive"/> class.
         /// </summary>
@@ -18,16 +54,18 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
             Name = name;
             FirmwareVersion = firmware;
 
-            string[] lines = value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
             DriveAttributeValues = new Interop.Models.Kernel32.SmartAttribute[lines.Length];
-            var thresholds = new System.Collections.Generic.List<Interop.Models.Kernel32.SmartThreshold>();
+            var thresholds = new List<SmartThreshold>();
 
             for (int i = 0; i < lines.Length; i++)
             {
-                string[] array = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var array = lines[i].Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
                 if (array.Length is not 4 and not 5)
+                {
                     throw new Exception();
+                }
 
                 var v = new Interop.Models.Kernel32.SmartAttribute { Id = Convert.ToByte(array[0], idBase), RawValue = new byte[6] };
 
@@ -41,22 +79,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart
 
                 DriveAttributeValues[i] = v;
 
-                if (array.Length == 5)
-                {
-                    var t = new Interop.Models.Kernel32.SmartThreshold { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
-                    thresholds.Add(t);
-                }
+                if (array.Length != 5) continue;
+                var t = new SmartThreshold { Id = v.Id, Threshold = Convert.ToByte(array[4], 10) };
+                thresholds.Add(t);
             }
 
             DriveThresholdValues = thresholds.ToArray();
         }
-
-        public Interop.Models.Kernel32.SmartAttribute[] DriveAttributeValues { get; }
-
-        public Interop.Models.Kernel32.SmartThreshold[] DriveThresholdValues { get; }
-
-        public string FirmwareVersion { get; }
-
-        public string Name { get; }
     }
 }

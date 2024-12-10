@@ -7,7 +7,6 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Ssd;
 /// <summary>
 /// SSD: Samsung
 /// </summary>
-/// <seealso cref="Xcalibur.HardwareMonitor.Framework.Hardware.Storage.AtaStorage" />
 /// <seealso cref="AtaStorage" />
 [NamePrefix(""), RequireSmart(0xB1), RequireSmart(0xB3), RequireSmart(0xB5), RequireSmart(0xB6), RequireSmart(0xB7), RequireSmart(0xBB), RequireSmart(0xC3), RequireSmart(0xC7)]
 internal class SsdSamsung : AtaStorage
@@ -36,7 +35,7 @@ internal class SsdSamsung : AtaStorage
             0,
             SmartNames.Temperature,
             false,
-            new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0) }),
+            [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0)]),
         new(0xC2, SmartNames.AirflowTemperature),
         new(0xC3, SmartNames.EccRate),
         new(0xC6, SmartNames.OffLineUncorrectableErrorCount, RawToInt),

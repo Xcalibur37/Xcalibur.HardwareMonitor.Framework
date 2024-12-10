@@ -17,15 +17,15 @@ internal sealed class IntelCpu : CpuBase
     private Sensor[] _coreClocks;
     private Sensor _coreMax;
     private Sensor[] _coreTemperatures;
-    private Sensor[] _coreVIDs;
+    private Sensor[] _coreVids;
     private Sensor _coreVoltage;
     private Sensor[] _distToTjMaxTemperatures;
     private uint[] _energyStatusMsrs = [
-        IntelConstants.MSR_PKG_ENERGY_STATUS,
-        IntelConstants.MSR_PP0_ENERGY_STATUS,
-        IntelConstants.MSR_PP1_ENERGY_STATUS,
-        IntelConstants.MSR_DRAM_ENERGY_STATUS,
-        IntelConstants.MSR_PLATFORM_ENERGY_STATUS
+        IntelConstants.MsrPkgEnergyStatus,
+        IntelConstants.MsrPp0EnergyStatus,
+        IntelConstants.MsrPp1EnergyStatus,
+        IntelConstants.MsrDramEnergyStatus,
+        IntelConstants.MsrPlatformEnergyStatus
     ];
     private uint[] _lastEnergyConsumed;
     private DateTime[] _lastEnergyTime;
@@ -104,17 +104,17 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     protected override uint[] GetMsrs() =>
     [
-        IntelConstants.MSR_PLATFORM_INFO,
-        IntelConstants.IA32_PERF_STATUS,
-        IntelConstants.IA32_THERM_STATUS_MSR,
-        IntelConstants.IA32_TEMPERATURE_TARGET,
-        IntelConstants.IA32_PACKAGE_THERM_STATUS,
-        IntelConstants.MSR_RAPL_POWER_UNIT,
-        IntelConstants.MSR_PKG_ENERGY_STATUS,
-        IntelConstants.MSR_DRAM_ENERGY_STATUS,
-        IntelConstants.MSR_PP0_ENERGY_STATUS,
-        IntelConstants.MSR_PP1_ENERGY_STATUS,
-        IntelConstants.MSR_PLATFORM_ENERGY_STATUS
+        IntelConstants.MsrPlatformInfo,
+        IntelConstants.Ia32PerfStatus,
+        IntelConstants.Ia32ThermStatusMsr,
+        IntelConstants.Ia32TemperatureTarget,
+        IntelConstants.Ia32PackageThermStatus,
+        IntelConstants.MsrRaplPowerUnit,
+        IntelConstants.MsrPkgEnergyStatus,
+        IntelConstants.MsrDramEnergyStatus,
+        IntelConstants.MsrPp0EnergyStatus,
+        IntelConstants.MsrPp1EnergyStatus,
+        IntelConstants.MsrPlatformEnergyStatus
     ];
 
     /// <summary>
@@ -124,7 +124,7 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     protected override string SetCoreName(int index)
     {
-        string name = $"Core #{index}";
+        string name = $"{CpuConstants.CoreNumber}{index}";
 
         // Intel CPU that contains P-Cores and E-Cores
         if (_microArchitecture is
@@ -134,8 +134,8 @@ internal sealed class IntelCpu : CpuBase
             IntelMicroArchitecture.ArrowLake)
         {
             name = CpuId[index].Length > 1
-                ? $"P-Core #{index}"
-                : $"E-Core #{index}";
+                ? $"{CpuConstants.PCoreNumber}{index}"
+                : $"{CpuConstants.ECoreNumber}{index}";
         }
         return name;
     }
@@ -341,6 +341,7 @@ internal sealed class IntelCpu : CpuBase
 
                 break;
             case 0x0F:
+                _tjMax = SetFloatValues(100);
                 switch (Model)
                 {
                     case 0x00: // Pentium 4 (180nm)
@@ -350,15 +351,13 @@ internal sealed class IntelCpu : CpuBase
                     case 0x04: // Pentium 4, Pentium D, Celeron D (90nm)
                     case 0x06: // Pentium 4, Pentium D, Celeron D (65nm)
                         _microArchitecture = IntelMicroArchitecture.NetBurst;
-                        _tjMax = SetFloatValues(100);
                         break;
 
                     default:
                         _microArchitecture = IntelMicroArchitecture.Unknown;
-                        _tjMax = SetFloatValues(100);
                         break;
                 }
-
+                
                 break;
             default:
                 _microArchitecture = IntelMicroArchitecture.Unknown;
@@ -378,7 +377,7 @@ internal sealed class IntelCpu : CpuBase
             case IntelMicroArchitecture.Atom:
             case IntelMicroArchitecture.Core:
             case IntelMicroArchitecture.NetBurst:
-                if (Ring0.ReadMsr(IntelConstants.IA32_PERF_STATUS, out uint _, out uint edx))
+                if (Ring0.ReadMsr(IntelConstants.Ia32PerfStatus, out _, out var edx))
                 {
                     _timeStampCounterMultiplier = ((edx >> 8) & 0x1f) + (0.5 * ((edx >> 14) & 1));
                 }
@@ -405,7 +404,7 @@ internal sealed class IntelCpu : CpuBase
             case IntelMicroArchitecture.Skylake:
             case IntelMicroArchitecture.TigerLake:
             case IntelMicroArchitecture.Tremont:
-                if (Ring0.ReadMsr(IntelConstants.MSR_PLATFORM_INFO, out uint eax, out uint _))
+                if (Ring0.ReadMsr(IntelConstants.MsrPlatformInfo, out var eax, out _))
                 {
                     _timeStampCounterMultiplier = (eax >> 8) & 0xff;
                 }
@@ -437,8 +436,8 @@ internal sealed class IntelCpu : CpuBase
                     SensorType.Temperature,
                     this,
                     [
-                        new ParameterDescription("TjMax [째C]", "TjMax temperature of the core sensor.\n" + "Temperature = TjMax - TSlope * Value.", _tjMax[i]),
-                        new ParameterDescription("TSlope [째C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
+                        new ParameterDescription("TjMax [캜]", "TjMax temperature of the core sensor.\n" + "Temperature = TjMax - TSlope * Value.", _tjMax[i]),
+                        new ParameterDescription("TSlope [캜]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
                     ],
                     Settings);
 
@@ -454,13 +453,13 @@ internal sealed class IntelCpu : CpuBase
         // Check if processor supports a digital thermal sensor at package level
         if (cpu0Data.GetLength(0) > 6 && (cpu0Data[6, 0] & 0x40) != 0 && _microArchitecture != IntelMicroArchitecture.Unknown)
         {
-            _packageTemperature = new Sensor("CPU Package",
+            _packageTemperature = new Sensor(CpuConstants.CpuPackage,
                 coreSensorId,
                 SensorType.Temperature,
                 this,
                 [
-                    new ParameterDescription("TjMax [째C]", "TjMax temperature of the package sensor.\n" + "Temperature = TjMax - TSlope * Value.", _tjMax[0]),
-                    new ParameterDescription("TSlope [째C]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
+                    new ParameterDescription("TjMax [캜]", "TjMax temperature of the package sensor.\n" + "Temperature = TjMax - TSlope * Value.", _tjMax[0]),
+                    new ParameterDescription("TSlope [캜]", "Temperature slope of the digital thermal sensor.\n" + "Temperature = TjMax - TSlope * Value.", 1)
                 ],
                 Settings);
 
@@ -474,7 +473,7 @@ internal sealed class IntelCpu : CpuBase
             _distToTjMaxTemperatures = new Sensor[CoreCount];
             for (int i = 0; i < _distToTjMaxTemperatures.Length; i++)
             {
-                _distToTjMaxTemperatures[i] = new Sensor(SetCoreName(i) + " Distance to TjMax", coreSensorId, SensorType.Temperature, this, Settings);
+                _distToTjMaxTemperatures[i] = new Sensor($"{SetCoreName(i)} {CpuConstants.DistToTjMax}", coreSensorId, SensorType.Temperature, this, Settings);
                 ActivateSensor(_distToTjMaxTemperatures[i]);
                 coreSensorId++;
             }
@@ -488,11 +487,11 @@ internal sealed class IntelCpu : CpuBase
         // Note: only available when the cpu has more than 1 core
         if (cpu0Data.GetLength(0) > 6 && (cpu0Data[6, 0] & 0x40) != 0 && _microArchitecture != IntelMicroArchitecture.Unknown && CoreCount > 1)
         {
-            _coreMax = new Sensor("Core Max", coreSensorId, SensorType.Temperature, this, Settings);
+            _coreMax = new Sensor(CpuConstants.CoreMax, coreSensorId, SensorType.Temperature, this, Settings);
             ActivateSensor(_coreMax);
             coreSensorId++;
 
-            _coreAvg = new Sensor("Core Average", coreSensorId, SensorType.Temperature, this, Settings);
+            _coreAvg = new Sensor(CpuConstants.CoreAverage, coreSensorId, SensorType.Temperature, this, Settings);
             ActivateSensor(_coreAvg);
         }
         else
@@ -520,7 +519,7 @@ internal sealed class IntelCpu : CpuBase
             var distToTjMax = _distToTjMaxTemperatures[i];
 
             // Get the latest reading
-            if (Ring0.ReadMsr(IntelConstants.IA32_THERM_STATUS_MSR, out eax, out _, CpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
+            if (Ring0.ReadMsr(IntelConstants.Ia32ThermStatusMsr, out eax, out _, CpuId[i][0].Affinity) && (eax & 0x80000000) != 0)
             {
                 // Get the dist from tjMax from bits 22:16
                 float deltaT = (eax & 0x007F0000) >> 16;
@@ -561,7 +560,7 @@ internal sealed class IntelCpu : CpuBase
         if (_packageTemperature is null) return;
 
         // if reading is valid
-        if (Ring0.ReadMsr(IntelConstants.IA32_PACKAGE_THERM_STATUS, out eax, out _, Cpu0.Affinity) && (eax & 0x80000000) != 0)
+        if (Ring0.ReadMsr(IntelConstants.Ia32PackageThermStatus, out eax, out _, Cpu0.Affinity) && (eax & 0x80000000) != 0)
         {
             // get the dist from tjMax from bits 22:16
             float deltaT = (eax & 0x007F0000) >> 16;
@@ -581,15 +580,13 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     private void CreateClockSensors()
     {
-        _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, Settings);
+        _busClock = new Sensor(CpuConstants.BusSpeed, 0, SensorType.Clock, this, Settings);
         _coreClocks = new Sensor[CoreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
             _coreClocks[i] = new Sensor(SetCoreName(i), i + 1, SensorType.Clock, this, Settings);
-            if (HasTimeStampCounter && _microArchitecture != IntelMicroArchitecture.Unknown)
-            {
-                ActivateSensor(_coreClocks[i]);
-            }
+            if (!HasTimeStampCounter || _microArchitecture == IntelMicroArchitecture.Unknown) continue;
+            ActivateSensor(_coreClocks[i]);
         }
     }
 
@@ -606,10 +603,10 @@ internal sealed class IntelCpu : CpuBase
 
         // Evaluate
         double newBusClock = 0;
-        for (int i = 0; i < _coreClocks.Length; i++)
+        for (var i = 0; i < _coreClocks.Length; i++)
         {
             System.Threading.Thread.Sleep(1);
-            if (Ring0.ReadMsr(IntelConstants.IA32_PERF_STATUS, out eax, out _, CpuId[i][0].Affinity))
+            if (Ring0.ReadMsr(IntelConstants.Ia32PerfStatus, out eax, out _, CpuId[i][0].Affinity))
             {
                 newBusClock = TimeStampCounterFrequency / _timeStampCounterMultiplier;
                 switch (_microArchitecture)
@@ -663,22 +660,20 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     private void CreateVoltageSensors()
     {
-        uint eax;
-
         // ReSharper disable once ShiftExpressionRealShiftCountIsZero
         // Core Voltages
-        if (Ring0.ReadMsr(IntelConstants.IA32_PERF_STATUS, out eax, out uint _) && ((eax >> 32) & 0xFFFF) > 0)
+        if (Ring0.ReadMsr(IntelConstants.Ia32PerfStatus, out var eax, out _) && ((eax >> 32) & 0xFFFF) > 0)
         {
-            _coreVoltage = new Sensor("CPU Core", 0, SensorType.Voltage, this, Settings);
+            _coreVoltage = new Sensor(CpuConstants.CpuCore, 0, SensorType.Voltage, this, Settings);
             ActivateSensor(_coreVoltage);
         }
 
         // Core VIDs
-        _coreVIDs = new Sensor[CoreCount];
-        for (int i = 0; i < _coreVIDs.Length; i++)
+        _coreVids = new Sensor[CoreCount];
+        for (var i = 0; i < _coreVids.Length; i++)
         {
-            _coreVIDs[i] = new Sensor(SetCoreName(i), i + 1, SensorType.Voltage, this, Settings);
-            ActivateSensor(_coreVIDs[i]);
+            _coreVids[i] = new Sensor(SetCoreName(i), i + 1, SensorType.Voltage, this, Settings);
+            ActivateSensor(_coreVids[i]);
         }
     }
 
@@ -689,25 +684,25 @@ internal sealed class IntelCpu : CpuBase
     private void UpdateVoltageSensors()
     {
         // Core voltage
-        if (_coreVoltage is not null && Ring0.ReadMsr(IntelConstants.IA32_PERF_STATUS, out _, out uint edx))
+        if (_coreVoltage is not null && Ring0.ReadMsr(IntelConstants.Ia32PerfStatus, out _, out uint edx))
         {
             // ReSharper disable once ShiftExpressionRealShiftCountIsZero
             _coreVoltage.Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
         }
 
         // Core VIDs
-        for (int i = 0; i < _coreVIDs.Length; i++)
+        for (var i = 0; i < _coreVids.Length; i++)
         {
             // ReSharper disable once ShiftExpressionRealShiftCountIsZero
-            if (Ring0.ReadMsr(IntelConstants.IA32_PERF_STATUS, out _, out edx, CpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
+            if (Ring0.ReadMsr(IntelConstants.Ia32PerfStatus, out _, out edx, CpuId[i][0].Affinity) && ((edx >> 32) & 0xFFFF) > 0)
             {
                 // ReSharper disable once ShiftExpressionRealShiftCountIsZero
-                _coreVIDs[i].Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
-                ActivateSensor(_coreVIDs[i]);
+                _coreVids[i].Value = ((edx >> 32) & 0xFFFF) / (float)(1 << 13);
+                ActivateSensor(_coreVids[i]);
             }
             else
             {
-                DeactivateSensor(_coreVIDs[i]);
+                DeactivateSensor(_coreVids[i]);
             }
         }
     }
@@ -718,7 +713,6 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     private void CreatePowerSensors()
     {
-        uint eax;
         if (_microArchitecture is
             IntelMicroArchitecture.Atom or
             IntelMicroArchitecture.ArrowLake or
@@ -731,7 +725,7 @@ internal sealed class IntelCpu : CpuBase
         }
 
         // Energy unit multiplier
-        if (Ring0.ReadMsr(IntelConstants.MSR_RAPL_POWER_UNIT, out eax, out uint _))
+        if (Ring0.ReadMsr(IntelConstants.MsrRaplPowerUnit, out var eax, out _))
         {
             EnergyUnitsMultiplier = _microArchitecture switch
             {
@@ -745,11 +739,17 @@ internal sealed class IntelCpu : CpuBase
         _powerSensors = new Sensor[_energyStatusMsrs.Length];
         _lastEnergyTime = new DateTime[_energyStatusMsrs.Length];
         _lastEnergyConsumed = new uint[_energyStatusMsrs.Length];
-        string[] powerSensorLabels = ["CPU Package", "CPU Cores", "CPU Graphics", "CPU Memory", "CPU Platform"];
+        string[] powerSensorLabels = [
+            CpuConstants.CpuPackage, 
+            CpuConstants.CpuCores, 
+            CpuConstants.CpuGraphics, 
+            CpuConstants.CpuMemory, 
+            CpuConstants.CpuPlatform
+        ];
 
-        for (int i = 0; i < _energyStatusMsrs.Length; i++)
+        for (var i = 0; i < _energyStatusMsrs.Length; i++)
         {
-            if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out uint _)) continue;
+            if (!Ring0.ReadMsr(_energyStatusMsrs[i], out eax, out _)) continue;
 
             // Don't show the "GPU Graphics" sensor on windows, it will show up under the GPU instead.
             if (i == 2 && !Software.OperatingSystem.IsUnix) continue;
@@ -769,24 +769,22 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     private void UpdatePowerSensors()
     {
-        uint eax;
         if (_powerSensors is null) return;
 
         // Power sensors
-        foreach (Sensor sensor in _powerSensors)
+        foreach (var sensor in _powerSensors)
         {
             if (sensor == null) continue;
-            if (!Ring0.ReadMsr(_energyStatusMsrs[sensor.Index], out eax, out _)) continue;
+            if (!Ring0.ReadMsr(_energyStatusMsrs[sensor.Index], out var eax, out _)) continue;
 
-            DateTime time = DateTime.UtcNow;
-            uint energyConsumed = eax;
-            float deltaTime = (float)(time - _lastEnergyTime[sensor.Index]).TotalSeconds;
+            var time = DateTime.UtcNow;
+            var deltaTime = (float)(time - _lastEnergyTime[sensor.Index]).TotalSeconds;
             if (deltaTime < 0.01) continue;
 
             // Set sensor
-            sensor.Value = EnergyUnitsMultiplier * unchecked(energyConsumed - _lastEnergyConsumed[sensor.Index]) / deltaTime;
+            sensor.Value = EnergyUnitsMultiplier * unchecked(eax - _lastEnergyConsumed[sensor.Index]) / deltaTime;
             _lastEnergyTime[sensor.Index] = time;
-            _lastEnergyConsumed[sensor.Index] = energyConsumed;
+            _lastEnergyConsumed[sensor.Index] = eax;
         }
     }
 
@@ -797,8 +795,8 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     private float[] SetFloatValues(float f)
     {
-        float[] result = new float[CoreCount];
-        for (int i = 0; i < CoreCount; i++)
+        var result = new float[CoreCount];
+        for (var i = 0; i < CoreCount; i++)
         {
             result[i] = f;
         }
@@ -811,10 +809,10 @@ internal sealed class IntelCpu : CpuBase
     /// <returns></returns>
     private float[] GetTjMaxFromMsr()
     {
-        float[] result = new float[CoreCount];
-        for (int i = 0; i < CoreCount; i++)
+        var result = new float[CoreCount];
+        for (var i = 0; i < CoreCount; i++)
         {
-            result[i] = Ring0.ReadMsr(IntelConstants.IA32_TEMPERATURE_TARGET, out uint eax, out uint _, CpuId[i][0].Affinity)
+            result[i] = Ring0.ReadMsr(IntelConstants.Ia32TemperatureTarget, out var eax, out _, CpuId[i][0].Affinity)
                 ? (eax >> 16) & 0xFF
                 : 100;
         }

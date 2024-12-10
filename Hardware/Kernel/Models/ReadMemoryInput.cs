@@ -2,6 +2,9 @@
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Kernel.Models
 {
+    /// <summary>
+    /// Read Memory Input
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     internal struct ReadMemoryInput
     {

@@ -45,12 +45,9 @@ internal class EcIoPortGigabyteController : IGigabyteController
         IT879xEcIoPort port = new(EcIoRegisterPort, EcIoValuePort);
 
         // Check compatibility by querying its version.
-        if (!port.Read(ControllerFanControlArea + ControllerVersionOffset, out byte majorVersion) || majorVersion != 1)
-        {
-            return null;
-        }
-
-        return new EcIoPortGigabyteController(port);
+        return !port.Read(ControllerFanControlArea + ControllerVersionOffset, out var majorVersion) || majorVersion != 1
+            ? null
+            : new EcIoPortGigabyteController(port);
     }
 
     /// <summary>
@@ -79,10 +76,8 @@ internal class EcIoPortGigabyteController : IGigabyteController
     /// </summary>
     public void Restore()
     {
-        if (_initialState.HasValue)
-        {
-            Enable(_initialState.Value);
-        }
+        if (!_initialState.HasValue) return;
+        Enable(_initialState.Value);
     }
 
     #endregion

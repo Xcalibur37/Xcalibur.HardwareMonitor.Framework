@@ -79,7 +79,7 @@ public class GenericHardDisk : AtaStorage
             SensorType.Temperature, 0, SmartNames.Temperature),
 
         new(0xBE, SmartNames.TemperatureDifferenceFrom100, (r, _, p) => r[0] + (p?[0].Value ?? 0),
-            SensorType.Temperature, 0, "Temperature")
+            SensorType.Temperature, 0, SmartNames.Temperature)
     ];
 
     /// <summary>

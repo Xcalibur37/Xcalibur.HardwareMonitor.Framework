@@ -8,9 +8,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nu
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum SourceNct6776F : byte
     {
-        SYSTIN = 1,
-        CPUTIN = 2,
-        AUXTIN = 3,
-        PECI_0 = 12
+        SysTin = 1,
+        CpuTin = 2,
+        AuxTin = 3,
+        Peci0 = 12
     }
 }

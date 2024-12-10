@@ -1,20 +1,19 @@
 ﻿using System.Globalization;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
-namespace Xcalibur.HardwareMonitor.Framework.Hardware;
+namespace Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
-internal delegate void ControlEventHandler(Control control);
+internal delegate void ControlSensorEventHandler(ControlSensor control);
 
 /// <summary>
-/// Control
+/// Control Sensor
 /// </summary>
-/// <seealso cref="IControl" />
-internal class Control : IControl
+/// <seealso cref="IControlSensor" />
+internal class ControlSensor : IControlSensor
 {
     #region Fields
-    
+
     private readonly ISettings _settings;
-    private ControlMode _mode;
+    private ControlSensorMode _mode;
     private float _softwareValue;
 
     #endregion
@@ -27,7 +26,7 @@ internal class Control : IControl
     /// <value>
     /// The control mode.
     /// </value>
-    public ControlMode ControlMode
+    public ControlSensorMode ControlMode
     {
         get => _mode;
         private set
@@ -94,33 +93,32 @@ internal class Control : IControl
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Control" /> class.
+    /// Initializes a new instance of the <see cref="ControlSensor" /> class.
     /// </summary>
     /// <param name="sensor">The sensor.</param>
     /// <param name="settings">The settings.</param>
     /// <param name="minSoftwareValue">The minimum software value.</param>
     /// <param name="maxSoftwareValue">The maximum software value.</param>
-    public Control(ISensor sensor, ISettings settings, float minSoftwareValue, float maxSoftwareValue)
+    public ControlSensor(ISensor sensor, ISettings settings, float minSoftwareValue, float maxSoftwareValue)
     {
         _settings = settings;
         Identifier = new Identifier(sensor.Identifier, "control");
         Sensor = sensor;
         MinSoftwareValue = minSoftwareValue;
         MaxSoftwareValue = maxSoftwareValue;
-
-
+        
         if (!float.TryParse(
-                settings.GetValue(new Identifier(Identifier, "value").ToString(), "0"),
-                NumberStyles.Float, CultureInfo.InvariantCulture, out _softwareValue))
+            settings.GetValue(new Identifier(Identifier, "value").ToString(), "0"),
+            NumberStyles.Float, CultureInfo.InvariantCulture, out _softwareValue))
         {
             _softwareValue = 0;
         }
 
         _mode = !int.TryParse(
             settings.GetValue(new Identifier(Identifier, "mode").ToString(),
-                ((int)ControlMode.Undefined).ToString(CultureInfo.InvariantCulture)),
+                ((int)ControlSensorMode.Undefined).ToString(CultureInfo.InvariantCulture)),
             NumberStyles.Integer, CultureInfo.InvariantCulture, out int mode)
-            ? ControlMode.Undefined : (ControlMode)mode;
+            ? ControlSensorMode.Undefined : (ControlSensorMode)mode;
     }
 
     #endregion
@@ -132,7 +130,7 @@ internal class Control : IControl
     /// </summary>
     public void SetDefault()
     {
-        ControlMode = ControlMode.Default;
+        ControlMode = ControlSensorMode.Default;
     }
 
     /// <summary>
@@ -141,7 +139,7 @@ internal class Control : IControl
     /// <param name="value">The value.</param>
     public void SetSoftware(float value)
     {
-        ControlMode = ControlMode.Software;
+        ControlMode = ControlSensorMode.Software;
         SoftwareValue = value;
     }
 
@@ -152,12 +150,12 @@ internal class Control : IControl
     /// <summary>
     /// Occurs when [control mode changed].
     /// </summary>
-    internal event ControlEventHandler ControlModeChanged;
+    internal event ControlSensorEventHandler ControlModeChanged;
 
     /// <summary>
     /// Occurs when [software control value changed].
     /// </summary>
-    internal event ControlEventHandler SoftwareControlValueChanged;
+    internal event ControlSensorEventHandler SoftwareControlValueChanged;
 
     #endregion
 }

@@ -12,6 +12,7 @@ using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Memory;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Network;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware;
@@ -217,17 +218,8 @@ public class Computer : IComputer
     /// Contains computer information table read in accordance with
     /// <see href="https://www.dmtf.org/standards/smbios">System Management BIOS (SMBIOS) Reference Specification</see>.
     /// </summary>
-    public SmBios.SmBios SmBios
-    {
-        get
-        {
-            if (!_open)
-            {
-                throw new InvalidOperationException("SMBIOS cannot be accessed before opening.");
-            }
-            return _smbios;
-        }
-    }
+    public SmBios.SmBios SmBios => 
+        !_open ? throw new InvalidOperationException("SMBIOS cannot be accessed before opening.") : _smbios;
 
     #endregion
 
@@ -327,8 +319,8 @@ public class Computer : IComputer
     {
         lock (_lock)
         {
-            // Use a for-loop instead of foreach to avoid a collection modified exception after sleep, even though everything is under a lock.
-            foreach (var t in _groups.SelectMany(group => group.Hardware))
+            Span<IHardware> itemsSpan = _groups.SelectMany(group => group.Hardware).ToArray();
+            foreach (var t in itemsSpan)
             {
                 t.Accept(visitor);
             }

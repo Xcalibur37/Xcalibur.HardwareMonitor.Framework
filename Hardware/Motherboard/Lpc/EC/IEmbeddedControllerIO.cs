@@ -5,7 +5,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC;
 /// <summary>
 /// Embedded Controller I/O - Interface
 /// </summary>
-/// <seealso cref="System.IDisposable" />
+/// <seealso cref="IDisposable" />
 public interface IEmbeddedControllerIo : IDisposable
 {
     /// <summary>

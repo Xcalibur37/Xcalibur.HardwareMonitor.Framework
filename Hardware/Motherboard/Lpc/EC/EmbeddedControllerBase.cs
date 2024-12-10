@@ -21,200 +21,200 @@ public abstract class EmbeddedControllerBase : Hardware
 
     private readonly IReadOnlyList<EmbeddedControllerSource> _sources;
 
-    private static readonly Dictionary<BoardFamily, Dictionary<ECSensor, EmbeddedControllerSource>> _knownSensors =
+    private static readonly Dictionary<BoardFamily, Dictionary<EcSensor, EmbeddedControllerSource>> _knownSensors =
         new()
         {
             {
                 BoardFamily.Amd400,
-                new Dictionary<ECSensor, EmbeddedControllerSource>() // no chipset fans in this generation
+                new Dictionary<EcSensor, EmbeddedControllerSource>() // no chipset fans in this generation
                 {
-                    { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
-                    { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
-                    { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
+                    { EcSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                    { EcSensor.TempCpu, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
+                    { EcSensor.TempMb, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
                     {
-                        ECSensor.TempTSensor,
+                        EcSensor.TempTSensor,
                         new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40)
                     },
-                    { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                    { EcSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
                     {
-                        ECSensor.VoltageCPU,
+                        EcSensor.VoltageCpu,
                         new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f)
                     },
-                    { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00bc, 2) },
-                    { ECSensor.FanVrmHS, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
+                    { EcSensor.FanCpuOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00bc, 2) },
+                    { EcSensor.FanVrmHs, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
                     {
-                        ECSensor.FanWaterFlow,
+                        EcSensor.FanWaterFlow,
                         new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00b4, 2, factor: 1.0f / 42f * 60f)
                     },
-                    { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+                    { EcSensor.CurrCpu, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                     {
-                        ECSensor.TempWaterIn,
+                        EcSensor.TempWaterIn,
                         new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x010d, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterOut,
+                        EcSensor.TempWaterOut,
                         new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x010b, blank: -40)
                     }
                 }
             },
             {
-                BoardFamily.Amd500, new Dictionary<ECSensor, EmbeddedControllerSource>
+                BoardFamily.Amd500, new Dictionary<EcSensor, EmbeddedControllerSource>
                 {
-                    { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
-                    { ECSensor.TempCPU, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
-                    { ECSensor.TempMB, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
+                    { EcSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                    { EcSensor.TempCpu, new EmbeddedControllerSource("CPU", SensorType.Temperature, 0x003b) },
+                    { EcSensor.TempMb, new EmbeddedControllerSource("Motherboard", SensorType.Temperature, 0x003c) },
                     {
-                        ECSensor.TempTSensor,
+                        EcSensor.TempTSensor,
                         new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40)
                     },
-                    { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                    { EcSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
                     {
-                        ECSensor.VoltageCPU,
+                        EcSensor.VoltageCpu,
                         new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f)
                     },
-                    { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
-                    { ECSensor.FanVrmHS, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
-                    { ECSensor.FanChipset, new EmbeddedControllerSource("Chipset Fan", SensorType.Fan, 0x00b4, 2) },
+                    { EcSensor.FanCpuOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                    { EcSensor.FanVrmHs, new EmbeddedControllerSource("VRM Heat Sink Fan", SensorType.Fan, 0x00b2, 2) },
+                    { EcSensor.FanChipset, new EmbeddedControllerSource("Chipset Fan", SensorType.Fan, 0x00b4, 2) },
                     // TODO: "why 42?" is a silly question, I know, but still, why? On the serious side, it might be 41.6(6)
                     {
-                        ECSensor.FanWaterFlow,
+                        EcSensor.FanWaterFlow,
                         new EmbeddedControllerSource("Water flow", SensorType.Flow, 0x00bc, 2, factor: 1.0f / 42f * 60f)
                     },
-                    { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+                    { EcSensor.CurrCpu, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                     {
-                        ECSensor.TempWaterIn,
+                        EcSensor.TempWaterIn,
                         new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterOut,
+                        EcSensor.TempWaterOut,
                         new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40)
                     }
                 }
             },
             {
-                BoardFamily.Amd600, new Dictionary<ECSensor, EmbeddedControllerSource>
+                BoardFamily.Amd600, new Dictionary<EcSensor, EmbeddedControllerSource>
                 {
-                    { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                    { EcSensor.FanCpuOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
                     {
-                        ECSensor.TempWaterIn,
+                        EcSensor.TempWaterIn,
                         new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterOut,
+                        EcSensor.TempWaterOut,
                         new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40)
                     }
                 }
             },
             {
-                BoardFamily.Intel100, new Dictionary<ECSensor, EmbeddedControllerSource>
+                BoardFamily.Intel100, new Dictionary<EcSensor, EmbeddedControllerSource>
                 {
-                    { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                    { EcSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
                     {
-                        ECSensor.TempTSensor,
+                        EcSensor.TempTSensor,
                         new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40)
                     },
-                    { ECSensor.FanWaterPump, new EmbeddedControllerSource("Water Pump", SensorType.Fan, 0x00bc, 2) },
-                    { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+                    { EcSensor.FanWaterPump, new EmbeddedControllerSource("Water Pump", SensorType.Fan, 0x00bc, 2) },
+                    { EcSensor.CurrCpu, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                     {
-                        ECSensor.VoltageCPU,
+                        EcSensor.VoltageCpu,
                         new EmbeddedControllerSource("CPU Core", SensorType.Voltage, 0x00a2, 2, factor: 1e-3f)
                     }
                 }
             },
             {
-                BoardFamily.Intel300, new Dictionary<ECSensor, EmbeddedControllerSource>
+                BoardFamily.Intel300, new Dictionary<EcSensor, EmbeddedControllerSource>
                 {
-                    { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
-                    { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                    { EcSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                    { EcSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
                     {
-                        ECSensor.TempTSensor,
+                        EcSensor.TempTSensor,
                         new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterIn,
+                        EcSensor.TempWaterIn,
                         new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterOut,
+                        EcSensor.TempWaterOut,
                         new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40)
                     },
-                    { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
+                    { EcSensor.FanCpuOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) }
                 }
             },
             {
-                BoardFamily.Intel400, new Dictionary<ECSensor, EmbeddedControllerSource>
+                BoardFamily.Intel400, new Dictionary<EcSensor, EmbeddedControllerSource>
                 {
-                    { ECSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
+                    { EcSensor.TempChipset, new EmbeddedControllerSource("Chipset", SensorType.Temperature, 0x003a) },
                     {
-                        ECSensor.TempTSensor,
+                        EcSensor.TempTSensor,
                         new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40)
                     },
-                    { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
-                    { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                    { EcSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                    { EcSensor.FanCpuOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
                     {
-                        ECSensor.FanWaterFlow,
+                        EcSensor.FanWaterFlow,
                         new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f)
                     }, // todo: need validation for this calculation
-                    { ECSensor.CurrCPU, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
+                    { EcSensor.CurrCpu, new EmbeddedControllerSource("CPU", SensorType.Current, 0x00f4) },
                     {
-                        ECSensor.TempWaterIn,
+                        EcSensor.TempWaterIn,
                         new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterOut,
+                        EcSensor.TempWaterOut,
                         new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40)
                     },
                 }
             },
             {
-                BoardFamily.Intel600, new Dictionary<ECSensor, EmbeddedControllerSource>
+                BoardFamily.Intel600, new Dictionary<EcSensor, EmbeddedControllerSource>
                 {
                     {
-                        ECSensor.TempTSensor,
+                        EcSensor.TempTSensor,
                         new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x003d, blank: -40)
                     },
-                    { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
+                    { EcSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x003e) },
                     {
-                        ECSensor.TempWaterIn,
+                        EcSensor.TempWaterIn,
                         new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterOut,
+                        EcSensor.TempWaterOut,
                         new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterBlockIn,
+                        EcSensor.TempWaterBlockIn,
                         new EmbeddedControllerSource("Water Block In", SensorType.Temperature, 0x0102, blank: -40)
                     },
                     {
-                        ECSensor.FanWaterFlow,
+                        EcSensor.FanWaterFlow,
                         new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f)
                     } // todo: need validation for this calculation
                 }
             },
             {
-                BoardFamily.Intel700, new Dictionary<ECSensor, EmbeddedControllerSource>
+                BoardFamily.Intel700, new Dictionary<EcSensor, EmbeddedControllerSource>
                 {
-                    { ECSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
-                    { ECSensor.FanCPUOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
+                    { EcSensor.TempVrm, new EmbeddedControllerSource("VRM", SensorType.Temperature, 0x0033) },
+                    { EcSensor.FanCpuOpt, new EmbeddedControllerSource("CPU Optional Fan", SensorType.Fan, 0x00b0, 2) },
                     {
-                        ECSensor.TempTSensor,
+                        EcSensor.TempTSensor,
                         new EmbeddedControllerSource("T Sensor", SensorType.Temperature, 0x0109, blank: -40)
                     },
                     {
-                        ECSensor.TempTSensor2,
+                        EcSensor.TempTSensor2,
                         new EmbeddedControllerSource("T Sensor 2", SensorType.Temperature, 0x105, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterIn,
+                        EcSensor.TempWaterIn,
                         new EmbeddedControllerSource("Water In", SensorType.Temperature, 0x0100, blank: -40)
                     },
                     {
-                        ECSensor.TempWaterOut,
+                        EcSensor.TempWaterOut,
                         new EmbeddedControllerSource("Water Out", SensorType.Temperature, 0x0101, blank: -40)
                     },
                     {
-                        ECSensor.FanWaterFlow,
+                        EcSensor.FanWaterFlow,
                         new EmbeddedControllerSource("Water Flow", SensorType.Flow, 0x00be, 2, factor: 1.0f / 42f * 60f)
                     } // todo: need validation for this calculation
                 }
@@ -227,264 +227,264 @@ public abstract class EmbeddedControllerBase : Hardware
     // https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html
     private static readonly BoardInfo[] _boards =
     [
-        new(MotherboardModel.PRIME_X470_PRO,
+        new(MotherboardModel.PrimeX470Pro,
             BoardFamily.Amd400,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempVrm,
-            ECSensor.TempVrm,
-            ECSensor.FanCPUOpt,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.PRIME_X570_PRO,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempVrm,
+            EcSensor.TempVrm,
+            EcSensor.FanCpuOpt,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.PrimeX570Pro,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempVrm,
-            ECSensor.TempTSensor,
-            ECSensor.FanChipset),
-        new(MotherboardModel.PROART_X570_CREATOR_WIFI,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempVrm,
+            EcSensor.TempTSensor,
+            EcSensor.FanChipset),
+        new(MotherboardModel.ProartX570CreatorWifi,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempVrm,
-            ECSensor.TempTSensor,
-            ECSensor.FanCPUOpt,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.PRO_WS_X570_ACE,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempVrm,
+            EcSensor.TempTSensor,
+            EcSensor.FanCpuOpt,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.ProWsX570Ace,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempVrm,
-            ECSensor.FanChipset,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(new[] { MotherboardModel.ROG_CROSSHAIR_VIII_HERO, MotherboardModel.ROG_CROSSHAIR_VIII_HERO_WIFI, MotherboardModel.ROG_CROSSHAIR_VIII_FORMULA },
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempVrm,
+            EcSensor.FanChipset,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(new[] { MotherboardModel.RogCrosshairViiiHero, MotherboardModel.RogCrosshairViiiHeroWifi, MotherboardModel.RogCrosshairViiiFormula },
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanCPUOpt,
-            ECSensor.FanChipset,
-            ECSensor.FanWaterFlow,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.ROG_CROSSHAIR_X670E_EXTREME,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanCpuOpt,
+            EcSensor.FanChipset,
+            EcSensor.FanWaterFlow,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.RogCrosshairX670EExtreme,
             BoardFamily.Amd600,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_CROSSHAIR_X670E_HERO,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogCrosshairX670EHero,
             BoardFamily.Amd600,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_CROSSHAIR_X670E_GENE,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogCrosshairX670EGene,
             BoardFamily.Amd600,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_STRIX_X670E_E_GAMING_WIFI,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogStrixX670EEGamingWifi,
             BoardFamily.Amd600,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_STRIX_X670E_F_GAMING_WIFI,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogStrixX670EFGamingWifi,
             BoardFamily.Amd600,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_CROSSHAIR_VIII_DARK_HERO,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogCrosshairViiiDarkHero,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanCPUOpt,
-            ECSensor.FanWaterFlow,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.ROG_CROSSHAIR_VIII_IMPACT,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanCpuOpt,
+            EcSensor.FanWaterFlow,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.RogCrosshairViiiImpact,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.FanChipset,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.ROG_STRIX_B550_E_GAMING,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.FanChipset,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.RogStrixB550EGaming,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_STRIX_B550_I_GAMING,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogStrixB550IGaming,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.FanVrmHS,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.ROG_STRIX_X570_E_GAMING,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.FanVrmHs,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.RogStrixX570EGaming,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.FanChipset,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.ROG_STRIX_X570_E_GAMING_WIFI_II,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.FanChipset,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.RogStrixX570EGamingWifiIi,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm),
-        new(MotherboardModel.ROG_STRIX_X570_F_GAMING,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm),
+        new(MotherboardModel.RogStrixX570FGaming,
             BoardFamily.Amd500,
-            ECSensor.TempChipset,
-            ECSensor.TempCPU,
-            ECSensor.TempMB,
-            ECSensor.TempTSensor,
-            ECSensor.FanChipset),
-        new(MotherboardModel.ROG_STRIX_X570_I_GAMING,
+            EcSensor.TempChipset,
+            EcSensor.TempCpu,
+            EcSensor.TempMb,
+            EcSensor.TempTSensor,
+            EcSensor.FanChipset),
+        new(MotherboardModel.RogStrixX570IGaming,
             BoardFamily.Amd500,
-            ECSensor.TempTSensor,
-            ECSensor.FanVrmHS,
-            ECSensor.FanChipset,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU,
-            ECSensor.TempChipset,
-            ECSensor.TempVrm),
-        new(MotherboardModel.ROG_STRIX_Z390_E_GAMING,
+            EcSensor.TempTSensor,
+            EcSensor.FanVrmHs,
+            EcSensor.FanChipset,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu,
+            EcSensor.TempChipset,
+            EcSensor.TempVrm),
+        new(MotherboardModel.RogStrixZ390EGaming,
             BoardFamily.Intel300,
-            ECSensor.TempVrm,
-            ECSensor.TempChipset,
-            ECSensor.TempTSensor,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_STRIX_Z390_F_GAMING,
+            EcSensor.TempVrm,
+            EcSensor.TempChipset,
+            EcSensor.TempTSensor,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogStrixZ390FGaming,
             BoardFamily.Intel300,
-            ECSensor.TempVrm,
-            ECSensor.TempChipset,
-            ECSensor.TempTSensor,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_STRIX_Z390_I_GAMING,
+            EcSensor.TempVrm,
+            EcSensor.TempChipset,
+            EcSensor.TempTSensor,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogStrixZ390IGaming,
             BoardFamily.Intel300,
-            ECSensor.TempVrm,
-            ECSensor.TempChipset,
-            ECSensor.TempTSensor),
-        new(MotherboardModel.ROG_MAXIMUS_XI_FORMULA,
+            EcSensor.TempVrm,
+            EcSensor.TempChipset,
+            EcSensor.TempTSensor),
+        new(MotherboardModel.RogMaximusXiFormula,
             BoardFamily.Intel300,
-            ECSensor.TempVrm,
-            ECSensor.TempChipset,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.TempTSensor,
-            ECSensor.FanCPUOpt),
-        new(MotherboardModel.ROG_MAXIMUS_XII_Z490_FORMULA,
+            EcSensor.TempVrm,
+            EcSensor.TempChipset,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.TempTSensor,
+            EcSensor.FanCpuOpt),
+        new(MotherboardModel.RogMaximusXiiZ490Formula,
             BoardFamily.Intel400,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanWaterFlow),
-        new(MotherboardModel.ROG_STRIX_Z690_A_GAMING_WIFI_D4,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanWaterFlow),
+        new(MotherboardModel.RogStrixZ690AGamingWifiD4,
             BoardFamily.Intel600,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm),
-        new(MotherboardModel.ROG_MAXIMUS_Z690_HERO,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm),
+        new(MotherboardModel.RogMaximusZ690Hero,
             BoardFamily.Intel600,
-            ECSensor.TempTSensor,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanWaterFlow),
-        new(MotherboardModel.ROG_MAXIMUS_Z690_FORMULA,
+            EcSensor.TempTSensor,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanWaterFlow),
+        new(MotherboardModel.RogMaximusZ690Formula,
             BoardFamily.Intel600,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.TempWaterBlockIn,
-            ECSensor.FanWaterFlow),
-        new(MotherboardModel.ROG_MAXIMUS_Z690_EXTREME_GLACIAL,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.TempWaterBlockIn,
+            EcSensor.FanWaterFlow),
+        new(MotherboardModel.RogMaximusZ690ExtremeGlacial,
             BoardFamily.Intel600,
-            ECSensor.TempVrm,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.TempWaterBlockIn,
-            ECSensor.FanWaterFlow),
-        new(MotherboardModel.ROG_MAXIMUS_Z790_HERO,
+            EcSensor.TempVrm,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.TempWaterBlockIn,
+            EcSensor.FanWaterFlow),
+        new(MotherboardModel.RogMaximusZ790Hero,
             BoardFamily.Intel700,
-            ECSensor.TempTSensor,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanWaterFlow),
-        new(MotherboardModel.ROG_MAXIMUS_Z790_DARK_HERO,
+            EcSensor.TempTSensor,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanWaterFlow),
+        new(MotherboardModel.RogMaximusZ790DarkHero,
             BoardFamily.Intel700,
-            ECSensor.TempVrm,
-            ECSensor.FanCPUOpt,
-            ECSensor.TempTSensor,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.FanWaterFlow),
-        new(MotherboardModel.Z170_A,
+            EcSensor.TempVrm,
+            EcSensor.FanCpuOpt,
+            EcSensor.TempTSensor,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.FanWaterFlow),
+        new(MotherboardModel.Z170A,
             BoardFamily.Intel100,
-            ECSensor.TempTSensor,
-            ECSensor.TempChipset,
-            ECSensor.FanWaterPump,
-            ECSensor.CurrCPU,
-            ECSensor.VoltageCPU),
-        new(MotherboardModel.PRIME_Z690_A,
+            EcSensor.TempTSensor,
+            EcSensor.TempChipset,
+            EcSensor.FanWaterPump,
+            EcSensor.CurrCpu,
+            EcSensor.VoltageCpu),
+        new(MotherboardModel.PrimeZ690A,
             BoardFamily.Intel600,
-            ECSensor.TempTSensor,
-            ECSensor.TempVrm),
-        new(MotherboardModel.ROG_STRIX_Z790_I_GAMING_WIFI,
+            EcSensor.TempTSensor,
+            EcSensor.TempVrm),
+        new(MotherboardModel.RogStrixZ790IGamingWifi,
             BoardFamily.Intel700,
-            ECSensor.TempTSensor,
-            ECSensor.TempTSensor2),
-        new(MotherboardModel.ROG_STRIX_Z790_E_GAMING_WIFI,
+            EcSensor.TempTSensor,
+            EcSensor.TempTSensor2),
+        new(MotherboardModel.RogStrixZ790EGamingWifi,
              BoardFamily.Intel700,
-             ECSensor.TempVrm,
-             ECSensor.FanCPUOpt,
-             ECSensor.TempTSensor,
-             ECSensor.TempWaterIn,
-             ECSensor.TempWaterOut,
-             ECSensor.FanWaterFlow),
-        new(MotherboardModel.ROG_MAXIMUS_Z790_FORMULA,
+             EcSensor.TempVrm,
+             EcSensor.FanCpuOpt,
+             EcSensor.TempTSensor,
+             EcSensor.TempWaterIn,
+             EcSensor.TempWaterOut,
+             EcSensor.FanWaterFlow),
+        new(MotherboardModel.RogMaximusZ790Formula,
             BoardFamily.Intel700,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut),
-        new(MotherboardModel.ROG_MAXIMUS_XII_HERO_WIFI,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut),
+        new(MotherboardModel.RogMaximusXiiHeroWifi,
             BoardFamily.Intel400,
-            ECSensor.TempTSensor,
-            ECSensor.TempChipset,
-            ECSensor.TempVrm,
-            ECSensor.TempWaterIn,
-            ECSensor.TempWaterOut,
-            ECSensor.CurrCPU,
-            ECSensor.FanCPUOpt,
-            ECSensor.FanWaterFlow)
+            EcSensor.TempTSensor,
+            EcSensor.TempChipset,
+            EcSensor.TempVrm,
+            EcSensor.TempWaterIn,
+            EcSensor.TempWaterOut,
+            EcSensor.CurrCpu,
+            EcSensor.FanCpuOpt,
+            EcSensor.FanWaterFlow)
     ];
 
     #endregion
@@ -503,7 +503,12 @@ public abstract class EmbeddedControllerBase : Hardware
     /// </summary>
     /// <param name="sources">The sources.</param>
     /// <param name="settings">The settings.</param>
-    protected EmbeddedControllerBase(IEnumerable<EmbeddedControllerSource> sources, ISettings settings) : base("Embedded Controller", new Identifier("lpc", "ec"), settings)
+    protected EmbeddedControllerBase(IEnumerable<EmbeddedControllerSource> sources, ISettings settings) : 
+        base(HardwareConstants.EmbeddedControllerName, 
+            new Identifier(
+                HardwareConstants.LpcIdentifier, 
+                HardwareConstants.EmbeddedControllerIdentifier), 
+            settings)
     {
         // sorting by address, which implies sorting by bank, for optimized EC access
         var sourcesList = sources.ToList();
@@ -515,16 +520,16 @@ public abstract class EmbeddedControllerBase : Hardware
             indices.Add(t, 0);
         }
 
-        _sensors = new List<Sensor>();
-        List<ushort> registers = new();
-        foreach (EmbeddedControllerSource s in _sources)
+        _sensors = [];
+        List<ushort> registers = [];
+        foreach (var source in _sources)
         {
-            int index = indices[s.Type];
-            indices[s.Type] = index + 1;
-            _sensors.Add(new Sensor(s.Name, index, s.Type, this, settings));
-            for (int i = 0; i < s.Size; ++i)
+            int index = indices[source.Type];
+            indices[source.Type] = index + 1;
+            _sensors.Add(new Sensor(source.Name, index, source.Type, this, settings));
+            for (int i = 0; i < source.Size; ++i)
             {
-                registers.Add((ushort)(s.Register + i));
+                registers.Add((ushort)(source.Register + i));
             }
 
             // ReSharper disable once VirtualMemberCallInConstructor
@@ -545,7 +550,7 @@ public abstract class EmbeddedControllerBase : Hardware
     /// <param name="model">The model.</param>
     /// <param name="settings">The settings.</param>
     /// <returns></returns>
-    /// <exception cref="Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC.Exceptions.MultipleBoardRecordsFoundException"></exception>
+    /// <exception cref="MultipleBoardRecordsFoundException"></exception>
     internal static EmbeddedControllerBase Create(MotherboardModel model, ISettings settings)
     {
         var boards = _boards.Where(b => b.Models.Contains(model)).ToList();
@@ -570,12 +575,8 @@ public abstract class EmbeddedControllerBase : Hardware
     /// <inheritdoc />
     public override void Update()
     {
-        if (!TryUpdateData())
-        {
-            // just skip this update cycle?
-            return;
-        }
-
+        if (!TryUpdateData()) return;
+        
         int readRegister = 0;
         for (int si = 0; si < _sensors.Count; ++si)
         {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
+﻿using Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
 {
@@ -34,14 +29,14 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
         /// <value>
         /// The sensors.
         /// </value>
-        public ECSensor[] Sensors { get; }
+        public EcSensor[] Sensors { get; }
         /// <summary>
         /// Initializes a new instance of the <see cref="BoardInfo"/> struct.
         /// </summary>
         /// <param name="models">The models.</param>
         /// <param name="family">The family.</param>
         /// <param name="sensors">The sensors.</param>
-        public BoardInfo(MotherboardModel[] models, BoardFamily family, params ECSensor[] sensors)
+        public BoardInfo(MotherboardModel[] models, BoardFamily family, params EcSensor[] sensors)
         {
             Models = models;
             Family = family;
@@ -54,9 +49,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC
         /// <param name="model">The model.</param>
         /// <param name="family">The family.</param>
         /// <param name="sensors">The sensors.</param>
-        public BoardInfo(MotherboardModel model, BoardFamily family, params ECSensor[] sensors)
+        public BoardInfo(MotherboardModel model, BoardFamily family, params EcSensor[] sensors)
         {
-            Models = new[] { model };
+            Models = [model];
             Family = family;
             Sensors = sensors;
         }

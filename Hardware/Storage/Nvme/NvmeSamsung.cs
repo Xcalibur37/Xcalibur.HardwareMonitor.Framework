@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Xcalibur.HardwareMonitor.Framework.Interop;
@@ -27,7 +26,7 @@ internal class NvmeSamsung : INvmeDrive
         if (hDevice?.IsInvalid != false) return false;
 
         bool result = false;
-        ScsiPassThroughWithBuffers buffers = Kernel32.CreateStruct<ScsiPassThroughWithBuffers>();
+        var buffers = Kernel32.CreateStruct<ScsiPassThroughWithBuffers>();
 
         buffers.Spt.Length = (ushort)Marshal.SizeOf<ScsiPassThrough>();
         buffers.Spt.PathId = 0;
@@ -54,7 +53,7 @@ internal class NvmeSamsung : INvmeDrive
         int length = Marshal.SizeOf<ScsiPassThroughWithBuffers>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlScsiPassThrough, buffer, length, buffer, length, out _, nint.Zero);
         Marshal.FreeHGlobal(buffer);
 
         if (!validTransfer) return false;
@@ -81,7 +80,7 @@ internal class NvmeSamsung : INvmeDrive
         buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
 
-        validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, nint.Zero);
+        validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlScsiPassThrough, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
             nint offset = Marshal.OffsetOf<ScsiPassThroughWithBuffers>(nameof(ScsiPassThroughWithBuffers.DataBuf));
@@ -117,7 +116,7 @@ internal class NvmeSamsung : INvmeDrive
         if (hDevice?.IsInvalid != false) return false;
 
         bool result = false;
-        ScsiPassThroughWithBuffers buffers = Kernel32.CreateStruct<ScsiPassThroughWithBuffers>();
+        var buffers = Kernel32.CreateStruct<ScsiPassThroughWithBuffers>();
 
         buffers.Spt.Length = (ushort)Marshal.SizeOf<ScsiPassThrough>();
         buffers.Spt.PathId = 0;
@@ -140,7 +139,7 @@ internal class NvmeSamsung : INvmeDrive
         int length = Marshal.SizeOf<ScsiPassThroughWithBuffers>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlScsiPassThrough, buffer, length, buffer, length, out _, nint.Zero);
         Marshal.FreeHGlobal(buffer);
 
         if (!validTransfer) return false;
@@ -167,7 +166,7 @@ internal class NvmeSamsung : INvmeDrive
         buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
 
-        validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, nint.Zero);
+        validTransfer = Kernel32.DeviceIoControl(hDevice, IoCtl.IoctlScsiPassThrough, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer && buffers.DataBuf.Any(x => x != 0))
         {
             nint offset = Marshal.OffsetOf<ScsiPassThroughWithBuffers>(nameof(ScsiPassThroughWithBuffers.DataBuf));
@@ -194,7 +193,7 @@ internal class NvmeSamsung : INvmeDrive
         SafeFileHandle handle = Kernel32.OpenDevice(storageInfo.DeviceId);
         if (handle?.IsInvalid != false) return null;
 
-        ScsiPassThroughWithBuffers buffers = Kernel32.CreateStruct<ScsiPassThroughWithBuffers>();
+        var buffers = Kernel32.CreateStruct<ScsiPassThroughWithBuffers>();
 
         buffers.Spt.Length = (ushort)Marshal.SizeOf<ScsiPassThrough>();
         buffers.Spt.PathId = 0;
@@ -217,7 +216,7 @@ internal class NvmeSamsung : INvmeDrive
         int length = Marshal.SizeOf<ScsiPassThroughWithBuffers>();
         nint buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
-        bool validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, nint.Zero);
+        bool validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IoctlScsiPassThrough, buffer, length, buffer, length, out _, nint.Zero);
         Marshal.FreeHGlobal(buffer);
 
         if (!validTransfer) return handle;
@@ -244,7 +243,7 @@ internal class NvmeSamsung : INvmeDrive
         buffer = Marshal.AllocHGlobal(length);
         Marshal.StructureToPtr(buffers, buffer, false);
 
-        validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IOCTL_SCSI_PASS_THROUGH, buffer, length, buffer, length, out _, nint.Zero);
+        validTransfer = Kernel32.DeviceIoControl(handle, IoCtl.IoctlScsiPassThrough, buffer, length, buffer, length, out _, nint.Zero);
         if (validTransfer)
         {
             var result = Marshal.PtrToStructure<ScsiPassThroughWithBuffers>(buffer);

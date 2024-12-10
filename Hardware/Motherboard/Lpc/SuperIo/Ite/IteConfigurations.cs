@@ -31,7 +31,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls,
+            ICollection<Control> controls,
             ref SuperIoDelegates.ReadValueDelegate readFan,
             ref SuperIoDelegates.UpdateDelegate postUpdate,
             ref Mutex mutex)
@@ -41,69 +41,83 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 case Manufacturer.ASUS:
                     switch (model)
                     {
-                        case MotherboardModel.CROSSHAIR_III_FORMULA: // IT8720F
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("CPU", 0));
+                        case MotherboardModel.CrosshairIiiFormula: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
 
-                        case MotherboardModel.M2N_SLI_Deluxe:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 4, 30, 10));
-                            voltages.Add(new Voltage("+5VSB", 7, 6.8f, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("Motherboard", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("Chassis Fan #1", 1));
-                            fans.Add(new Fan("Power Fan", 2));
+                        case MotherboardModel.M2NSliDeluxe:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 30, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V50StandbyVolts, 7, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
                             break;
 
-                        case MotherboardModel.M4A79XTD_EVO: // IT8720F
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("Motherboard", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("Chassis Fan #1", 1));
-                            fans.Add(new Fan("Chassis Fan #2", 2));
+                        case MotherboardModel.M4A79XtdEvo: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("Voltage #8", 7, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "8"), 7, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
                     }
 
@@ -111,38 +125,34 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 case Manufacturer.ASRock:
                     switch (model)
                     {
-                        case MotherboardModel.P55_Deluxe: // IT8720F
-                            GetAsRockConfiguration(superIo,
-                                                   voltages,
-                                                   temps,
-                                                   fans,
-                                                   ref readFan,
-                                                   ref postUpdate,
-                                                   out mutex);
-
+                        case MotherboardModel.P55Deluxe: // IT8720F
+                            GetAsRockConfiguration(superIo, voltages, temps, fans,
+                                                   ref readFan, ref postUpdate, out mutex);
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("Voltage #8", 7, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "8"), 7, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
                     }
 
@@ -150,335 +160,392 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 case Manufacturer.DFI:
                     switch (model)
                     {
-                        case MotherboardModel.LP_BI_P45_T2RS_Elite: // IT8718F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("CPU Termination", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 4, 30, 10));
-                            voltages.Add(new Voltage("Northbridge Core", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+5VSB", 7, 6.8f, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("System", 1));
-                            temps.Add(new Temperature("Chipset", 2));
-                            fans.Add(new Fan("Fan #1", 0));
-                            fans.Add(new Fan("Fan #2", 1));
-                            fans.Add(new Fan("Fan #3", 2));
+                        case MotherboardModel.LpBiP45T2RsElite: // IT8718F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 30, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.NorthbridgeCore, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V50StandbyVolts, 7, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 1), 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 2), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 3), 2));
                             break;
 
-                        case MotherboardModel.LP_DK_P55_T3EH9: // IT8720F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("CPU Termination", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 4, 30, 10));
-                            voltages.Add(new Voltage("Phase Locked Loop", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+5VSB", 7, 6.8f, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("Chipset", 0));
-                            temps.Add(new Temperature("CPU PWM", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("Fan #1", 0));
-                            fans.Add(new Fan("Fan #2", 1));
-                            fans.Add(new Fan("Fan #3", 2));
+                        case MotherboardModel.LpDkP55T3Eh9: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 30, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.PhaseLockedLoopVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V50StandbyVolts, 7, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuPwmTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 1), 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 2), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 3), 2));
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("CPU Termination", 1, true));
-                            voltages.Add(new Voltage("+3.3V", 2, true));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10, 0, true));
-                            voltages.Add(new Voltage("+12V", 4, 30, 10, 0, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("DIMM", 6, true));
-                            voltages.Add(new Voltage("+5VSB", 7, 6.8f, 10, 0, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 1, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10, 0, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 30, 10, 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V50StandbyVolts, 7, 6.8f, 10, 0, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
                     }
 
                     break;
                 case Manufacturer.Gigabyte:
+                    voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
                     switch (model)
                     {
                         case MotherboardModel._965P_S3: // IT8718F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 7, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
                             break;
 
-                        case MotherboardModel.EP45_DS3R: // IT8718F
-                        case MotherboardModel.EP45_UD3R:
-                        case MotherboardModel.X38_DS5:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #2", 1));
-                            fans.Add(new Fan("Power Fan", 2));
-                            fans.Add(new Fan("System Fan #1", 3));
+                        case MotherboardModel.Ep45Ds3R: // IT8718F
+                        case MotherboardModel.Ep45Ud3R:
+                        case MotherboardModel.X38Ds5:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 7, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 3));
                             break;
 
-                        case MotherboardModel.EX58_EXTREME: // IT8720F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            temps.Add(new Temperature("Northbridge", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #2", 1));
-                            fans.Add(new Fan("Power Fan", 2));
-                            fans.Add(new Fan("System Fan #1", 3));
+                        case MotherboardModel.Ex58Extreme: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.NorthbridgeTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 3));
                             break;
 
-                        case MotherboardModel.P35_DS3: // IT8718F
-                        case MotherboardModel.P35_DS3L: // IT8718F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("Power Fan", 3));
+                        case MotherboardModel.P35Ds3: // IT8718F
+                        case MotherboardModel.P35Ds3L: // IT8718F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 7, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+
+                            // Fans
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 3));
                             break;
 
-                        case MotherboardModel.P55_UD4: // IT8720F
-                        case MotherboardModel.P55A_UD3: // IT8720F
-                        case MotherboardModel.P55M_UD4: // IT8720F
-                        case MotherboardModel.H55_USB3: // IT8720F
-                        case MotherboardModel.EX58_UD3R: // IT8720F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 5, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #2", 1));
-                            fans.Add(new Fan("Power Fan", 2));
-                            fans.Add(new Fan("System Fan #1", 3));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #2", 1));
+                        case MotherboardModel.P55Ud4: // IT8720F
+                        case MotherboardModel.P55AUd3: // IT8720F
+                        case MotherboardModel.P55MUd4: // IT8720F
+                        case MotherboardModel.H55Usb3: // IT8720F
+                        case MotherboardModel.Ex58Ud3R: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 5, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 3));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 1));
                             break;
 
-                        case MotherboardModel.H55N_USB3: // IT8720F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 5, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
+                        case MotherboardModel.H55NUsb3: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 5, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
                             break;
 
-                        case MotherboardModel.G41M_COMBO: // IT8718F
-                        case MotherboardModel.G41MT_S2: // IT8718F
-                        case MotherboardModel.G41MT_S2P: // IT8718F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 7, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
+                        case MotherboardModel.G41MCombo: // IT8718F
+                        case MotherboardModel.G41MtS2: // IT8718F
+                        case MotherboardModel.G41MtS2P: // IT8718F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 7, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
                             break;
 
                         case MotherboardModel._970A_UD3: // IT8720F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("Power Fan", 4));
-                            controls.Add(new Models.Control("PWM #1", 0));
-                            controls.Add(new Models.Control("PWM #2", 1));
-                            controls.Add(new Models.Control("PWM #3", 2));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(string.Format(SuperIoConstants.PwmControlNumber, 1), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.PwmControlNumber, 2), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.PwmControlNumber, 3), 2));
                             break;
 
-                        case MotherboardModel.MA770T_UD3: // IT8720F
-                        case MotherboardModel.MA770T_UD3P: // IT8720F
-                        case MotherboardModel.MA790X_UD3P: // IT8720F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("Power Fan", 3));
+                        case MotherboardModel.Ma770TUd3: // IT8720F
+                        case MotherboardModel.Ma770TUd3P: // IT8720F
+                        case MotherboardModel.Ma790XUd3P: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 3));
                             break;
 
-                        case MotherboardModel.MA78LM_S2H: // IT8718F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            temps.Add(new Temperature("VRM", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("Power Fan", 3));
+                        case MotherboardModel.Ma78LmS2H: // IT8718F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 3));
                             break;
 
-                        case MotherboardModel.MA785GM_US2H: // IT8718F
-                        case MotherboardModel.MA785GMT_UD2H: // IT8718F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 4, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
-                            fans.Add(new Fan("Northbridge Fan", 2));
+                        case MotherboardModel.Ma785GmUs2H: // IT8718F
+                        case MotherboardModel.Ma785GmtUd2H: // IT8718F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
+                            fans.Add(new Fan(SuperIoConstants.NorthbridgeFan, 2));
                             break;
 
-                        case MotherboardModel.X58A_UD3R: // IT8720F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+3.3V", 2));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10));
-                            voltages.Add(new Voltage("+12V", 5, 24.3f, 8.2f));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            temps.Add(new Temperature("Northbridge", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #2", 1));
-                            fans.Add(new Fan("Power Fan", 2));
-                            fans.Add(new Fan("System Fan #1", 3));
+                        case MotherboardModel.X58AUd3R: // IT8720F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 5, 24.3f, 8.2f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.NorthbridgeTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 3));
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1, true));
-                            voltages.Add(new Voltage("+3.3V", 2, true));
-                            voltages.Add(new Voltage("+5V", 3, 6.8f, 10, 0, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("Voltage #8", 7, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 6.8f, 10, 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "8"), 7, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
                     }
 
                     break;
                 default:
-                    voltages.Add(new Voltage("Vcore", 0));
-                    voltages.Add(new Voltage("Voltage #2", 1, true));
-                    voltages.Add(new Voltage("Voltage #3", 2, true));
-                    voltages.Add(new Voltage("Voltage #4", 3, true));
-                    voltages.Add(new Voltage("Voltage #5", 4, true));
-                    voltages.Add(new Voltage("Voltage #6", 5, true));
-                    voltages.Add(new Voltage("Voltage #7", 6, true));
-                    voltages.Add(new Voltage("Voltage #8", 7, true));
-                    voltages.Add(new Voltage("CMOS Battery", 8));
+                    // Voltages
+                    voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "8"), 7, true));
+                    voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                    // Temps
                     for (int i = 0; i < superIo.Temperatures.Length; i++)
                     {
-                        temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                        temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                     }
 
+                    // Fans
                     for (int i = 0; i < superIo.Fans.Length; i++)
                     {
-                        fans.Add(new Fan("Fan #" + (i + 1), i));
+                        fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                     }
 
+                    // Controls
                     for (int i = 0; i < superIo.Controls.Length; i++)
                     {
-                        controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                        controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                     }
-
                     break;
             }
         }
@@ -499,169 +566,189 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             switch (manufacturer)
             {
                 case Manufacturer.ASUS:
                     switch (model)
                     {
-                        case MotherboardModel.PRIME_X370_PRO: // IT8665E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("Southbridge 2.5V", 1));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("Voltage #4", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3.3V", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            voltages.Add(new Voltage("Voltage #10", 9, true));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("Motherboard", 1));
-                            temps.Add(new Temperature("VRM", 2));
+                        case MotherboardModel.PrimeX370Pro: // IT8665E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.Southbridge250Volts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "10"), 9, true));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 2));
 
                             for (int i = 3; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             // Don't know how to get the Pump Fans readings (bios? DC controller? driver?)
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("Chassis Fan #1", 1));
-                            fans.Add(new Fan("Chassis Fan #2", 2));
-                            fans.Add(new Fan("AIO Pump", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            fans.Add(new Fan("Water Pump", 5));
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
+                            fans.Add(new Fan(SuperIoConstants.AioPumpFan, 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+                            fans.Add(new Fan(SuperIoConstants.WaterPumpFan, 5));
 
                             for (int i = 6; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
 
-                        case MotherboardModel.TUF_X470_PLUS_GAMING: // IT8665E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("Southbridge 2.5V", 1));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("Voltage #4", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3.3V", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            voltages.Add(new Voltage("Voltage #10", 9, true));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("Motherboard", 1));
-                            temps.Add(new Temperature("PCH", 2));
+                        case MotherboardModel.TufX470PlusGaming: // IT8665E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.Southbridge250Volts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "10"), 9, true));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 2));
 
                             for (int i = 3; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
-                            fans.Add(new Fan("CPU Fan", 0));
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
 
                             for (int i = 1; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
 
-                        case MotherboardModel.ROG_ZENITH_EXTREME: // IT8665E
-                            voltages.Add(new Voltage("Vcore", 0, 10, 10));
-                            voltages.Add(new Voltage("DIMM A/B", 1, 10, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("Southbridge 1.05V", 4, 10, 10));
-                            voltages.Add(new Voltage("DIMM C/D", 5, 10, 10));
-                            voltages.Add(new Voltage("Phase Locked Loop", 6, 10, 10));
-                            voltages.Add(new Voltage("+3.3V", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("Motherboard", 1));
-                            temps.Add(new Temperature("CPU Socket", 2));
-                            temps.Add(new Temperature("Temperature #4", 3));
-                            temps.Add(new Temperature("Temperature #5", 4));
-                            temps.Add(new Temperature("VRM", 5));
+                        case MotherboardModel.RogZenithExtreme: // IT8665E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 1, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.Southbridge105Volts, 4, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmCdVolts, 5, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.PhaseLockedLoopVolts, 6, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("Chassis Fan #1", 1));
-                            fans.Add(new Fan("Chassis Fan #2", 2));
-                            fans.Add(new Fan("High Amp Fan", 3));
-                            fans.Add(new Fan("Fan 5", 4));
-                            fans.Add(new Fan("Fan 6", 5));
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuSocketTemp, 2));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, 4), 3));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, 5), 4));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 5));
 
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
+                            fans.Add(new Fan(SuperIoConstants.HighAmpFan, 3));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 5), 4));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 6), 5));
+
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
 
-                        case MotherboardModel.ROG_STRIX_X470_I: // IT8665E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("Southbridge 2.5V", 1));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("+3.3V", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("Motherboard", 1));
-                            temps.Add(new Temperature("T_Sensor", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM", 4));
-                            temps.Add(new Temperature("Temperature #6", 5));
+                        case MotherboardModel.RogStrixX470I: // IT8665E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.Southbridge250Volts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
-                            fans.Add(new Fan("CPU Fan", 0));
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.TSensorTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, 6), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
 
                             //Does not work when in AIO pump mode (shows 0). I don't know how to fix it.
-                            fans.Add(new Fan("Chassis Fan #1", 1));
-                            fans.Add(new Fan("Chassis Fan #2", 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + i, i));
+                                controls.Add(new Control("Fan #" + i, i));
                             }
-
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("Voltage #8", 7, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "8"), 7, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
                             break;
@@ -671,49 +758,56 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 case Manufacturer.ECS:
                     switch (model)
                     {
-                        case MotherboardModel.A890GXM_A: // IT8721F
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("Northbridge", 2));
-                            voltages.Add(new Voltage("AVCC", 3, 10, 10));
-                            // voltages.Add(new Voltage("DIMM", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("System", 1));
-                            temps.Add(new Temperature("Northbridge", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
-                            fans.Add(new Fan("Power Fan", 2));
+                        case MotherboardModel.A890GxmA: // IT8721F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.NorthbridgeTemp, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 3, 10, 10));
+                            // voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.NorthbridgeTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Voltage #1", 0, true));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("AVCC", 3, 10, 10, 0, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                            // Voltages
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "1"), 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(SuperIoConstants.AvccVolts, 3, 10, 10, 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10, 0, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
                     }
 
@@ -721,1017 +815,1237 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 case Manufacturer.Gigabyte:
                     switch (model)
                     {
-                        case MotherboardModel.H61M_DS2_REV_1_2: // IT8728F
-                        case MotherboardModel.H61M_USB3_B3_REV_2_0: // IT8728F
-                            voltages.Add(new Voltage("CPU Termination", 0));
-                            voltages.Add(new Voltage("+12V", 2, 30.9f, 10));
-                            voltages.Add(new Voltage("Vcore", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
+                        case MotherboardModel.H61MDs2Rev12: // IT8728F
+                        case MotherboardModel.H61MUsb3B3Rev20: // IT8728F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 30.9f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
                             break;
 
-                        case MotherboardModel.H67A_UD3H_B3: // IT8728F
-                        case MotherboardModel.H67A_USB3_B3: // IT8728F
-                            voltages.Add(new Voltage("CPU Termination", 0));
-                            voltages.Add(new Voltage("+5V", 1, 15, 10));
-                            voltages.Add(new Voltage("+12V", 2, 30.9f, 10));
-                            voltages.Add(new Voltage("Vcore", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("Power Fan", 2));
-                            fans.Add(new Fan("System Fan #2", 3));
+                        case MotherboardModel.H67AUd3HB3: // IT8728F
+                        case MotherboardModel.H67AUsb3B3: // IT8728F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 1, 15, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 30.9f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 3));
                             break;
 
-                        case MotherboardModel.B75M_D3H: // IT8728F
-                            voltages.Add(new Voltage("CPU Termination", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+5V", 3, 15, 10));
-                            voltages.Add(new Voltage("+12V", 2, 10, 2));
-                            voltages.Add(new Voltage("iGPU VAXG", 4));
-                            voltages.Add(new Voltage("Vcore", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
-                            controls.Add(new Models.Control("CPU Fan", 2));
-                            controls.Add(new Models.Control("System Fan", 1));
+                        case MotherboardModel.B75MD3H: // IT8728F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVaxgVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 2));
+                            controls.Add(new Control(SuperIoConstants.SystemFan, 1));
                             break;
 
                         case MotherboardModel._970A_DS3P: // IT8620E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("+3.3V", 4, 6.5f, 10));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU Package", 1));
-                            temps.Add(new Temperature("CPU Cores", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("Power Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 4, 6.5f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuPackageTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuCoreTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
                             break;
 
-                        case MotherboardModel.H81M_HD3: //IT8620E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("iGPU", 4));
-                            voltages.Add(new Voltage("CPU Input Auxiliary", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("System", 0));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan", 1));
+                        case MotherboardModel.H81MHd3: //IT8620E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuInputAuxVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(SuperIoConstants.SystemFan, 1));
                             break;
 
-                        case MotherboardModel.H97_D3H: //IT8620E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("iGPU", 4));
-                            voltages.Add(new Voltage("CPU Input Auxiliary", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                        case MotherboardModel.H97D3H: //IT8620E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuInputAuxVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("System", 0));
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
 
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("CPU Optional Fan", 1));
-                            fans.Add(new Fan("System Fan #1", 4));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 4));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
 
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("CPU Optional Fan", 1));
-                            controls.Add(new Models.Control("System Fan #1", 4));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 4));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
                             break;
 
-                        case MotherboardModel.Z170N_WIFI: // ITE IT8628E
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
+                        case MotherboardModel.Z170NWifi: // ITE IT8628E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
                             // NO DIMM C/D channels on this motherboard; gives a very tiny voltage reading
-                            // voltages.Add(new Voltage("DIMM C/D", 4, 0, 1));
-                            voltages.Add(new Voltage("iGPU VAXG", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM A/B", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            voltages.Add(new Voltage("AVCC3", 9, 54, 10));
+                            // voltages.Add(new Voltage(SuperIoConstants.DimmCdVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVaxgVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, 54, 10));
 
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM", 4));
-                            temps.Add(new Temperature("System #2", 5));
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 5));
 
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
 
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan", 1));
-
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(SuperIoConstants.SystemFan, 1));
                             break;
 
-                        case MotherboardModel.AX370_Gaming_K7: // IT8686E
-                        case MotherboardModel.AX370_Gaming_5:
-                        case MotherboardModel.AB350_Gaming_3: // IT8686E
-                                                              // Note: v3.3, v12, v5, and AVCC3 might be slightly off.
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 0.65f, 1));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("VSOC", 4));
-                            voltages.Add(new Voltage("VDDP", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            voltages.Add(new Voltage("AVCC3", 9, 7.53f, 1));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
+                        case MotherboardModel.Ax370GamingK7: // IT8686E
+                        case MotherboardModel.Ax370Gaming5:
+                        case MotherboardModel.Ab350Gaming3: // IT8686E
+                            // Voltages                                  // Note: v3.3, v12, v5, and AVCC3 might be slightly off.
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 0.65f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VsocVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, 7.53f, 1));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
 
-                        case MotherboardModel.X399_AORUS_Gaming_7: // ITE IT8686E
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("DIMM C/D", 4, 0, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM A/B", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            voltages.Add(new Voltage("AVCC3", 9, 54, 10));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM", 4));
+                        case MotherboardModel.X399AorusGaming7: // ITE IT8686E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmCdVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, 54, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 4));
+
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
 
-                        case MotherboardModel.B450_AORUS_PRO:
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("VSoC MOS", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.B450AorusPro:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.VsocMosVolts, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.B450_GAMING_X:
-                        case MotherboardModel.B450_AORUS_ELITE:
-                        case MotherboardModel.B450M_AORUS_ELITE:
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("VSoC MOS", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
+                        case MotherboardModel.B450GamingX:
+                        case MotherboardModel.B450AorusElite:
+                        case MotherboardModel.B450MAorusElite:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.VsocMosVolts, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
                             break;
 
-                        case MotherboardModel.B450M_GAMING: // ITE IT8686E
-                        case MotherboardModel.B450_AORUS_M:
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("VSoC MOS", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
+                        case MotherboardModel.B450MGaming: // ITE IT8686E
+                        case MotherboardModel.B450AorusM:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.VsocMosVolts, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
                             break;
 
-                        case MotherboardModel.B450_I_AORUS_PRO_WIFI:
-                        case MotherboardModel.B450M_DS3H: // ITE IT8686E
-                        case MotherboardModel.B450M_S2H:
-                        case MotherboardModel.B450M_H:
-                        case MotherboardModel.B450M_K:
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("VSoC MOS", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan", 1));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan", 1));
+                        case MotherboardModel.B450IAorusProWifi:
+                        case MotherboardModel.B450MDs3H: // ITE IT8686E
+                        case MotherboardModel.B450MS2H:
+                        case MotherboardModel.B450MH:
+                        case MotherboardModel.B450MK:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.VsocMosVolts, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 1));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(SuperIoConstants.SystemFan, 1));
                             break;
 
-                        case MotherboardModel.X470_AORUS_GAMING_7_WIFI: // ITE IT8686E
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM A/B", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            voltages.Add(new Voltage("AVCC3", 9, 54, 10));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM", 4));
+                        case MotherboardModel.X470AorusGaming7Wifi: // ITE IT8686E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, 54, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 4));
+
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
                             break;
 
-                        case MotherboardModel.B560M_AORUS_ELITE: // IT8689E
-                        case MotherboardModel.B560M_AORUS_PRO:
-                        case MotherboardModel.B560M_AORUS_PRO_AX:
-                        case MotherboardModel.B560I_AORUS_PRO_AX:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
-                            voltages.Add(new Voltage("+12V", 2, 10f, 2f));
-                            voltages.Add(new Voltage("+5V", 3, 15f, 10f));
-                            voltages.Add(new Voltage("iGPU VAGX", 4));
-                            voltages.Add(new Voltage("CPU System Agent", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10f, 10f));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
-                            voltages.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("System #2", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.B560MAorusElite: // IT8689E
+                        case MotherboardModel.B560MAorusPro:
+                        case MotherboardModel.B560MAorusProAx:
+                        case MotherboardModel.B560IAorusProAx:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 29.4f, 45.3f));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10f, 2f));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVaxgVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuSaVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, 59.9f, 9.8f));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.B650_AORUS_ELITE: // IT8689E
-                        case MotherboardModel.B650_AORUS_ELITE_AX: // IT8689E
-                        case MotherboardModel.B650_AORUS_ELITE_V2: // IT8689E
-                        case MotherboardModel.B650_AORUS_ELITE_AX_V2: // IT8689E
-                        case MotherboardModel.B650_AORUS_ELITE_AX_ICE: // IT8689E
-                        case MotherboardModel.B650E_AORUS_ELITE_AX_ICE: // IT8689E
-                        case MotherboardModel.B650M_AORUS_PRO: // IT8689E
-                        case MotherboardModel.B650M_AORUS_PRO_AX:
-                        case MotherboardModel.B650M_AORUS_ELITE:
-                        case MotherboardModel.B650M_AORUS_ELITE_AX:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
-                            voltages.Add(new Voltage("+12V", 2, 10f, 2f));
-                            voltages.Add(new Voltage("+5V", 3, 15f, 10f));
-                            voltages.Add(new Voltage("Vcore SoC", 4));
-                            voltages.Add(new Voltage("Vcore Misc", 5));
-                            voltages.Add(new Voltage("Dual DDR5 5V", 6, 1.5f, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10f, 10f));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
-                            voltages.Add(new Voltage("AVCC3", 9, 59.9f, 9.8f));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("VSoC MOS", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            fans.Add(new Fan("System Fan #4 / Pump", 4));
-                            fans.Add(new Fan("CPU Optional Fan", 5));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-                            controls.Add(new Models.Control("System Fan #4 / Pump", 4));
-                            controls.Add(new Models.Control("CPU Optional Fan", 5));
+                        case MotherboardModel.B650AorusElite: // IT8689E
+                        case MotherboardModel.B650AorusEliteAx: // IT8689E
+                        case MotherboardModel.B650AorusEliteV2: // IT8689E
+                        case MotherboardModel.B650AorusEliteAxV2: // IT8689E
+                        case MotherboardModel.B650AorusEliteAxIce: // IT8689E
+                        case MotherboardModel.B650EAorusEliteAxIce: // IT8689E
+                        case MotherboardModel.B650MAorusPro: // IT8689E
+                        case MotherboardModel.B650MAorusProAx:
+                        case MotherboardModel.B650MAorusElite:
+                        case MotherboardModel.B650MAorusEliteAx:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 29.4f, 45.3f));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10f, 2f));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreMiscVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DualDDR55VVolts, 6, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, 59.9f, 9.8f));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.VsocMosVolts, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 4), 4));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 5));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 4), 4));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 5));
                             break;
 
-                        case MotherboardModel.B360_AORUS_GAMING_3_WIFI_CF: // IT8688E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
-                            voltages.Add(new Voltage("+12V", 2, 10f, 2f));
-                            voltages.Add(new Voltage("+5V", 3, 15f, 10f));
-                            voltages.Add(new Voltage("CPU Vcore", 4, 0, 1));
-                            voltages.Add(new Voltage("CPU System Agent", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM A/B", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 1, 1));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 1, 1));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("EC_TEMP1", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("PCH", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("PCH Fan", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("PCH Fan", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.B360AorusGaming3WifiCf: // IT8688E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 29.4f, 45.3f));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10f, 2f));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuSaVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 1, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 1, 1));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.EcTempTempNumber, 1), 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PchFan, 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(SuperIoConstants.PchFan, 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.X570_AORUS_MASTER: // IT8688E
-                        case MotherboardModel.X570_AORUS_ULTRA:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
-                            voltages.Add(new Voltage("+12V", 2, 10f, 2f));
-                            voltages.Add(new Voltage("+5V", 3, 15f, 10f));
-                            voltages.Add(new Voltage("Vcore SoC", 4));
-                            voltages.Add(new Voltage("VDDP", 5));
-                            voltages.Add(new Voltage("DIMM A/B", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 1f, 10f));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 1f, 10f));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("EC_TEMP1", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("PCH", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("PCH Fan", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("PCH Fan", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.X570AorusMaster: // IT8688E
+                        case MotherboardModel.X570AorusUltra:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 29.4f, 45.3f));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10f, 2f));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 1f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 1f, 10f));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.EcTempTempNumber, 1), 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PchFan, 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(SuperIoConstants.PchFan, 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.X570_AORUS_PRO: // IT8688E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
-                            voltages.Add(new Voltage("+12V", 2, 10f, 2f));
-                            voltages.Add(new Voltage("+5V", 3, 15f, 10f));
-                            voltages.Add(new Voltage("Vcore SoC", 4));
-                            voltages.Add(new Voltage("VDDP", 5));
-                            voltages.Add(new Voltage("DIMM A/B", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10f, 10f));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10f, 10f));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("External #1", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("PCH", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("PCH Fan", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("PCH Fan", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.X570AorusPro: // IT8688E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 29.4f, 45.3f));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10f, 2f));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10f, 10f));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.ExternalTempNumber, 1), 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PchFan, 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(SuperIoConstants.PchFan, 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.X570_GAMING_X: // IT8688E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 29.4f, 45.3f));
-                            voltages.Add(new Voltage("+12V", 2, 10f, 2f));
-                            voltages.Add(new Voltage("+5V", 3, 15f, 10f));
-                            voltages.Add(new Voltage("Vcore SoC", 4));
-                            voltages.Add(new Voltage("VDDP", 5));
-                            voltages.Add(new Voltage("DIMM A/B", 6));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("System #2", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("PCH", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("PCH Fan", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("PCH Fan", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.X570GamingX: // IT8688E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 29.4f, 45.3f));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10f, 2f));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15f, 10f));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 6));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(SuperIoConstants.PchFan, 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(SuperIoConstants.PchFan, 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.Z390_M_GAMING: // IT8688E
-                        case MotherboardModel.Z390_AORUS_ULTRA:
-                        case MotherboardModel.Z390_UD:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5f, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("CPU VCCGT", 4));
-                            voltages.Add(new Voltage("CPU System Agent", 5));
-                            voltages.Add(new Voltage("VDDQ", 6));
-                            voltages.Add(new Voltage("DDRVTT", 7));
-                            voltages.Add(new Voltage("PCHCore", 8));
-                            voltages.Add(new Voltage("CPU VCCIO", 9));
-                            voltages.Add(new Voltage("DDRVPP", 10));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("System #2", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
+                        case MotherboardModel.Z390MGaming: // IT8688E
+                        case MotherboardModel.Z390AorusUltra:
+                        case MotherboardModel.Z390Ud:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuVccGTVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuSaVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.VddqVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.DdrVttVolts, 7));
+                            voltages.Add(new Voltage(SuperIoConstants.PchCoreVolts, 8));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuVccioVolts, 9));
+                            voltages.Add(new Voltage(SuperIoConstants.DdrVppVolts, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
                             break;
 
-                        case MotherboardModel.Z390_AORUS_PRO:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5f, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("CPU VCCGT", 4));
-                            voltages.Add(new Voltage("CPU System Agent", 5));
-                            voltages.Add(new Voltage("DDR", 6));
-                            voltages.Add(new Voltage("Voltage #7", 7, true));
-                            voltages.Add(new Voltage("+3V Standby", 8, 1f, 1f, -0.312f));
-                            voltages.Add(new Voltage("CMOS Battery", 9, 6f, 1f, 0.01f));
-                            voltages.Add(new Voltage("AVCC3", 10, 6f, 1f, 0.048f));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("EC_TEMP1/System #2", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.Z390AorusPro:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuVccGTVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuSaVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DdrVolts, 6));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 7, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 8, 1f, 1f, -0.312f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 9, 6f, 1f, 0.01f));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 10, 6f, 1f, 0.048f));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.EcTempTempNumber, 1), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.Z790_UD: // ITE IT8689E
-                        case MotherboardModel.Z790_UD_AC: // ITE IT8689E
-                        case MotherboardModel.Z790_GAMING_X: // ITE IT8689E
-                        case MotherboardModel.Z790_GAMING_X_AX: // ITE IT8689E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5f, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("iGPU", 4));
-                            voltages.Add(new Voltage("CPU Input Auxiliary", 5));
-                            voltages.Add(new Voltage("Dual DDR5 5V", 6, 1.5f, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 1, 1));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 1, 1));
-                            voltages.Add(new Voltage("AVCC3", 9, true));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("System #2", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3 / Pump", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3 / Pump", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.Z790Ud: // ITE IT8689E
+                        case MotherboardModel.Z790UdAc: // ITE IT8689E
+                        case MotherboardModel.Z790GamingX: // ITE IT8689E
+                        case MotherboardModel.Z790GamingXAx: // ITE IT8689E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuInputAuxVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DualDDR55VVolts, 6, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 1, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 1, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, true));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.Z790_AORUS_PRO_X: // ITE IT8689E
-                        case MotherboardModel.Z690_AORUS_PRO:
-                        case MotherboardModel.Z690_AORUS_ULTRA: // ITE IT8689E
-                        case MotherboardModel.Z690_AORUS_MASTER: // ITE IT8689E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5f, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5f, 1));
-                            voltages.Add(new Voltage("iGPU VAXG", 4));
-                            voltages.Add(new Voltage("CPU Input Auxiliary", 5));
-                            voltages.Add(new Voltage("Dual DDR5 5V", 6, 1.5f, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 1f, 1f));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
-                            voltages.Add(new Voltage("AVCC3", 9, true));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("External #1", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3 / Pump", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3 / Pump", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.Z790AorusProX: // ITE IT8689E
+                        case MotherboardModel.Z690AorusPro:
+                        case MotherboardModel.Z690AorusUltra: // ITE IT8689E
+                        case MotherboardModel.Z690AorusMaster: // ITE IT8689E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVaxgVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuInputAuxVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DualDDR55VVolts, 6, 1.5f, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 1f, 1f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 1f, 1f));
+                            voltages.Add(new Voltage(SuperIoConstants.Avcc3Volts, 9, true));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.ExternalTempNumber, 1), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.Z690_GAMING_X_DDR4:
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("System #2", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            fans.Add(new Fan("System Fan #4 / Pump", 5));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("System Fan #4 / Pump", 5));
+                        case MotherboardModel.Z690GamingXDdr4:
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 4), 5));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 4), 5));
                             break;
 
-                        case MotherboardModel.Z68A_D3H_B3: // IT8728F
-                            voltages.Add(new Voltage("CPU Termination", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 30.9f, 10));
-                            voltages.Add(new Voltage("+5V", 3, 7.15f, 10));
-                            voltages.Add(new Voltage("Vcore", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("Power Fan", 2));
-                            fans.Add(new Fan("System Fan #2", 3));
+                        case MotherboardModel.Z68AD3HB3: // IT8728F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 30.9f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 7.15f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 3));
                             break;
 
-                        case MotherboardModel.P67A_UD3_B3: // IT8728F
-                        case MotherboardModel.P67A_UD3R_B3: // IT8728F
-                        case MotherboardModel.P67A_UD4_B3: // IT8728F
-                        case MotherboardModel.Z68AP_D3: // IT8728F
-                        case MotherboardModel.Z68X_UD3H_B3: // IT8728F
-                        case MotherboardModel.Z68XP_UD3R: // IT8728F
-                            voltages.Add(new Voltage("CPU Termination", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 30.9f, 10));
-                            voltages.Add(new Voltage("+5V", 3, 7.15f, 10));
-                            voltages.Add(new Voltage("Vcore", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #2", 1));
-                            fans.Add(new Fan("Power Fan", 2));
-                            fans.Add(new Fan("System Fan #1", 3));
+                        case MotherboardModel.P67AUd3B3: // IT8728F
+                        case MotherboardModel.P67AUd3RB3: // IT8728F
+                        case MotherboardModel.P67AUd4B3: // IT8728F
+                        case MotherboardModel.Z68ApD3: // IT8728F
+                        case MotherboardModel.Z68XUd3HB3: // IT8728F
+                        case MotherboardModel.Z68XpUd3R: // IT8728F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 30.9f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 7.15f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 1));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 3));
                             break;
 
-                        case MotherboardModel.Z68X_UD7_B3: // IT8728F
-                            voltages.Add(new Voltage("CPU Termination", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.49f, 10));
-                            voltages.Add(new Voltage("+12V", 2, 30.9f, 10));
-                            voltages.Add(new Voltage("+5V", 3, 7.15f, 10));
-                            voltages.Add(new Voltage("Vcore", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            temps.Add(new Temperature("System #3", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("Power Fan", 1));
-                            fans.Add(new Fan("System Fan #1", 2));
-                            fans.Add(new Fan("System Fan #2", 3));
-                            fans.Add(new Fan("System Fan #3", 4));
+                        case MotherboardModel.Z68XUd7B3: // IT8728F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.49f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 30.9f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 30.9f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 7.15f, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 3), 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.PowerFan, 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 3));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 4));
                             break;
 
-                        case MotherboardModel.X79_UD3: // IT8728F
-                            voltages.Add(new Voltage("CPU Termination", 0));
-                            voltages.Add(new Voltage("DIMM A/B", 1));
-                            voltages.Add(new Voltage("+12V", 2, 10, 2));
-                            voltages.Add(new Voltage("+5V", 3, 15, 10));
-                            voltages.Add(new Voltage("VIN4", 4));
-                            voltages.Add(new Voltage("VCore", 5));
-                            voltages.Add(new Voltage("DIMM C/D", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 1, 1));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 1, 1));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            temps.Add(new Temperature("Northbridge", 2));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
+                        case MotherboardModel.X79Ud3: // IT8728F
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.CpuTerminationVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 15, 10));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VinVoltNumber, 4), 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmCdVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 1, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 1, 1));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.NorthbridgeTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
                             break;
 
-                        case MotherboardModel.B550_AORUS_MASTER:
-                        case MotherboardModel.B550_AORUS_PRO:
-                        case MotherboardModel.B550_AORUS_PRO_AC:
-                        case MotherboardModel.B550_AORUS_PRO_AX:
-                        case MotherboardModel.B550_VISION_D:
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("External #1", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("Chipset", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.B550AorusMaster:
+                        case MotherboardModel.B550AorusPro:
+                        case MotherboardModel.B550AorusProAc:
+                        case MotherboardModel.B550AorusProAx:
+                        case MotherboardModel.B550VisionD:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.ExternalTempNumber, 1), 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.B550_AORUS_ELITE:
-                        case MotherboardModel.B550_AORUS_ELITE_AX:
-                        case MotherboardModel.B550_GAMING_X:
-                        case MotherboardModel.B550_UD_AC:
-                        case MotherboardModel.B550M_AORUS_PRO:
-                        case MotherboardModel.B550M_AORUS_PRO_AX:
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("System #2", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("Chipset", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.B550AorusElite:
+                        case MotherboardModel.B550AorusEliteAx:
+                        case MotherboardModel.B550GamingX:
+                        case MotherboardModel.B550UdAc:
+                        case MotherboardModel.B550MAorusPro:
+                        case MotherboardModel.B550MAorusProAx:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.B550I_AORUS_PRO_AX:
-                        case MotherboardModel.B550M_AORUS_ELITE:
-                        case MotherboardModel.B550M_GAMING:
-                        case MotherboardModel.B550M_DS3H:
-                        case MotherboardModel.B550M_DS3H_AC:
-                        case MotherboardModel.B550M_S2H:
-                        case MotherboardModel.B550M_H:
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("Vcore SoC", 4, 0, 1));
-                            voltages.Add(new Voltage("VDDP", 5, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 6, 0, 1));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("VSoC MOS", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("Chipset", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
+                        case MotherboardModel.B550IAorusProAx:
+                        case MotherboardModel.B550MAorusElite:
+                        case MotherboardModel.B550MGaming:
+                        case MotherboardModel.B550MDs3H:
+                        case MotherboardModel.B550MDs3HAc:
+                        case MotherboardModel.B550MS2H:
+                        case MotherboardModel.B550MH:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreSocVolts, 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.VsocMosVolts, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
                             break;
 
-                        case MotherboardModel.B660_DS3H_DDR4:
-                        case MotherboardModel.B660_DS3H_AC_DDR4:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("+3.3V", 1, 6.5F, 10));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1));
-                            voltages.Add(new Voltage("+5V", 3, 1.5F, 1));
-                            voltages.Add(new Voltage("iGPU", 4));
-                            voltages.Add(new Voltage("CPU Input Auxiliary", 5));
-                            voltages.Add(new Voltage("DIMM", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System #1", 0));
-                            temps.Add(new Temperature("Chipset", 1));
-                            temps.Add(new Temperature("CPU", 2));
-                            temps.Add(new Temperature("PCIe x16", 3));
-                            temps.Add(new Temperature("VRM MOS", 4));
-                            temps.Add(new Temperature("System #2", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 1));
-                            fans.Add(new Fan("System Fan #2", 2));
-                            fans.Add(new Fan("System Fan #3 / Pump", 3));
-                            fans.Add(new Fan("CPU Optional Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 1));
-                            controls.Add(new Models.Control("System Fan #2", 2));
-                            controls.Add(new Models.Control("System Fan #3 / Pump", 3));
-                            controls.Add(new Models.Control("CPU Optional Fan", 4));
+                        case MotherboardModel.B660Ds3HDdr4:
+                        case MotherboardModel.B660Ds3HAcDdr4:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 1, 6.5F, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 1.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuInputAuxVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(SuperIoConstants.ChipsetTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 3));
+                            temps.Add(new Temperature(SuperIoConstants.VrmMosTemp, 4));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 3));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 4));
                             break;
 
-                        case MotherboardModel.B660M_DS3H_AX_DDR4:
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("VAXG", 1));
-                            voltages.Add(new Voltage("CPU Input Auxiliary", 2));
-                            voltages.Add(new Voltage("DIMM A/B", 3));
-                            voltages.Add(new Voltage("+12V", 4));
-                            voltages.Add(new Voltage("+3.3V", 5));
-                            voltages.Add(new Voltage("+5V", 6));
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("PCH", 1));
-                            temps.Add(new Temperature("PCIEX16", 2));
-                            temps.Add(new Temperature("System #1", 3));
-                            temps.Add(new Temperature("System #2", 4));
-                            temps.Add(new Temperature("VRAM MOS", 5));
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("System Fan #1", 2));
-                            fans.Add(new Fan("System Fan #2", 3));
-                            fans.Add(new Fan("System Fan #3", 4));
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("System Fan #1", 2));
-                            controls.Add(new Models.Control("System Fan #2", 3));
-                            controls.Add(new Models.Control("System Fan #3", 4));
+                        case MotherboardModel.B660MDs3HAxDdr4:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.IGpuVaxgVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuInputAuxVolts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmAbVolts, 3));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 6));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.PchTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.PciEx16Temp, 2));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 3));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 4));
+                            temps.Add(new Temperature(SuperIoConstants.VramMosTemp, 5));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 1), 2));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 2), 3));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 3), 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 1), 2));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 2), 3));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 3), 4));
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Voltage #1", 0, true));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                            // Voltages
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "1"), 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10, 0, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
                     }
-
                     break;
+
                 case Manufacturer.Biostar:
                     switch (model)
                     {
-                        case MotherboardModel.B660GTN: //IT8613E
-                                                       // This board has some problems with their app controlling fans that I was able to replicate here so I guess is a BIOS problem with the pins.
-                                                       // Biostar is aware so expect changes in the control pins with new bios.
-                                                       // In the meantime, it's possible to control CPUFAN and CPUOPT1m but not SYSFAN1.
-                                                       // The parameters are extracted from the Biostar app config file.
-                            voltages.Add(new Voltage("Vcore", 0, 0, 1));
-                            voltages.Add(new Voltage("DIMM", 1, 0, 1));
-                            voltages.Add(new Voltage("+12V", 2, 5, 1)); // Reads higher than it should.
-                            voltages.Add(new Voltage("+5V", 3, 147, 100)); // Reads higher than it should.
-                                                                           // Commented because I don't know if it makes sense.
-                                                                           //voltages.Add(new Voltage("VCC ST", 4)); // Reads 4.2V.
-                                                                           //voltages.Add(new Voltage("CPU Input Auxiliary", 5)); // Reads 2.2V.
-                                                                           //voltages.Add(new Voltage("CPU GT", 6)); // Reads 2.6V.
-                                                                           //voltages.Add(new Voltage("+3V Standby", 7, 10, 10)); // Reads 5.8V ?
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10)); // Reads higher than it should at 3.4V.
-                            temps.Add(new Temperature("System 1", 0));
-                            temps.Add(new Temperature("System 2", 1)); // Not sure what sensor is this.
-                            temps.Add(new Temperature("CPU", 2));
-                            fans.Add(new Fan("CPU Fan", 1));
-                            fans.Add(new Fan("CPU Optional fan", 2));
-                            fans.Add(new Fan("System Fan", 4));
-                            controls.Add(new Models.Control("CPU Fan", 1));
-                            controls.Add(new Models.Control("CPU Optional Fan", 2));
-                            controls.Add(new Models.Control("System Fan", 4));
+                        // IT8613E
+                        // This board has some problems with their app controlling fans that I was able to replicate here so I guess is a BIOS problem with the pins.
+                        // Biostar is aware so expect changes in the control pins with new bios.
+                        // In the meantime, it's possible to control CPUFAN and CPUOPT1m but not SYSFAN1.
+                        // The parameters are extracted from the Biostar app config file.
+                        case MotherboardModel.B660Gtn:
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1, 0, 1));
+                            // Reads higher than it should.
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 5, 1));
+                            // Reads higher than it should.
+                            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 3, 147, 100));
+                            // Commented because I don't know if it makes sense.
+                            //voltages.Add(new Voltage("VCC ST", 4)); // Reads 4.2V.
+                            //voltages.Add(new Voltage(SuperIoConstants.CpuInputAuxVolts, 5)); // Reads 2.2V.
+                            //voltages.Add(new Voltage("CPU GT", 6)); // Reads 2.6V.
+                            //voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10)); // Reads 5.8V ?
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10)); // Reads higher than it should at 3.4V.
+
+                            // Temps
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 1), 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 1)); // Not sure what sensor is this.
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 2));
+
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 1));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 2));
+                            fans.Add(new Fan(SuperIoConstants.SystemFan, 4));
+
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 1));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 2));
+                            controls.Add(new Control(SuperIoConstants.SystemFan, 4));
                             break;
 
-                        case MotherboardModel.X670E_Valkyrie: //IT8625E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("+12V", 2, 10, 2));
+                        case MotherboardModel.X670EValkyrie: //IT8625E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 2, 10, 2));
                             // Voltage of unknown use
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
                             // The biostar utility shows CPU MISC Voltage.
-                            voltages.Add(new Voltage("Voltage #5", 4));
-                            voltages.Add(new Voltage("VDDP", 5));
-                            voltages.Add(new Voltage("VSOC", 6));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4));
+                            voltages.Add(new Voltage(SuperIoConstants.VddpVolts, 5));
+                            voltages.Add(new Voltage(SuperIoConstants.VsocVolts, 6));
 
-                            temps.Add(new Temperature("CPU", 0));
-                            temps.Add(new Temperature("VRM", 1));
-                            temps.Add(new Temperature("System", 2));
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.VrmTemp, 1));
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 2));
 
-                            fans.Add(new Fan("CPU Fan", 0));
-                            fans.Add(new Fan("CPU Optional Fan", 1));
+                            // Fans
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+                            fans.Add(new Fan(SuperIoConstants.CpuOptionalFan, 1));
                             for (int i = 2; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan($"System Fan #{i - 1}", i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, i - 1), i));
                             }
 
-                            controls.Add(new Models.Control("CPU Fan", 0));
-                            controls.Add(new Models.Control("CPU Optional Fan", 1));
+                            // Controls
+                            controls.Add(new Control(SuperIoConstants.CpuFan, 0));
+                            controls.Add(new Control(SuperIoConstants.CpuOptionalFan, 1));
                             for (int i = 2; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control($"System Fan #{i - 1}", i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, i - 1), i));
                             }
-
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Voltage #1", 0, true));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                            // Voltages
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "1"), 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10, 0, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
                             break;
                     }
@@ -1740,74 +2054,86 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 case Manufacturer.Shuttle:
                     switch (model)
                     {
-                        case MotherboardModel.FH67: // IT8772E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM", 1));
-                            voltages.Add(new Voltage("PCH VCCIO", 2));
-                            voltages.Add(new Voltage("CPU VCCIO", 3));
-                            voltages.Add(new Voltage("Graphics", 4));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("System", 0));
-                            temps.Add(new Temperature("CPU", 1));
-                            fans.Add(new Fan("Fan #1", 0));
-                            fans.Add(new Fan("CPU Fan", 1));
+                        case MotherboardModel.Fh67: // IT8772E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.PchVccioVolts, 2));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuVccioVolts, 3));
+                            voltages.Add(new Voltage(SuperIoConstants.GraphicsVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.SystemTemp, 0));
+                            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 1));
+
+                            // Fans
+                            fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, 1), 0));
+                            fans.Add(new Fan(SuperIoConstants.CpuFan, 1));
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Voltage #1", 0, true));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                            // Voltages
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "1"), 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10, 0, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
-
                             break;
                     }
 
                     break;
                 default:
-                    voltages.Add(new Voltage("Voltage #1", 0, true));
-                    voltages.Add(new Voltage("Voltage #2", 1, true));
-                    voltages.Add(new Voltage("Voltage #3", 2, true));
-                    voltages.Add(new Voltage("Voltage #4", 3, true));
-                    voltages.Add(new Voltage("Voltage #5", 4, true));
-                    voltages.Add(new Voltage("Voltage #6", 5, true));
-                    voltages.Add(new Voltage("Voltage #7", 6, true));
-                    voltages.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                    voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                    // Voltages
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "1"), 0, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                    voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10, 0, true));
+                    voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                    // Temps
                     for (int i = 0; i < superIo.Temperatures.Length; i++)
                     {
-                        temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                        temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                     }
 
+                    // Fans
                     for (int i = 0; i < superIo.Fans.Length; i++)
                     {
-                        fans.Add(new Fan("Fan #" + (i + 1), i));
+                        fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                     }
 
+                    // Controls
                     for (int i = 0; i < superIo.Controls.Length; i++)
                     {
-                        controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                        controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                     }
                     break;
             }
@@ -1830,161 +2156,195 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
             IList<Voltage> voltages,
             IList<Temperature> temps,
             IList<Fan> fans,
-            ICollection<Models.Control> controls)
+            ICollection<Control> controls)
         {
             switch (manufacturer)
             {
                 case Manufacturer.Gigabyte:
                     switch (model)
                     {
-                        case MotherboardModel.X570_AORUS_MASTER: // IT879XE
-                        case MotherboardModel.X570_AORUS_PRO:
-                        case MotherboardModel.X570_AORUS_ULTRA:
-                        case MotherboardModel.B550_AORUS_MASTER:
-                        case MotherboardModel.B550_AORUS_PRO:
-                        case MotherboardModel.B550_AORUS_PRO_AC:
-                        case MotherboardModel.B550_AORUS_PRO_AX:
-                        case MotherboardModel.B550_VISION_D:
-                            voltages.Add(new Voltage("VIN0", 0));
-                            voltages.Add(new Voltage("DDRVTT AB", 1));
-                            voltages.Add(new Voltage("Chipset Core", 2));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("CPU VDD18", 4));
-                            voltages.Add(new Voltage("PM_CLDO12", 5));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 1f, 1f));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
-                            temps.Add(new Temperature("PCIe x8", 0));
-                            temps.Add(new Temperature("External #2", 1));
-                            temps.Add(new Temperature("System #2", 2));
-                            fans.Add(new Fan("System Fan #5 / Pump", 0));
-                            fans.Add(new Fan("System Fan #6 / Pump", 1));
-                            fans.Add(new Fan("System Fan #4", 2));
-                            controls.Add(new Models.Control("System Fan #5 / Pump", 0));
-                            controls.Add(new Models.Control("System Fan #6 / Pump", 1));
-                            controls.Add(new Models.Control("System Fan #4", 2));
+                        case MotherboardModel.X570AorusMaster: // IT879XE
+                        case MotherboardModel.X570AorusPro:
+                        case MotherboardModel.X570AorusUltra:
+                        case MotherboardModel.B550AorusMaster:
+                        case MotherboardModel.B550AorusPro:
+                        case MotherboardModel.B550AorusProAc:
+                        case MotherboardModel.B550AorusProAx:
+                        case MotherboardModel.B550VisionD:
+                            // Voltages
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VinVoltNumber, 0), 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DdrVttAbVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.ChipsetCoreVolts, 2));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.CpuVddNumberVolts, 18), 4));
+                            voltages.Add(new Voltage(SuperIoConstants.PmCldO12Volts, 5));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 1f, 1f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 1f, 1f));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.PciEx8Temp, 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.ExternalTempNumber, 2), 1));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 2));
+
+                            // Fans
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 5), 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 6), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 4), 2));
+
+                            // Controls
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 5), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 6), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 4), 2));
                             break;
 
-                        case MotherboardModel.X470_AORUS_GAMING_7_WIFI: // ITE IT8792
-                            voltages.Add(new Voltage("VIN0", 0, 0, 1));
-                            voltages.Add(new Voltage("DDR VTT", 1, 0, 1));
-                            voltages.Add(new Voltage("Chipset Core", 2, 0, 1));
-                            voltages.Add(new Voltage("VIN3", 3, 0, 1));
-                            voltages.Add(new Voltage("CPU VDD18", 4, 0, 1));
-                            voltages.Add(new Voltage("Chipset Core +2.5V", 5, 0.5F, 1));
-                            voltages.Add(new Voltage("+3V Standby", 6, 1, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 7, 0.7F, 1));
-                            temps.Add(new Temperature("PCIe x8", 0));
-                            temps.Add(new Temperature("System #2", 2));
+                        case MotherboardModel.X470AorusGaming7Wifi: // ITE IT8792
+                            // Voltages
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VinVoltNumber, 0), 0, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.DdrVttVolts, 1, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.ChipsetCoreVolts, 2, 0, 1));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VinVoltNumber, 3), 3, 0, 1));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.CpuVddNumberVolts, 18), 4, 0, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.ChipsetCore250Volts, 5, 0.5F, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 6, 1, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 7, 0.7F, 1));
 
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.PciEx8Temp, 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 2));
+
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
                             break;
 
-                        case MotherboardModel.Z390_AORUS_PRO: // IT879XE
-                            voltages.Add(new Voltage("VCore", 0));
-                            voltages.Add(new Voltage("DDRVTT AB", 1));
-                            voltages.Add(new Voltage("Chipset Core", 2));
-                            voltages.Add(new Voltage("VIN3", 3, true));
-                            voltages.Add(new Voltage("VCCIO", 4));
-                            voltages.Add(new Voltage("Voltage #7", 5, true));
-                            voltages.Add(new Voltage("DDR VPP", 6));
-                            voltages.Add(new Voltage("+3V Standby", 7, 1f, 1f));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 1f, 1f));
-                            temps.Add(new Temperature("PCIe x8", 0));
-                            temps.Add(new Temperature("External #2", 1));
-                            temps.Add(new Temperature("System #2", 2));
-                            fans.Add(new Fan("System Fan #5 / Pump", 0));
-                            fans.Add(new Fan("System Fan #6 / Pump", 1));
-                            fans.Add(new Fan("System Fan #4", 2));
-                            controls.Add(new Models.Control("System Fan #5 / Pump", 0));
-                            controls.Add(new Models.Control("System Fan #6 / Pump", 1));
-                            controls.Add(new Models.Control("System Fan #4", 2));
+                        case MotherboardModel.Z390AorusPro: // IT879XE
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DdrVttAbVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.ChipsetCoreVolts, 2));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VinVoltNumber, 3), 3, true));
+                            voltages.Add(new Voltage(SuperIoConstants.VccIoVolts, 4));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 5, true));
+                            voltages.Add(new Voltage(SuperIoConstants.DdrVppVolts, 6));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 1f, 1f));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 1f, 1f));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.PciEx8Temp, 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.ExternalTempNumber, 2), 1));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 2));
+
+                            // Fans 
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 5), 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 6), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 4), 2));
+
+                            // Controls
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 5), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 6), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 4), 2));
                             break;
 
-                        case MotherboardModel.Z790_AORUS_PRO_X: // ITE IT87952E
-                        case MotherboardModel.Z690_AORUS_PRO:
-                        case MotherboardModel.Z690_AORUS_MASTER: // ITE IT87952E
-                            voltages.Add(new Voltage("Vcore", 0));
-                            voltages.Add(new Voltage("DIMM I/O", 1));
-                            voltages.Add(new Voltage("Chipset +0.82V", 2));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("CPU System Agent", 4));
-                            voltages.Add(new Voltage("Chipset +1.8V", 5));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
-                            temps.Add(new Temperature("PCIe x4", 0));
-                            temps.Add(new Temperature("External #2", 1));
-                            temps.Add(new Temperature("System #2", 2));
-                            fans.Add(new Fan("System Fan #5 / Pump", 0));
-                            fans.Add(new Fan("System Fan #6 / Pump", 1));
-                            fans.Add(new Fan("System Fan #4", 2));
-                            controls.Add(new Models.Control("System Fan #5 / Pump", 0));
-                            controls.Add(new Models.Control("System Fan #6 / Pump", 1));
-                            controls.Add(new Models.Control("System Fan #4", 2));
+                        case MotherboardModel.Z790AorusProX: // ITE IT87952E
+                        case MotherboardModel.Z690AorusPro:
+                        case MotherboardModel.Z690AorusMaster: // ITE IT87952E
+                            // Voltages
+                            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+                            voltages.Add(new Voltage(SuperIoConstants.DimmIoVolts, 1));
+                            voltages.Add(new Voltage(SuperIoConstants.Chipset082Volts, 2));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CpuSaVolts, 4));
+                            voltages.Add(new Voltage(SuperIoConstants.Chipset180Volts, 5));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
+
+                            // Temps
+                            temps.Add(new Temperature(SuperIoConstants.PciEx4Temp, 0));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.ExternalTempNumber, 2), 1));
+                            temps.Add(new Temperature(string.Format(SuperIoConstants.SystemNumberTemp, 2), 2));
+
+                            // Fans
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 5), 0));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 6), 1));
+                            fans.Add(new Fan(string.Format(SuperIoConstants.SystemFanNumber, 4), 2));
+
+                            // Controls
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 5), 0));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 6), 1));
+                            controls.Add(new Control(string.Format(SuperIoConstants.SystemFanNumber, 4), 2));
                             break;
 
                         default:
-                            voltages.Add(new Voltage("Voltage #1", 0, true));
-                            voltages.Add(new Voltage("Voltage #2", 1, true));
-                            voltages.Add(new Voltage("Voltage #3", 2, true));
-                            voltages.Add(new Voltage("Voltage #4", 3, true));
-                            voltages.Add(new Voltage("Voltage #5", 4, true));
-                            voltages.Add(new Voltage("Voltage #6", 5, true));
-                            voltages.Add(new Voltage("Voltage #7", 6, true));
-                            voltages.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                            voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                            // Voltages
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "1"), 0, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                            voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                            voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10, 0, true));
+                            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                            // Temps
                             for (int i = 0; i < superIo.Temperatures.Length; i++)
                             {
-                                temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                                temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                             }
 
+                            // Fans
                             for (int i = 0; i < superIo.Fans.Length; i++)
                             {
-                                fans.Add(new Fan("Fan #" + (i + 1), i));
+                                fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
 
+                            // Controls
                             for (int i = 0; i < superIo.Controls.Length; i++)
                             {
-                                controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                                controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                             }
                             break;
                     }
 
                     break;
                 default:
-                    voltages.Add(new Voltage("Voltage #1", 0, true));
-                    voltages.Add(new Voltage("Voltage #2", 1, true));
-                    voltages.Add(new Voltage("Voltage #3", 2, true));
-                    voltages.Add(new Voltage("Voltage #4", 3, true));
-                    voltages.Add(new Voltage("Voltage #5", 4, true));
-                    voltages.Add(new Voltage("Voltage #6", 5, true));
-                    voltages.Add(new Voltage("Voltage #7", 6, true));
-                    voltages.Add(new Voltage("+3V Standby", 7, 10, 10, 0, true));
-                    voltages.Add(new Voltage("CMOS Battery", 8, 10, 10));
+                    // Voltages
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.VoltageVoltNumber, "1"), 0, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 1, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 2, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "4"), 3, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "5"), 4, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "6"), 5, true));
+                    voltages.Add(new Voltage(string.Format(SuperIoConstants.ChassisFanNumber, "7"), 6, true));
+                    voltages.Add(new Voltage(SuperIoConstants.V3StandbyVolts, 7, 10, 10, 0, true));
+                    voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8, 10, 10));
 
+                    // Temps
                     for (int i = 0; i < superIo.Temperatures.Length; i++)
                     {
-                        temps.Add(new Temperature("Temperature #" + (i + 1), i));
+                        temps.Add(new Temperature(string.Format(SuperIoConstants.TempNumber, i + 1), i));
                     }
 
+                    // Fans
                     for (int i = 0; i < superIo.Fans.Length; i++)
                     {
-                        fans.Add(new Fan("Fan #" + (i + 1), i));
+                        fans.Add(new Fan(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                     }
 
+                    // Controls
                     for (int i = 0; i < superIo.Controls.Length; i++)
                     {
-                        controls.Add(new Models.Control("Fan #" + (i + 1), i));
+                        controls.Add(new Control(string.Format(SuperIoConstants.FanNumber, i + 1), i));
                     }
                     break;
             }
@@ -2010,15 +2370,20 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
             ref SuperIoDelegates.UpdateDelegate postUpdate,
             out Mutex mutex)
         {
-            voltages.Add(new Voltage("Vcore", 0));
-            voltages.Add(new Voltage("+3.3V", 2));
-            voltages.Add(new Voltage("+12V", 4, 30, 10));
-            voltages.Add(new Voltage("+5V", 5, 6.8f, 10));
-            voltages.Add(new Voltage("CMOS Battery", 8));
-            temps.Add(new Temperature("CPU", 0));
-            temps.Add(new Temperature("Motherboard", 1));
-            fans.Add(new Fan("CPU Fan", 0));
-            fans.Add(new Fan("Chassis Fan #1", 1));
+            // Voltages
+            voltages.Add(new Voltage(SuperIoConstants.VcoreVolts, 0));
+            voltages.Add(new Voltage(SuperIoConstants.V33Volts, 2));
+            voltages.Add(new Voltage(SuperIoConstants.V120Volts, 4, 30, 10));
+            voltages.Add(new Voltage(SuperIoConstants.V50Volts, 5, 6.8f, 10));
+            voltages.Add(new Voltage(SuperIoConstants.CmosBatteryVolts, 8));
+
+            // Temps
+            temps.Add(new Temperature(SuperIoConstants.CpuTemp, 0));
+            temps.Add(new Temperature(SuperIoConstants.MotherboardTemp, 1));
+
+            // Fans
+            fans.Add(new Fan(SuperIoConstants.CpuFan, 0));
+            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "1"), 1));
 
             // this mutex is also used by the official ASRock tool
             mutex = new Mutex(false, "ASRockOCMark");
@@ -2039,10 +2404,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
 
             // only read additional fans if we get exclusive access
             if (!exclusiveAccess) return;
-            fans.Add(new Fan("Chassis Fan #2", 2));
-            fans.Add(new Fan("Chassis Fan #3", 3));
-            fans.Add(new Fan("Power Fan", 4));
+            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "2"), 2));
+            fans.Add(new Fan(string.Format(SuperIoConstants.ChassisFanNumber, "3"), 3));
+            fans.Add(new Fan(SuperIoConstants.PowerFan, 4));
 
+            // Read fan delegate
             readFan = index =>
             {
                 if (index < 2) return superIo.Fans[index];
@@ -2052,12 +2418,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 if (!gpio.HasValue) return null;
 
                 // read the last 3 fans based on GPIO 83-85
-                int[] masks = { 0x05, 0x03, 0x06 };
+                int[] masks = [0x05, 0x03, 0x06];
                 return (gpio.Value >> 3 & 0x07) == masks[index - 2] ? superIo.Fans[2] : null;
             };
 
+            // Post update delegate
             int fanIndex = 0;
-
             postUpdate = () =>
             {
                 // get GPIO 80-87
@@ -2065,7 +2431,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.It
                 if (!gpio.HasValue) return;
 
                 // prepare the GPIO 83-85 for the next update
-                int[] masks = { 0x05, 0x03, 0x06 };
+                int[] masks = [0x05, 0x03, 0x06];
                 superIo.WriteGpio(7, (byte)(gpio.Value & 0xC7 | masks[fanIndex] << 3));
                 fanIndex = (fanIndex + 1) % 3;
             };

@@ -14,7 +14,7 @@ public interface ISensor : IElement
     /// <value>
     /// The control.
     /// </value>
-    IControl Control { get; }
+    IControlSensor Control { get; }
 
     /// <summary>
     /// <inheritdoc cref="IHardware"/>

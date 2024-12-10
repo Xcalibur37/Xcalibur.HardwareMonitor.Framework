@@ -6,7 +6,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Memory;
 /// <summary>
 /// Memory Group
 /// </summary>
-/// <seealso cref="Xcalibur.HardwareMonitor.Framework.Hardware.IGroup" />
+/// <seealso cref="IGroup" />
 internal class MemoryGroup : IGroup
 {
     private readonly Hardware[] _hardware;
@@ -22,7 +22,11 @@ internal class MemoryGroup : IGroup
     /// <param name="settings">The settings.</param>
     public MemoryGroup(ISettings settings)
     {
-        _hardware = new Hardware[] { Software.OperatingSystem.IsUnix ? new GenericLinuxMemory("Generic Memory", settings) : new GenericWindowsMemory("Generic Memory", settings) };
+        _hardware = [
+            Software.OperatingSystem.IsUnix 
+                ? new GenericLinuxMemory(MemoryConstants.GenericMemory, settings) 
+                : new GenericWindowsMemory(MemoryConstants.GenericMemory, settings)
+        ];
     }
 
     /// <summary>

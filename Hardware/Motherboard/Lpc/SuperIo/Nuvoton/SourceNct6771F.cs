@@ -1,16 +1,13 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nuvoton
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo.Nuvoton
 {
     /// <summary>
     /// Source Nuvoton 6771F
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum SourceNct6771F : byte
     {
-        SYSTIN = 1,
-        CPUTIN = 2,
-        AUXTIN = 3,
-        PECI_0 = 5
+        SysTin = 1,
+        CpuTin = 2,
+        AuxTin = 3,
+        Peci0 = 5
     }
 }

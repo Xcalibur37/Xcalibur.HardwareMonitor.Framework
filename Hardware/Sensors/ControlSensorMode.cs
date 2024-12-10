@@ -1,9 +1,9 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Sensors
 {
     /// <summary>
     /// Control Mode
     /// </summary>
-    public enum ControlMode
+    public enum ControlSensorMode
     {
         Undefined,
         Software,

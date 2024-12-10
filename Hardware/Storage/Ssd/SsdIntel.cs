@@ -36,7 +36,7 @@ internal class SsdIntel : AtaStorage
             0,
             SmartNames.AirflowTemperature,
             false,
-            new[] { new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0) }),
+            [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\nTemperature = Value + Offset.", 0)]),
         new(0xC0, SmartNames.UnsafeShutdownCount),
         new(0xC7, SmartNames.CrcErrorCount, RawToInt),
         new(0xE1, SmartNames.HostWrites, (r, v, p) => RawToInt(r, v, p) / 0x20, SensorType.Data, 0, SmartNames.HostWrites),

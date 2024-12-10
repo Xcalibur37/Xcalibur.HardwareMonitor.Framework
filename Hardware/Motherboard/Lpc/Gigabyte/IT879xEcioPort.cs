@@ -59,12 +59,9 @@ internal class IT879xEcIoPort
     /// <returns></returns>
     public bool Read(ushort offset, out byte value)
     {
-        if (!Init(0xB0, offset))
-        {
-            value = 0;
-            return false;
-        }
-        return ReadFromValue(out value);
+        if (Init(0xB0, offset)) return ReadFromValue(out value);
+        value = 0;
+        return false;
     }
 
     /// <summary>
@@ -120,14 +117,14 @@ internal class IT879xEcIoPort
     /// <returns></returns>
     private bool ReadFromValue(out byte value)
     {
-        if (!WaitObf())
+        if (WaitObf())
         {
-            value = 0;
-            return false;
+            value = Ring0.ReadIoPort(ValuePort);
+            return true;
         }
 
-        value = Ring0.ReadIoPort(ValuePort);
-        return true;
+        value = 0;
+        return false;
     }
 
     /// <summary>
@@ -141,10 +138,8 @@ internal class IT879xEcIoPort
         {
             while ((Ring0.ReadIoPort(RegisterPort) & 2) != 0)
             {
-                if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT)
-                {
-                    return false;
-                }
+                if (stopwatch.ElapsedMilliseconds <= WAIT_TIMEOUT) continue;
+                return false;
             }
             return true;
         }
@@ -165,7 +160,8 @@ internal class IT879xEcIoPort
         {
             while ((Ring0.ReadIoPort(RegisterPort) & 1) == 0)
             {
-                if (stopwatch.ElapsedMilliseconds > WAIT_TIMEOUT) return false;
+                if (stopwatch.ElapsedMilliseconds <= WAIT_TIMEOUT) continue;
+                return false;
             }
             return true;
         }

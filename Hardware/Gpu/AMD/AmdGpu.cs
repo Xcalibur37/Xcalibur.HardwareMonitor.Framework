@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3D;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 using Xcalibur.HardwareMonitor.Framework.Interop.Models.ADL;
@@ -30,7 +30,7 @@ internal sealed class AmdGpu : GpuBase
     private string _d3dDeviceId;
     private uint _device;
     private Sensor _fan;
-    private Control _fanControl;
+    private ControlSensor _fanControl;
     private bool _frameMetricsStarted;
     private Sensor _fullscreenFps;
     private Sensor _gpuDedicatedMemoryUsage;
@@ -107,7 +107,7 @@ internal sealed class AmdGpu : GpuBase
     /// <param name="gcnInfo">The GCN information.</param>
     /// <param name="settings">The settings.</param>
     public AmdGpu(IntPtr amdContext, AdlAdapterInfo adapterInfo, AdlGcnInfo gcnInfo, ISettings settings)
-        : base(adapterInfo.AdapterName.Trim(), new Identifier("gpu-amd",
+        : base(adapterInfo.AdapterName.Trim(), new Identifier(HardwareConstants.GpuAmdIdentifier,
             adapterInfo.AdapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _context = amdContext;
@@ -133,7 +133,7 @@ internal sealed class AmdGpu : GpuBase
         _fanControl.ControlModeChanged -= ControlModeChanged;
         _fanControl.SoftwareControlValueChanged -= SoftwareControlValueChanged;
 
-        if (_fanControl.ControlMode != ControlMode.Undefined)
+        if (_fanControl.ControlMode != ControlSensorMode.Undefined)
         {
             SetDefaultFanSpeed();
         }
@@ -176,9 +176,9 @@ internal sealed class AmdGpu : GpuBase
     /// Software control value changed.
     /// </summary>
     /// <param name="control">The control.</param>
-    private void SoftwareControlValueChanged(IControl control)
+    private void SoftwareControlValueChanged(IControlSensor control)
     {
-        if (control.ControlMode != ControlMode.Software) return;
+        if (control.ControlMode != ControlSensorMode.Software) return;
         AdlFanSpeedValue fanSpeedValue = new()
         {
             iSpeedType = AtiAdlxx.AdlDlFanctrlSpeedTypePercent,
@@ -192,16 +192,16 @@ internal sealed class AmdGpu : GpuBase
     /// Controls the mode changed.
     /// </summary>
     /// <param name="control">The control.</param>
-    private void ControlModeChanged(IControl control)
+    private void ControlModeChanged(IControlSensor control)
     {
         switch (control.ControlMode)
         {
-            case ControlMode.Undefined:
+            case ControlSensorMode.Undefined:
                 return;
-            case ControlMode.Default:
+            case ControlSensorMode.Default:
                 SetDefaultFanSpeed();
                 break;
-            case ControlMode.Software:
+            case ControlSensorMode.Software:
                 SoftwareControlValueChanged(control);
                 break;
             default:
@@ -369,7 +369,7 @@ internal sealed class AmdGpu : GpuBase
             fanSpeedInfo.iMinPercent = 0;
         }
 
-        _fanControl = new Control(_controlSensor, Settings, fanSpeedInfo.iMinPercent, fanSpeedInfo.iMaxPercent);
+        _fanControl = new ControlSensor(_controlSensor, Settings, fanSpeedInfo.iMinPercent, fanSpeedInfo.iMaxPercent);
         _fanControl.ControlModeChanged += ControlModeChanged;
         _fanControl.SoftwareControlValueChanged += SoftwareControlValueChanged;
         ControlModeChanged(_fanControl);

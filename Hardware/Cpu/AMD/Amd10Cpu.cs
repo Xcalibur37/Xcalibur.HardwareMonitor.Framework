@@ -18,31 +18,29 @@ internal sealed class Amd10Cpu : AmdCpuBase
 {
     #region Fields
 
-    // ReSharper disable InconsistentNaming
-    private const uint CLOCK_POWER_TIMING_CONTROL_0_REGISTER = 0xD4;
-    private const uint COFVID_STATUS = 0xC0010071;
-    private const uint CSTATES_IO_PORT = 0xCD6;
-    private const uint SMU_REPORTED_TEMP_CTRL_OFFSET = 0xD8200CA4;
-    private const uint HWCR = 0xC0010015;
-    private const byte MISCELLANEOUS_CONTROL_FUNCTION = 3;
-    private const uint P_STATE_0 = 0xC0010064;
-    private const uint PERF_CTL_0 = 0xC0010000;
-    private const uint PERF_CTR_0 = 0xC0010004;
-    private const uint REPORTED_TEMPERATURE_CONTROL_REGISTER = 0xA4;
+    private const uint ClockPowerTimingControl0Register = 0xD4;
+    private const uint CofvidStatus = 0xC0010071;
+    private const uint CstatesIoPort = 0xCD6;
+    private const uint SmuReportedTempCtrlOffset = 0xD8200CA4;
+    private const uint Hwcr = 0xC0010015;
+    private const byte MiscellaneousControlFunction = 3;
+    private const uint PState0 = 0xC0010064;
+    private const uint PerfCtl0 = 0xC0010000;
+    private const uint PerfCtr0 = 0xC0010004;
+    private const uint ReportedTemperatureControlRegister = 0xA4;
 
-    private const ushort FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1203;
-    private const ushort FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1303;
-    private const ushort FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1703;
-    private const ushort FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID = 0x1703;
-    private const ushort FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1603;
-    private const ushort FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID = 0x1403;
-    private const ushort FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x141D;
-    private const ushort FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID = 0x1573;
-    private const ushort FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID = 0x15B3;
-    private const ushort FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID = 0x1533;
-    private const ushort FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID = 0x1583;
-    // ReSharper restore InconsistentNaming
-
+    private const ushort Family10HMiscellaneousControlDeviceId = 0x1203;
+    private const ushort Family11HMiscellaneousControlDeviceId = 0x1303;
+    private const ushort Family12HMiscellaneousControlDeviceId = 0x1703;
+    private const ushort Family14HMiscellaneousControlDeviceId = 0x1703;
+    private const ushort Family15HModel00MiscControlDeviceId = 0x1603;
+    private const ushort Family15HModel10MiscControlDeviceId = 0x1403;
+    private const ushort Family15HModel30MiscControlDeviceId = 0x141D;
+    private const ushort Family15HModel60MiscControlDeviceId = 0x1573;
+    private const ushort Family15HModel70MiscControlDeviceId = 0x15B3;
+    private const ushort Family16HModel00MiscControlDeviceId = 0x1533;
+    private const ushort Family16HModel30MiscControlDeviceId = 0x1583;
+    
     private Sensor _busClock;
     private Sensor[] _coreClocks;
     private Sensor _coreTemperature;
@@ -109,7 +107,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
     /// Gets the MSRS.
     /// </summary>
     /// <returns></returns>
-    protected override uint[] GetMsrs() => [PERF_CTL_0, PERF_CTR_0, HWCR, P_STATE_0, COFVID_STATUS];
+    protected override uint[] GetMsrs() => [PerfCtl0, PerfCtr0, Hwcr, PState0, CofvidStatus];
 
     /// <summary>
     /// Updates all sensors.
@@ -172,7 +170,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
                 return false;
             }
 
-            bool result = Ring0.ReadPciConfig(0, 0xBC, out value);
+            var result = Ring0.ReadPciConfig(0, 0xBC, out value);
 
             // Release
             Mutexes.ReleasePciBus();
@@ -196,7 +194,9 @@ internal sealed class Amd10Cpu : AmdCpuBase
         // estimate the multiplier
         List<double> estimate = new(3);
         for (int i = 0; i < 3; i++)
+        {
             estimate.Add(EstimateTimeStampCounterMultiplier(0.025));
+        }
 
         estimate.Sort();
         return estimate[1];
@@ -210,7 +210,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
     private double EstimateTimeStampCounterMultiplier(double timeWindow)
     {
         // select event "076h CPU Clocks not Halted" and enable the counter
-        Ring0.WriteMsr(PERF_CTL_0,
+        Ring0.WriteMsr(PerfCtl0,
                        (1 << 22) | // enable performance counter
                        (1 << 17) | // count events in user mode
                        (1 << 16) | // count events in operating-system mode
@@ -218,19 +218,19 @@ internal sealed class Amd10Cpu : AmdCpuBase
                        0x00000000);
 
         // set the counter to 0
-        Ring0.WriteMsr(PERF_CTR_0, 0, 0);
+        Ring0.WriteMsr(PerfCtr0, 0, 0);
 
         long ticks = (long)(timeWindow * Stopwatch.Frequency);
         
         long timeBegin = Stopwatch.GetTimestamp() + (long)Math.Ceiling(0.001 * ticks);
         while (Stopwatch.GetTimestamp() < timeBegin) { }
-        Ring0.ReadMsr(PERF_CTR_0, out uint lsbBegin, out uint msbBegin);
+        Ring0.ReadMsr(PerfCtr0, out uint lsbBegin, out uint msbBegin);
 
         long timeEnd = timeBegin + ticks;
         while (Stopwatch.GetTimestamp() < timeEnd) { }
-        Ring0.ReadMsr(PERF_CTR_0, out uint lsbEnd, out uint msbEnd);
+        Ring0.ReadMsr(PerfCtr0, out uint lsbEnd, out uint msbEnd);
         
-        Ring0.ReadMsr(COFVID_STATUS, out uint eax, out uint _);
+        Ring0.ReadMsr(CofvidStatus, out uint eax, out uint _);
         double coreMultiplier = GetCoreMultiplier(eax);
         ulong countBegin = ((ulong)msbBegin << 32) | lsbBegin;
         ulong countEnd = ((ulong)msbEnd << 32) | lsbEnd;
@@ -287,7 +287,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
                 // 3:0: current CPU core divisor ID least significant digit
                 uint divisorIdMsd = (cofVidEax >> 4) & 0x1F;
                 uint divisorIdLsd = cofVidEax & 0xF;
-                Ring0.ReadPciConfig(_miscellaneousControlAddress, CLOCK_POWER_TIMING_CONTROL_0_REGISTER, out uint value);
+                Ring0.ReadPciConfig(_miscellaneousControlAddress, ClockPowerTimingControl0Register, out uint value);
                 uint frequencyId = value & 0x1F;
                 return (frequencyId + 0x10) / (divisorIdMsd + (divisorIdLsd * 0.25) + 1);
 
@@ -306,35 +306,35 @@ internal sealed class Amd10Cpu : AmdCpuBase
         switch (Family)
         {
             case 0x10:
-                miscellaneousControlDeviceId = FAMILY_10H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                miscellaneousControlDeviceId = Family10HMiscellaneousControlDeviceId;
                 break;
             case 0x11:
-                miscellaneousControlDeviceId = FAMILY_11H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                miscellaneousControlDeviceId = Family11HMiscellaneousControlDeviceId;
                 break;
             case 0x12:
-                miscellaneousControlDeviceId = FAMILY_12H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                miscellaneousControlDeviceId = Family12HMiscellaneousControlDeviceId;
                 break;
             case 0x14:
-                miscellaneousControlDeviceId = FAMILY_14H_MISCELLANEOUS_CONTROL_DEVICE_ID;
+                miscellaneousControlDeviceId = Family14HMiscellaneousControlDeviceId;
                 break;
             case 0x15:
                 switch (Model & 0xF0)
                 {
                     case 0x00:
-                        miscellaneousControlDeviceId = FAMILY_15H_MODEL_00_MISC_CONTROL_DEVICE_ID;
+                        miscellaneousControlDeviceId = Family15HModel00MiscControlDeviceId;
                         break;
                     case 0x10:
-                        miscellaneousControlDeviceId = FAMILY_15H_MODEL_10_MISC_CONTROL_DEVICE_ID;
+                        miscellaneousControlDeviceId = Family15HModel10MiscControlDeviceId;
                         break;
                     case 0x30:
-                        miscellaneousControlDeviceId = FAMILY_15H_MODEL_30_MISC_CONTROL_DEVICE_ID;
+                        miscellaneousControlDeviceId = Family15HModel30MiscControlDeviceId;
                         break;
                     case 0x70:
-                        miscellaneousControlDeviceId = FAMILY_15H_MODEL_70_MISC_CONTROL_DEVICE_ID;
+                        miscellaneousControlDeviceId = Family15HModel70MiscControlDeviceId;
                         _hasSmuTemperatureRegister = true;
                         break;
                     case 0x60:
-                        miscellaneousControlDeviceId = FAMILY_15H_MODEL_60_MISC_CONTROL_DEVICE_ID;
+                        miscellaneousControlDeviceId = Family15HModel60MiscControlDeviceId;
                         _hasSmuTemperatureRegister = true;
                         break;
                     default:
@@ -346,8 +346,8 @@ internal sealed class Amd10Cpu : AmdCpuBase
             case 0x16:
                 miscellaneousControlDeviceId = (Model & 0xF0) switch
                 {
-                    0x00 => FAMILY_16H_MODEL_00_MISC_CONTROL_DEVICE_ID,
-                    0x30 => FAMILY_16H_MODEL_30_MISC_CONTROL_DEVICE_ID,
+                    0x00 => Family16HModel00MiscControlDeviceId,
+                    0x30 => Family16HModel30MiscControlDeviceId,
                     _ => 0
                 };
                 break;
@@ -357,7 +357,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
         }
 
         // get the pci address for the Miscellaneous Control registers
-        _miscellaneousControlAddress = GetPciAddress(MISCELLANEOUS_CONTROL_FUNCTION, miscellaneousControlDeviceId);
+        _miscellaneousControlAddress = GetPciAddress(MiscellaneousControlFunction, miscellaneousControlDeviceId);
     }
 
     /// <summary>
@@ -371,24 +371,24 @@ internal sealed class Amd10Cpu : AmdCpuBase
         GroupAffinity previousAffinity = ThreadAffinity.Set(Cpu0.Affinity);
 
         // Disable core performance boost
-        Ring0.ReadMsr(HWCR, out uint hwcrEax, out uint hwcrEdx);
+        Ring0.ReadMsr(Hwcr, out uint hwcrEax, out uint hwcrEdx);
         if (corePerformanceBoostSupport)
         {
-            Ring0.WriteMsr(HWCR, hwcrEax | (1 << 25), hwcrEdx);
+            Ring0.WriteMsr(Hwcr, hwcrEax | (1 << 25), hwcrEdx);
         }
-        Ring0.ReadMsr(PERF_CTL_0, out uint ctlEax, out uint ctlEdx);
-        Ring0.ReadMsr(PERF_CTR_0, out uint ctrEax, out uint ctrEdx);
+        Ring0.ReadMsr(PerfCtl0, out uint ctlEax, out uint ctlEdx);
+        Ring0.ReadMsr(PerfCtr0, out uint ctrEax, out uint ctrEdx);
 
         _timeStampCounterMultiplier = EstimateTimeStampCounterMultiplier();
 
         // Restore the performance counter registers
-        Ring0.WriteMsr(PERF_CTL_0, ctlEax, ctlEdx);
-        Ring0.WriteMsr(PERF_CTR_0, ctrEax, ctrEdx);
+        Ring0.WriteMsr(PerfCtl0, ctlEax, ctlEdx);
+        Ring0.WriteMsr(PerfCtr0, ctrEax, ctrEdx);
 
         // Restore core performance boost
         if (corePerformanceBoostSupport)
         {
-            Ring0.WriteMsr(HWCR, hwcrEax, hwcrEdx);
+            Ring0.WriteMsr(Hwcr, hwcrEax, hwcrEdx);
         }
 
         // Restore the thread affinity.
@@ -401,13 +401,11 @@ internal sealed class Amd10Cpu : AmdCpuBase
     /// <returns></returns>
     private void CreateTemperatureSensors()
     {
-        _coreTemperature = new Sensor("CPU Cores",
+        _coreTemperature = new Sensor(CpuConstants.CpuCores,
         0,
             SensorType.Temperature,
             this,
-            [
-                new ParameterDescription("Offset [°C]", "Temperature offset.", 0)
-            ],
+            [],
             Settings);
 
         // the file reader for lm-sensors support on Linux
@@ -421,7 +419,6 @@ internal sealed class Amd10Cpu : AmdCpuBase
             try
             {
                 using StreamReader reader = new(path + "/device/name");
-
                 name = reader.ReadLine();
             }
             catch (IOException)
@@ -447,27 +444,17 @@ internal sealed class Amd10Cpu : AmdCpuBase
         {
             if (_miscellaneousControlAddress != Interop.Ring0.InvalidPciAddress)
             {
-                bool isValueValid = _hasSmuTemperatureRegister
-                    ? ReadSmuRegister(SMU_REPORTED_TEMP_CTRL_OFFSET, out uint value)
-                    : Ring0.ReadPciConfig(_miscellaneousControlAddress, REPORTED_TEMPERATURE_CONTROL_REGISTER, out value);
+                var isValueValid = _hasSmuTemperatureRegister
+                    ? ReadSmuRegister(SmuReportedTempCtrlOffset, out uint value)
+                    : Ring0.ReadPciConfig(_miscellaneousControlAddress, ReportedTemperatureControlRegister, out value);
 
                 if (isValueValid)
                 {
-                    if ((Family == 0x15 || Family == 0x16) && (value & 0x30000) == 0x3000)
-                    {
-                        if (Family == 0x15 && (Model & 0xF0) == 0x00)
-                        {
-                            _coreTemperature.Value = (((value >> 21) & 0x7FC) / 8.0f) + _coreTemperature.Parameters[0].Value - 49;
-                        }
-                        else
-                        {
-                            _coreTemperature.Value = (((value >> 21) & 0x7FF) / 8.0f) + _coreTemperature.Parameters[0].Value - 49;
-                        }
-                    }
-                    else
-                    {
-                        _coreTemperature.Value = (((value >> 21) & 0x7FF) / 8.0f) + _coreTemperature.Parameters[0].Value;
-                    }
+                    _coreTemperature.Value = (Family == 0x15 || Family == 0x16) && (value & 0x30000) == 0x3000
+                        ? Family == 0x15 && (Model & 0xF0) == 0x00
+                            ? (((value >> 21) & 0x7FC) / 8.0f) + _coreTemperature.Parameters[0].Value - 49
+                            : (((value >> 21) & 0x7FF) / 8.0f) + _coreTemperature.Parameters[0].Value - 49
+                        : ((value >> 21) & 0x7FF) / 8.0f + _coreTemperature.Parameters[0].Value;
 
                     ActivateSensor(_coreTemperature);
                 }
@@ -502,7 +489,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
     /// <returns></returns>
     private void CreateClockSensors()
     {
-        _busClock = new Sensor("Bus Speed", 0, SensorType.Clock, this, Settings);
+        _busClock = new Sensor(CpuConstants.BusSpeed, 0, SensorType.Clock, this, Settings);
         _coreClocks = new Sensor[CoreCount];
         for (int i = 0; i < _coreClocks.Length; i++)
         {
@@ -526,7 +513,7 @@ internal sealed class Amd10Cpu : AmdCpuBase
         {
             Thread.Sleep(1);
 
-            if (Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, CpuId[i][0].Affinity))
+            if (Ring0.ReadMsr(CofvidStatus, out uint curEax, out uint _, CpuId[i][0].Affinity))
             {
                 double multiplier = GetCoreMultiplier(curEax);
                 _coreClocks[i].Value = (float)(multiplier * TimeStampCounterFrequency / _timeStampCounterMultiplier);
@@ -551,11 +538,11 @@ internal sealed class Amd10Cpu : AmdCpuBase
     private void CreateVoltageSensors()
     {
         // Core
-        _coreVoltage = new Sensor("CPU Cores", 0, SensorType.Voltage, this, Settings);
+        _coreVoltage = new Sensor(CpuConstants.CpuCores, 0, SensorType.Voltage, this, Settings);
         ActivateSensor(_coreVoltage);
 
         // Northbridge
-        _northBridgeVoltage = new Sensor("Northbridge", 0, SensorType.Voltage, this, Settings);
+        _northBridgeVoltage = new Sensor(CpuConstants.Northbridge, 0, SensorType.Voltage, this, Settings);
         ActivateSensor(_northBridgeVoltage);
     }
 
@@ -574,26 +561,26 @@ internal sealed class Amd10Cpu : AmdCpuBase
         for (int i = 0; i < _coreClocks.Length; i++)
         {
             Thread.Sleep(1);
-            if (!Ring0.ReadMsr(COFVID_STATUS, out uint curEax, out uint _, CpuId[i][0].Affinity)) continue;
+            if (!Ring0.ReadMsr(CofvidStatus, out uint curEax, out uint _, CpuId[i][0].Affinity)) continue;
 
             float newCoreVoltage = 0;
             float newNbVoltage = 0;
             uint coreVid60 = (curEax >> 9) & 0x7F;
 
             // Delegates
-            float SVI2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - (0.00625f * vid) : 0;
-            float SVI1Volt(uint vid) => vid < 0x7C ? 1.550f - (0.0125f * vid) : 0;
+            float Svi2Volt(uint vid) => vid < 0b1111_1000 ? 1.5500f - (0.00625f * vid) : 0;
+            float Svi1Volt(uint vid) => vid < 0x7C ? 1.550f - (0.0125f * vid) : 0;
 
             // AMD SVI2
             if (_isSvi2)
             {
-                newCoreVoltage = SVI2Volt((curEax >> 13 & 0x80) | coreVid60);
-                newNbVoltage = SVI2Volt(curEax >> 24);
+                newCoreVoltage = Svi2Volt((curEax >> 13 & 0x80) | coreVid60);
+                newNbVoltage = Svi2Volt(curEax >> 24);
             }
             else
             {
-                newCoreVoltage = SVI1Volt(coreVid60);
-                newNbVoltage = SVI1Volt(curEax >> 25);
+                newCoreVoltage = Svi1Volt(coreVid60);
+                newNbVoltage = Svi1Volt(curEax >> 25);
             }
 
             // Max core
@@ -634,8 +621,8 @@ internal sealed class Amd10Cpu : AmdCpuBase
         // Set C-State Residency sensors
         if (_cStatesIoOffset == 0) return;
         _cStatesResidency = [
-            new Sensor("CPU Package C2", 0, SensorType.Level, this, Settings),
-            new Sensor("CPU Package C3", 1, SensorType.Level, this, Settings)
+            new Sensor(CpuConstants.CpuPackageC2, 0, SensorType.Level, this, Settings),
+            new Sensor(CpuConstants.CpuPackageC3, 1, SensorType.Level, this, Settings)
         ];
         ActivateSensor(_cStatesResidency[0]);
         ActivateSensor(_cStatesResidency[1]);
@@ -649,8 +636,8 @@ internal sealed class Amd10Cpu : AmdCpuBase
         if (_cStatesResidency == null) return;
         for (int i = 0; i < _cStatesResidency.Length; i++)
         {
-            Ring0.WriteIoPort(CSTATES_IO_PORT, (byte)(_cStatesIoOffset + i));
-            _cStatesResidency[i].Value = Ring0.ReadIoPort(CSTATES_IO_PORT + 1) / 256f * 100;
+            Ring0.WriteIoPort(CstatesIoPort, (byte)(_cStatesIoOffset + i));
+            _cStatesResidency[i].Value = Ring0.ReadIoPort(CstatesIoPort + 1) / 256f * 100;
         }
     }
 

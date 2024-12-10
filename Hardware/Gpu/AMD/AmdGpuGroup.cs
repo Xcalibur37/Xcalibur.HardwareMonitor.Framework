@@ -10,7 +10,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.AMD;
 /// <summary>
 /// AMD GPU Group
 /// </summary>
-/// <seealso cref="Xcalibur.HardwareMonitor.Framework.Hardware.IGroup" />
+/// <seealso cref="IGroup" />
 internal class AmdGpuGroup : IGroup
 {
     #region Fields
@@ -53,10 +53,8 @@ internal class AmdGpuGroup : IGroup
         try
         {
             _hardware.Apply(x => x.Close());
-            if (_status == AdlStatus.AdlOk && _context != IntPtr.Zero)
-            {
-                AtiAdlxx.ADL2_Main_Control_Destroy(_context);
-            }
+            if (_status != AdlStatus.AdlOk || _context == IntPtr.Zero) return;
+            AtiAdlxx.ADL2_Main_Control_Destroy(_context);
         }
         catch (Exception)
         {

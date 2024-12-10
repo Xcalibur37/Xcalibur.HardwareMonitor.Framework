@@ -1,18 +1,10 @@
-﻿
-
-
-
-
-
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Models;
 
 /// <summary>
 /// Manufacturer
 /// </summary>
-[SuppressMessage("ReSharper", "IdentifierTypo")]
-[SuppressMessage("ReSharper", "CommentTypo")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum Manufacturer
 {

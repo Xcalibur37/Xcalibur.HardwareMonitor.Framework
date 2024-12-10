@@ -81,10 +81,10 @@ internal class CpuGroup : IGroup
         SortedDictionary<uint, List<CpuId>> processors = new();
         foreach (CpuId thread in threads)
         {
-            processors.TryGetValue(thread.ProcessorId, out List<CpuId> list);
+            processors.TryGetValue(thread.ProcessorId, out var list);
             if (list == null)
             {
-                list = new List<CpuId>();
+                list = [];
                 processors.Add(thread.ProcessorId, list);
             }
             list.Add(thread);

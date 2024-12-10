@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Win32;
 using Xcalibur.Extensions.V2;
-using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d;
+using Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3D;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Interop;
 using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia;
@@ -37,7 +37,7 @@ internal sealed class NvidiaGpu : GpuBase
     private int _clockVersion;
     private Sensor[] _controls;
     private string _d3dDeviceId;
-    private Control[] _fanControls;
+    private ControlSensor[] _fanControls;
     private Sensor[] _fans;
     private Sensor _gpuDedicatedMemoryUsage;
     private Sensor[] _gpuNodeUsage;
@@ -82,7 +82,7 @@ internal sealed class NvidiaGpu : GpuBase
     /// <param name="displayHandle">The display handle.</param>
     /// <param name="settings">The settings.</param>
     public NvidiaGpu(int adapterIndex, NvPhysicalGpuHandle handle, NvDisplayHandle? displayHandle, ISettings settings)
-        : base(GetName(handle), new Identifier("gpu-nvidia", adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
+        : base(GetName(handle), new Identifier(HardwareConstants.GpuNvidiaIdentifier, adapterIndex.ToString(CultureInfo.InvariantCulture)), settings)
     {
         _adapterIndex = adapterIndex;
         _handle = handle;
@@ -114,7 +114,7 @@ internal sealed class NvidiaGpu : GpuBase
             {
                 _fanControls[i].ControlModeChanged -= ControlModeChanged;
                 _fanControls[i].SoftwareControlValueChanged -= SoftwareControlValueChanged;
-                if (_fanControls[i].ControlMode == ControlMode.Undefined) continue;
+                if (_fanControls[i].ControlMode == ControlSensorMode.Undefined) continue;
                 RestoreDefaultFanBehavior(i);
             }
         }
@@ -412,14 +412,14 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="control">The control.</param>
     /// <returns></returns>
-    private void ControlModeChanged(IControl control)
+    private void ControlModeChanged(IControlSensor control)
     {
         switch (control.ControlMode)
         {
-            case ControlMode.Default:
+            case ControlSensorMode.Default:
                 RestoreDefaultFanBehavior(control.Sensor.Index);
                 break;
-            case ControlMode.Software:
+            case ControlSensorMode.Software:
                 SoftwareControlValueChanged(control);
                 break;
         }
@@ -430,7 +430,7 @@ internal sealed class NvidiaGpu : GpuBase
     /// </summary>
     /// <param name="control">The control.</param>
     /// <returns></returns>
-    private void SoftwareControlValueChanged(IControl control)
+    private void SoftwareControlValueChanged(IControlSensor control)
     {
         int index = control.Sensor?.Index ?? 0;
 
@@ -690,7 +690,7 @@ internal sealed class NvidiaGpu : GpuBase
         if (status == NvStatus.OK && fanControllers.Count > 0 && fanCoolers.Count > 0)
         {
             _controls = new Sensor[fanControllers.Count];
-            _fanControls = new Control[fanControllers.Count];
+            _fanControls = new ControlSensor[fanControllers.Count];
 
             for (int i = 0; i < fanControllers.Count; i++)
             {
@@ -704,7 +704,7 @@ internal sealed class NvidiaGpu : GpuBase
                 _controls[i] = new Sensor(name, (int)item.CoolerId, SensorType.Control, this, Settings);
                 ActivateSensor(_controls[i]);
 
-                _fanControls[i] = new Control(_controls[i], Settings, fanItem.CurrentMinLevel, fanItem.CurrentMaxLevel);
+                _fanControls[i] = new ControlSensor(_controls[i], Settings, fanItem.CurrentMinLevel, fanItem.CurrentMaxLevel);
                 _fanControls[i].ControlModeChanged += ControlModeChanged;
                 _fanControls[i].SoftwareControlValueChanged += SoftwareControlValueChanged;
                 _controls[i].Control = _fanControls[i];
@@ -718,7 +718,7 @@ internal sealed class NvidiaGpu : GpuBase
             if (status != NvStatus.OK || coolerSettings.Count <= 0) return;
 
             _controls = new Sensor[coolerSettings.Count];
-            _fanControls = new Control[coolerSettings.Count];
+            _fanControls = new ControlSensor[coolerSettings.Count];
 
             for (int i = 0; i < coolerSettings.Count; i++)
             {
@@ -728,7 +728,7 @@ internal sealed class NvidiaGpu : GpuBase
                 _controls[i] = new Sensor(name, i, SensorType.Control, this, Settings);
                 ActivateSensor(_controls[i]);
 
-                _fanControls[i] = new Control(_controls[i], Settings, cooler.DefaultMin, cooler.DefaultMax);
+                _fanControls[i] = new ControlSensor(_controls[i], Settings, cooler.DefaultMin, cooler.DefaultMax);
                 _fanControls[i].ControlModeChanged += ControlModeChanged;
                 _fanControls[i].SoftwareControlValueChanged += SoftwareControlValueChanged;
                 _controls[i].Control = _fanControls[i];

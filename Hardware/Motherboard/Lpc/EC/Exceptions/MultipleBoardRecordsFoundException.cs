@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC.Exceptions
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.EC.Exceptions
 {
     /// <summary>
     /// Multiple Board Records Found Exception

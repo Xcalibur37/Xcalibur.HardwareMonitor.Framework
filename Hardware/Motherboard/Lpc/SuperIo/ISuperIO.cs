@@ -1,10 +1,4 @@
-﻿
-
-
-
-
-
-namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard.Lpc.SuperIo;
 
 /// <summary>
 /// Super I/O: Interface

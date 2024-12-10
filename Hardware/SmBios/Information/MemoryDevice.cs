@@ -24,7 +24,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.SmBios.Information
             ConfiguredVoltage = GetWord(0x26);
             Size = GetWord(0x0C);
             if (Size == 0x7FFF)
+            {
                 Size = GetDword(0x1C);
+            }
             Type = (MemoryType)GetByte(0x12);
         }
 

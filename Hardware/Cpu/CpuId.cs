@@ -395,7 +395,7 @@ public class CpuId
         }
 
         var name = nameBuilder.ToString();
-        if (name.Contains($"@"))
+        if (name.Contains('@'))
         {
             name = name.Remove(name.LastIndexOf('@'));
         }

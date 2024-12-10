@@ -73,7 +73,7 @@ public abstract class Hardware : IHardware
     /// <value>
     /// The settings.
     /// </value>
-    protected ISettings Settings { get; }
+    internal ISettings Settings { get; set; }
 
     #endregion
 

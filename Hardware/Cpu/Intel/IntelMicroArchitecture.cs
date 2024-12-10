@@ -1,5 +1,7 @@
 ﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.Intel
 {
+    #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
     /// <summary>
     /// Intel Micro Architectures
     /// </summary>
@@ -32,4 +34,6 @@
         RaptorLake,
         Unknown
     }
+
+    #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

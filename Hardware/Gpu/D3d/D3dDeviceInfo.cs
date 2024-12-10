@@ -1,4 +1,4 @@
-﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3d
+﻿namespace Xcalibur.HardwareMonitor.Framework.Hardware.Gpu.D3D
 {
     /// <summary>
     /// D3D Device Info

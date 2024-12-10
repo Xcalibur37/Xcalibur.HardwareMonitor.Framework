@@ -1,10 +1,4 @@
-﻿
-
-
-
-
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Xcalibur.Extensions.V2;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Motherboard;

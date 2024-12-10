@@ -41,14 +41,15 @@ internal class SsdMicron : AtaStorage
         new(0xCE, SmartNames.WriteErrorRate, (raw, _, _) => 6e4f * (raw[1] << 8 | raw[0])),
         new(0xD2, SmartNames.SuccessfulRAINRecoveryCount, RawToInt),
         new(0xF6,
-            SmartNames.TotalLbasWritten,
-            (r, _, _) => ((long)r[5] << 40 |
-                          (long)r[4] << 32 |
-                          (long)r[3] << 24 |
-                          (long)r[2] << 16 |
-                          (long)r[1] << 8 |
-                          r[0]) *
-                         (512.0f / 1024 / 1024 / 1024),
+            SmartNames.TotalLbasWritten, 
+            (r, _, _) => (
+                (long)r[5] << 40 |
+                (long)r[4] << 32 |
+                (long)r[3] << 24 |
+                (long)r[2] << 16 |
+                (long)r[1] << 8 | 
+                r[0]
+            ) * (512.0f / 1024 / 1024 / 1024),
             SensorType.Data,
             0,
             "Total Bytes Written"),
@@ -71,25 +72,21 @@ internal class SsdMicron : AtaStorage
     public SsdMicron(StorageInfo storageInfo, ISmart smart, string name, string firmwareRevision, int index, ISettings settings)
         : base(storageInfo, smart, name, firmwareRevision, "ssd", index, _smartAttributes, settings)
     {
-        _temperature = new Sensor("Temperature",
-                                  0,
-                                  false,
-                                  SensorType.Temperature,
-                                  this,
-                                  new[]
-                                  {
-                                      new ParameterDescription("Offset [°C]",
-                                                               "Temperature offset of the thermal sensor.\n" +
-                                                               "Temperature = Value + Offset.",
-                                                               0)
-                                  },
-                                  settings);
+        _temperature = new Sensor(
+            "Temperature",
+                0,
+                false,
+                SensorType.Temperature,
+                this,
+                [new ParameterDescription("Offset [°C]", "Temperature offset of the thermal sensor.\n" + "Temperature = Value + Offset.", 0)],
+                settings);
 
-        _writeAmplification = new Sensor("Write Amplification",
-                                         0,
-                                         SensorType.Factor,
-                                         this,
-                                         settings);
+        _writeAmplification = new Sensor(
+            "Write Amplification",
+                 0,
+                 SensorType.Factor,
+                 this,
+                 settings);
     }
 
     /// <inheritdoc />

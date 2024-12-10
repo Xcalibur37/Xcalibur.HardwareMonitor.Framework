@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Xcalibur.Extensions.V2;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Smart;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Storage.Ssd;
-using Xcalibur.HardwareMonitor.Framework.Interop;
 
 namespace Xcalibur.HardwareMonitor.Framework.Hardware.Storage;
 
@@ -95,15 +95,15 @@ public abstract class AtaStorage : AbstractStorage
     /// <returns></returns>
     internal static AbstractStorage CreateInstance(StorageInfo storageInfo, ISettings settings)
     {
-        ISmart smart = new WindowsSmart(storageInfo.Index);
+        using ISmart smart = new WindowsSmart(storageInfo.Index);
         string name = null;
         string firmwareRevision = null;
         Interop.Models.Kernel32.SmartAttribute[] smartAttributes = [];
 
         if (smart.IsValid)
         {
-            bool nameValid = smart.ReadNameAndFirmwareRevision(out name, out firmwareRevision);
-            bool smartEnabled = smart.EnableSmart();
+            var nameValid = smart.ReadNameAndFirmwareRevision(out name, out firmwareRevision);
+            var smartEnabled = smart.EnableSmart();
 
             if (smartEnabled)
             {
@@ -126,16 +126,14 @@ public abstract class AtaStorage : AbstractStorage
             }
 
             bool hasNonZeroSizeDrive = false;
-            foreach (string logicalDrive in logicalDrives)
+            foreach (var logicalDrive in logicalDrives)
             {
                 try
                 {
                     var driveInfo = new DriveInfo(logicalDrive);
-                    if (driveInfo.TotalSize > 0)
-                    {
-                        hasNonZeroSizeDrive = true;
-                        break;
-                    }
+                    if (driveInfo.TotalSize <= 0) continue;
+                    hasNonZeroSizeDrive = true;
+                    break;
                 }
                 catch (ArgumentException)
                 {
@@ -177,11 +175,11 @@ public abstract class AtaStorage : AbstractStorage
 
             if (type.GetCustomAttributes(typeof(RequireSmartAttribute), true) is RequireSmartAttribute[] requiredAttributes)
             {
-                foreach (RequireSmartAttribute requireAttribute in requiredAttributes)
+                foreach (var requireAttribute in requiredAttributes)
                 {
                     bool attributeFound = false;
 
-                    foreach (Interop.Models.Kernel32.SmartAttribute value in smartAttributes)
+                    foreach (var value in smartAttributes)
                     {
                         if (value.Id != requireAttribute.AttributeId) continue;
                         attributeFound = true;
@@ -198,15 +196,13 @@ public abstract class AtaStorage : AbstractStorage
             if (!allAttributesFound) continue;
 
             // check if there is a matching name prefix for this type
-            if (type.GetCustomAttributes(typeof(NamePrefixAttribute), true) is NamePrefixAttribute[] namePrefixes)
+            if (type.GetCustomAttributes(typeof(NamePrefixAttribute), true) is not NamePrefixAttribute[] namePrefixes) continue;
+            foreach (NamePrefixAttribute prefix in namePrefixes)
             {
-                foreach (NamePrefixAttribute prefix in namePrefixes)
-                {
-                    if (!name.StartsWith(prefix.Prefix, StringComparison.InvariantCulture)) continue;
-                    const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
-                    return Activator.CreateInstance(type, flags, null, 
+                if (!name.StartsWith(prefix.Prefix, StringComparison.InvariantCulture)) continue;
+                const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+                return Activator.CreateInstance(type, flags, null, 
                     [storageInfo, smart, name, firmwareRevision, storageInfo.Index, settings], null) as AtaStorage;
-                }
             }
         }
 
@@ -237,24 +233,25 @@ public abstract class AtaStorage : AbstractStorage
             byte[] smartIds = Smart.ReadSmartData().Select(x => x.Id).ToArray();
 
             // unique attributes by SensorType and SensorChannel.
-            IEnumerable<SmartAttribute> smartAttributes = SmartAttributes
-                                                         .Where(x => x.SensorType.HasValue && smartIds.Contains(x.Id))
-                                                         .GroupBy(x => new { x.SensorType.Value, x.SensorChannel })
-                                                         .Select(x => x.First());
+            IEnumerable<SmartAttribute> smartAttributes = 
+                SmartAttributes
+                    .Where(x => x.SensorType.HasValue && smartIds.Contains(x.Id))
+                    .GroupBy(x => new { x.SensorType.Value, x.SensorChannel })
+                    .Select(x => x.First());
 
-            _sensors = smartAttributes.ToDictionary(attribute => attribute,
-                                                    attribute => new Sensor(attribute.SensorName,
-                                                                            attribute.SensorChannel,
-                                                                            attribute.DefaultHiddenSensor,
-                                                                            attribute.SensorType.GetValueOrDefault(),
-                                                                            this,
-                                                                            attribute.ParameterDescriptions,
-                                                                            Settings));
+            _sensors = smartAttributes.ToDictionary(
+                attribute => attribute,
+                attribute => new Sensor(
+                    attribute.SensorName,
+                    attribute.SensorChannel,
+                    attribute.DefaultHiddenSensor,
+                    attribute.SensorType.GetValueOrDefault(),
+                    this,
+                    attribute.ParameterDescriptions,
+                    Settings));
 
-            foreach (KeyValuePair<SmartAttribute, Sensor> sensor in _sensors)
-            {
-                ActivateSensor(sensor.Value);
-            }
+            // Activate sensors
+            _sensors.Apply(x => ActivateSensor(x.Value));
         }
 
         base.CreateSensors();
@@ -272,15 +269,15 @@ public abstract class AtaStorage : AbstractStorage
     protected override void UpdateSensors()
     {
         if (!Smart.IsValid) return;
-        Interop.Models.Kernel32.SmartAttribute[] smartAttributes = Smart.ReadSmartData();
+        var smartAttributes = Smart.ReadSmartData();
 
-        foreach (KeyValuePair<SmartAttribute, Sensor> keyValuePair in _sensors)
+        foreach (var keyValuePair in _sensors)
         {
             SmartAttribute attribute = keyValuePair.Key;
-            foreach (Interop.Models.Kernel32.SmartAttribute value in smartAttributes)
+            foreach (var value in smartAttributes)
             {
                 if (value.Id != attribute.Id) continue;
-                Sensor sensor = keyValuePair.Value;
+                var sensor = keyValuePair.Value;
                 sensor.Value = attribute.ConvertValue(value, sensor.Parameters);
             }
         }

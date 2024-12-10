@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Kernel;
 using Xcalibur.HardwareMonitor.Framework.Hardware.Sensors;
 
@@ -126,14 +125,6 @@ public class CpuBase : Hardware
     /// The thread count.
     /// </value>
     protected int ThreadCount { get; }
-
-    /// <summary>
-    /// Gets the settings.
-    /// </summary>
-    /// <value>
-    /// The settings.
-    /// </value>
-    protected internal ISettings Settings { get; }
 
     #endregion
 

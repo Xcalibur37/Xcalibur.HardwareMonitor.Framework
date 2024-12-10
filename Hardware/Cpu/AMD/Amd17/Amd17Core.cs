@@ -54,16 +54,20 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
         public Amd17Core(Amd17Cpu cpu, int id)
         {
             _cpu = cpu;
-            Threads = new List<CpuId>();
+            Threads = [];
             CoreId = id;
-            _clock = new Sensor("Core #" + CoreId, _cpu.SensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu.Settings);
-            _multiplier = new Sensor("Core #" + CoreId, cpu.SensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu.Settings);
-            _power = new Sensor("Core #" + CoreId + " (SMU)", cpu.SensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu.Settings);
-            _vcore = new Sensor("Core #" + CoreId + " VID", cpu.SensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu.Settings);
 
+            var coreNumber = $"{CpuConstants.CoreNumber}{CoreId}";
+            _clock = new Sensor(coreNumber, _cpu.SensorTypeIndex[SensorType.Clock]++, SensorType.Clock, cpu, cpu.Settings);
             cpu.ActivateSensor(_clock);
+
+            _multiplier = new Sensor(coreNumber, cpu.SensorTypeIndex[SensorType.Factor]++, SensorType.Factor, cpu, cpu.Settings);
             cpu.ActivateSensor(_multiplier);
+
+            _power = new Sensor($"{coreNumber} (SMU)", cpu.SensorTypeIndex[SensorType.Power]++, SensorType.Power, cpu, cpu.Settings);
             cpu.ActivateSensor(_power);
+
+            _vcore = new Sensor($"{coreNumber} VID", cpu.SensorTypeIndex[SensorType.Voltage]++, SensorType.Voltage, cpu, cpu.Settings);
             cpu.ActivateSensor(_vcore);
         }
 
@@ -87,12 +91,12 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             // TU [19:16]
             // ESU [12:8] -> Unit 15.3 micro Joule per increment
             // PU [3:0]
-            Ring0.ReadMsr(Amd17Constants.MSR_PWR_UNIT, out _, out _);
+            Ring0.ReadMsr(Amd17Constants.MsrPwrUnit, out _, out _);
 
             // MSRC001_029A
             // total_energy [31:0]
             DateTime sampleTime = DateTime.Now;
-            Ring0.ReadMsr(Amd17Constants.MSR_CORE_ENERGY_STAT, out uint eax, out _);
+            Ring0.ReadMsr(Amd17Constants.MsrCoreEnergyStat, out uint eax, out _);
             uint totalEnergy = eax;
 
             // MSRC001_0293
@@ -100,7 +104,7 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             // CurCpuVid [21:14]
             // CurCpuDfsId [13:8]
             // CurCpuFid [7:0]
-            Ring0.ReadMsr(Amd17Constants.MSR_HARDWARE_PSTATE_STATUS, out eax, out _);
+            Ring0.ReadMsr(Amd17Constants.MsrHardwarePstateStatus, out eax, out _);
             int curCpuVid = (int)(eax >> 14 & 0xff);
             int curCpuDfsId = (int)(eax >> 8 & 0x3f);
             int curCpuFid = (int)(eax & 0xff);
@@ -120,9 +124,11 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.Cpu.AMD.Amd17
             // clock
             // CoreCOF is (Core::X86::Msr::PStateDef[CpuFid[7:0]] / Core::X86::Msr::PStateDef[CpuDfsId]) * 200
             double clock = 200.0;
-            _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == "Bus Speed");
+            _busSpeed ??= _cpu.Sensors.FirstOrDefault(x => x.Name == CpuConstants.BusSpeed);
             if (_busSpeed?.Value.HasValue == true && _busSpeed.Value > 0)
+            {
                 clock = (double)(_busSpeed.Value * 2);
+            }
 
             _clock.Value = (float)(curCpuFid / (double)curCpuDfsId * clock);
 

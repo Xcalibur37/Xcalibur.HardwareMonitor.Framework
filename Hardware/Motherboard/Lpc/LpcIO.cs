@@ -1,9 +1,3 @@
-
-
-
-
-
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -116,7 +110,7 @@ internal class LpcIo
     /// </summary>
     /// <param name="motherboard">The motherboard.</param>
     /// <returns></returns>
-    private CpuVendor DetectVendor(Motherboard motherboard)
+    private static CpuVendor DetectVendor(Motherboard motherboard)
     {
         string manufacturer = motherboard.SmBios.Processors[0].ManufacturerName;
         if (manufacturer.IndexOf("Intel", StringComparison.OrdinalIgnoreCase) != -1) return CpuVendor.Intel;
@@ -465,15 +459,15 @@ internal class LpcIo
             port.Select(logicalDeviceNumber);
             ushort address = port.ReadWord(BASE_ADDRESS_REGISTER);
             Thread.Sleep(1);
+            
             ushort verify = port.ReadWord(BASE_ADDRESS_REGISTER);
-
             ushort vendorId = port.ReadWord(FINTEK_VENDOR_ID_REGISTER);
 
             // disable the hardware monitor i/o space lock on NCT679XD chips
             if (address == verify &&
                 chip is Chip.NCT6791D or Chip.NCT6792D or Chip.NCT6792DA or Chip.NCT6793D or Chip.NCT6795D or Chip.NCT6796D or Chip.NCT6796DR or Chip.NCT6798D or Chip.NCT6797D or Chip.NCT6799D)
             {
-                port.NuvotonDisableIOSpaceLock();
+                port.NuvotonDisableIoSpaceLock();
             }
 
             port.WinbondNuvotonFintekExit();
@@ -559,7 +553,7 @@ internal class LpcIo
         // Entering IT8792 in this state will result in IT8792 reporting with chip ID of 0x8883.
         if (port.RegisterPort != 0x4E || !port.TryReadWord(CHIP_ID_REGISTER, out ushort chipId))
         {
-            port.IT87Enter();
+            port.It87Enter();
             chipId = port.ReadWord(CHIP_ID_REGISTER);
         }
         
@@ -594,7 +588,7 @@ internal class LpcIo
         if (chip == Chip.Unknown)
         {
             if (chipId is 0 or 0xffff) return false;
-            port.IT87Exit();
+            port.It87Exit();
         }
         else
         {
@@ -602,8 +596,8 @@ internal class LpcIo
 
             ushort address = port.ReadWord(BASE_ADDRESS_REGISTER);
             Thread.Sleep(1);
-            ushort verify = port.ReadWord(BASE_ADDRESS_REGISTER);
 
+            ushort verify = port.ReadWord(BASE_ADDRESS_REGISTER);
             byte version = (byte)(port.ReadByte(IT87_CHIP_VERSION_REGISTER) & 0x0F);
 
             ushort gpioAddress;
@@ -626,11 +620,11 @@ internal class LpcIo
 
             IGigabyteController gigabyteController = Find(port, chip, motherboard);
 
-            port.IT87Exit();
+            port.It87Exit();
 
             if (address != verify || address < 0x100 || (address & 0xF007) != 0) return false;
             if (gpioAddress != gpioVerify || gpioAddress < 0x100 || (gpioAddress & 0xF007) != 0) return false;
-            _superIOs.Add(new IT87XX(chip, address, gpioAddress, version, gigabyteController));
+            _superIOs.Add(new It87Xx(chip, address, gpioAddress, version, gigabyteController));
             
             return true;
         }
@@ -699,6 +693,7 @@ internal class LpcIo
         // Check if the SMFI logical device is enabled
         byte enabled = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
         Thread.Sleep(1);
+
         byte enabledVerify = port.ReadByte(IT87_LD_ACTIVE_REGISTER);
 
         // The EC has no SMFI or it's RAM access is not enabled, assume the controller is not present

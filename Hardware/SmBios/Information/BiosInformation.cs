@@ -67,7 +67,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.SmBios.Information
 
             bool isExtendedBiosRomSize = biosRomSize == 0xFF && extendedBiosRomSize != 0;
             if (!isExtendedBiosRomSize)
+            {
                 return 65536 * (ulong)(biosRomSize + 1);
+            }
 
             int unit = (extendedBiosRomSize & 0xC000) >> 14;
             ulong extendedSize = (ulong)(extendedBiosRomSize & ~0xC000) * 1024 * 1024;
@@ -91,9 +93,9 @@ namespace Xcalibur.HardwareMonitor.Framework.Hardware.SmBios.Information
             string[] parts = (date ?? string.Empty).Split('/');
 
             if (parts.Length != 3 ||
-                !int.TryParse(parts[0], out int month) ||
-                !int.TryParse(parts[1], out int day) ||
-                !int.TryParse(parts[2], out int year)) return null;
+                !int.TryParse(parts[0], out var month) ||
+                !int.TryParse(parts[1], out var day) ||
+                !int.TryParse(parts[2], out var year)) return null;
 
             // Check if the SMBIOS specification is followed.
             if (month > 12 || day > 31) return null;

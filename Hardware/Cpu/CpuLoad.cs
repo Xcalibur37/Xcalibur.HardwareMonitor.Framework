@@ -136,13 +136,13 @@ internal class CpuLoad
         total = null;
 
         // Query processor idle information
-        SystemProcessorIdleInformation[] idleInformation = new SystemProcessorIdleInformation[64];
+        var idleInformation = new SystemProcessorIdleInformation[64];
         int idleSize = Marshal.SizeOf(typeof(SystemProcessorIdleInformation));
         if (Interop.NtDll.NtQuerySystemInformation(SystemInformationClass.SystemProcessorIdleInformation, idleInformation, idleInformation.Length * idleSize, out int idleReturn) != 0)
             return false;
 
         // Query processor performance information
-        SystemProcessorPerformanceInformation[] perfInformation = new SystemProcessorPerformanceInformation[64];
+        var perfInformation = new SystemProcessorPerformanceInformation[64];
         int perfSize = Marshal.SizeOf(typeof(SystemProcessorPerformanceInformation));
         if (Interop.NtDll.NtQuerySystemInformation(SystemInformationClass.SystemProcessorPerformanceInformation,
                                                    perfInformation,
@@ -177,13 +177,14 @@ internal class CpuLoad
     {
         idle = null;
         total = null;
+        const string filePath = "/proc/stat";
 
         List<long> idleList = [];
         List<long> totalList = [];
 
-        if (!File.Exists("/proc/stat")) return false;
-
-        string[] cpuInfos = File.ReadAllLines("/proc/stat");
+        if (!File.Exists(filePath)) return false;
+        
+        var cpuInfos = File.ReadAllLines(filePath);
 
         // currently parse the OverAll CPU info
         // cpu   1583083 737    452845   36226266 723316   63685 31896     0       0       0

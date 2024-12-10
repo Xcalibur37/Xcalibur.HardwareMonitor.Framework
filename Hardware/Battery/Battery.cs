@@ -146,7 +146,7 @@ internal sealed class Battery : Hardware
         BatteryInformation batteryInfo,
         uint batteryTag,
         ISettings settings) :
-        base(name, new Identifier("battery"), settings)
+        base(name, new Identifier(HardwareConstants.BatteryIdentifier), settings)
     {
         Name = name;
         Manufacturer = manufacturer;
@@ -178,7 +178,7 @@ internal sealed class Battery : Hardware
 
         BatteryStatus batteryStatus = new();
         if (Kernel32.DeviceIoControl(_batteryHandle,
-                                     IoCtl.IOCTL_BATTERY_QUERY_STATUS,
+                                     IoCtl.IoctlBatteryQueryStatus,
                                      ref bws,
                                      Marshal.SizeOf(bws),
                                      ref batteryStatus,
@@ -361,25 +361,23 @@ internal sealed class Battery : Hardware
         };
 
         // Remaining Time
-        if (Kernel32.DeviceIoControl(_batteryHandle,
-                IoCtl.IOCTL_BATTERY_QUERY_INFORMATION,
+        if (!Kernel32.DeviceIoControl(_batteryHandle,
+                IoCtl.IoctlBatteryQueryInformation,
                 ref bqi,
                 Marshal.SizeOf(bqi),
                 ref estimatedRunTime,
                 Marshal.SizeOf<uint>(),
                 out _,
-                IntPtr.Zero))
+                IntPtr.Zero)) return;
+        RemainingTime = estimatedRunTime;
+        if (estimatedRunTime != Kernel32.BatteryUnknownTime)
         {
-            RemainingTime = estimatedRunTime;
-            if (estimatedRunTime != Kernel32.BatteryUnknownTime)
-            {
-                ActivateSensor(_remainingTimeSensor);
-                _remainingTimeSensor.Value = estimatedRunTime;
-            }
-            else
-            {
-                DeactivateSensor(_remainingTimeSensor);
-            }
+            ActivateSensor(_remainingTimeSensor);
+            _remainingTimeSensor.Value = estimatedRunTime;
+        }
+        else
+        {
+            DeactivateSensor(_remainingTimeSensor);
         }
     }
 

@@ -5,8 +5,8 @@
     /// </summary>
     public enum Dfp : uint
     {
-        DFP_GET_VERSION = 0x00074080,
-        DFP_SEND_DRIVE_COMMAND = 0x0007c084,
-        DFP_RECEIVE_DRIVE_DATA = 0x0007c088
+        DfpGetVersion = 0x00074080,
+        DfpSendDriveCommand = 0x0007c084,
+        DfpReceiveDriveData = 0x0007c088
     }
 }

@@ -12,6 +12,11 @@ using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Thermal;
 using Xcalibur.HardwareMonitor.Framework.Interop.Models.Nvidia.Usages;
 
 namespace Xcalibur.HardwareMonitor.Framework.Interop;
+/// <summary>
+/// NVAPI provides you the ability to query and manipulate the way that 3D Vision Automatic works on behalf of your application;
+/// along with allowing you access to important internal variables.
+/// https://docs.nvidia.com/gameworks/content/technologies/desktop/nv3dva_using_nvapi.htm
+/// </summary>
 internal static class NvApi
 {
     public const int MAX_CLOCKS_PER_GPU = 0x120;
@@ -56,58 +61,6 @@ internal static class NvApi
 
     private static readonly NvAPI_GetInterfaceVersionStringDelegate _nvAPI_GetInterfaceVersionString;
     private static readonly NvAPI_GPU_GetFullNameDelegate _nvAPI_GPU_GetFullName;
-
-    /// <summary>
-    /// Gets a value indicating whether this instance is available.
-    /// </summary>
-    /// <value>
-    ///   <c>true</c> if this instance is available; otherwise, <c>false</c>.
-    /// </value>
-    public static bool IsAvailable { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NvApi"/> class.
-    /// </summary>
-    static NvApi()
-    {
-        NvAPI_InitializeDelegate nvApiInitialize;
-
-        try
-        {
-            if (!DllExists()) return;
-            GetDelegate(0x0150E828, out nvApiInitialize);
-        }
-        catch (Exception e) when (e is DllNotFoundException or ArgumentNullException or EntryPointNotFoundException or BadImageFormatException)
-        {
-            return;
-        }
-
-        if (nvApiInitialize() != NvStatus.OK) return;
-        GetDelegate(0xE3640A56, out NvAPI_GPU_GetThermalSettings);
-        GetDelegate(0xCEEE8E9F, out _nvAPI_GPU_GetFullName);
-        GetDelegate(0x9ABDD40D, out NvAPI_EnumNvidiaDisplayHandle);
-        GetDelegate(0x34EF9506, out NvAPI_GetPhysicalGPUsFromDisplay);
-        GetDelegate(0xE5AC921F, out NvAPI_EnumPhysicalGPUs);
-        GetDelegate(0x5F608315, out NvAPI_GPU_GetTachReading);
-        GetDelegate(0x1BD69F49, out NvAPI_GPU_GetAllClocks);
-        GetDelegate(0x60DED2ED, out NvAPI_GPU_GetDynamicPstatesInfoEx);
-        GetDelegate(0x189A1FDF, out NvAPI_GPU_GetUsages);
-        GetDelegate(0xDA141340, out NvAPI_GPU_GetCoolerSettings);
-        GetDelegate(0x891FA0AE, out NvAPI_GPU_SetCoolerLevels);
-        GetDelegate(0x774AA982, out NvAPI_GPU_GetMemoryInfo);
-        GetDelegate(0xF951A4D1, out NvAPI_GetDisplayDriverVersion);
-        GetDelegate(0x01053FA5, out _nvAPI_GetInterfaceVersionString);
-        GetDelegate(0x2DDFB66E, out NvAPI_GPU_GetPCIIdentifiers);
-        GetDelegate(0x1BE0B8E5, out NvAPI_GPU_GetBusId);
-        GetDelegate(0x35AED5E8, out NvAPI_GPU_ClientFanCoolersGetStatus);
-        GetDelegate(0xDCB616C3, out NvAPI_GPU_GetAllClockFrequencies);
-        GetDelegate(0x814B209F, out NvAPI_GPU_ClientFanCoolersGetControl);
-        GetDelegate(0xA58971A5, out NvAPI_GPU_ClientFanCoolersSetControl);
-        GetDelegate(0x0EDCF624E, out NvAPI_GPU_ClientPowerTopologyGetStatus);
-        GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetSensors);
-
-        IsAvailable = true;
-    }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_EnumNvidiaDisplayHandleDelegate(int thisEnum, ref NvDisplayHandle displayHandle);
@@ -171,7 +124,60 @@ internal static class NvApi
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate NvStatus NvAPI_GPU_SetCoolerLevelsDelegate(NvPhysicalGpuHandle gpuHandle, int coolerIndex, ref NvCoolerLevels NvCoolerLevels);
-    
+
+
+    /// <summary>
+    /// Gets a value indicating whether this instance is available.
+    /// </summary>
+    /// <value>
+    ///   <c>true</c> if this instance is available; otherwise, <c>false</c>.
+    /// </value>
+    public static bool IsAvailable { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NvApi"/> class.
+    /// </summary>
+    static NvApi()
+    {
+        NvAPI_InitializeDelegate nvApiInitialize;
+
+        try
+        {
+            if (!DllExists()) return;
+            GetDelegate(0x0150E828, out nvApiInitialize);
+        }
+        catch (Exception e) when (e is DllNotFoundException or ArgumentNullException or EntryPointNotFoundException or BadImageFormatException)
+        {
+            return;
+        }
+
+        if (nvApiInitialize() != NvStatus.OK) return;
+        GetDelegate(0xE3640A56, out NvAPI_GPU_GetThermalSettings);
+        GetDelegate(0xCEEE8E9F, out _nvAPI_GPU_GetFullName);
+        GetDelegate(0x9ABDD40D, out NvAPI_EnumNvidiaDisplayHandle);
+        GetDelegate(0x34EF9506, out NvAPI_GetPhysicalGPUsFromDisplay);
+        GetDelegate(0xE5AC921F, out NvAPI_EnumPhysicalGPUs);
+        GetDelegate(0x5F608315, out NvAPI_GPU_GetTachReading);
+        GetDelegate(0x1BD69F49, out NvAPI_GPU_GetAllClocks);
+        GetDelegate(0x60DED2ED, out NvAPI_GPU_GetDynamicPstatesInfoEx);
+        GetDelegate(0x189A1FDF, out NvAPI_GPU_GetUsages);
+        GetDelegate(0xDA141340, out NvAPI_GPU_GetCoolerSettings);
+        GetDelegate(0x891FA0AE, out NvAPI_GPU_SetCoolerLevels);
+        GetDelegate(0x774AA982, out NvAPI_GPU_GetMemoryInfo);
+        GetDelegate(0xF951A4D1, out NvAPI_GetDisplayDriverVersion);
+        GetDelegate(0x01053FA5, out _nvAPI_GetInterfaceVersionString);
+        GetDelegate(0x2DDFB66E, out NvAPI_GPU_GetPCIIdentifiers);
+        GetDelegate(0x1BE0B8E5, out NvAPI_GPU_GetBusId);
+        GetDelegate(0x35AED5E8, out NvAPI_GPU_ClientFanCoolersGetStatus);
+        GetDelegate(0xDCB616C3, out NvAPI_GPU_GetAllClockFrequencies);
+        GetDelegate(0x814B209F, out NvAPI_GPU_ClientFanCoolersGetControl);
+        GetDelegate(0xA58971A5, out NvAPI_GPU_ClientFanCoolersSetControl);
+        GetDelegate(0x0EDCF624E, out NvAPI_GPU_ClientPowerTopologyGetStatus);
+        GetDelegate(0x65FE3AAD, out NvAPI_GPU_ThermalGetSensors);
+
+        IsAvailable = true;
+    }
+
     public static NvStatus NvAPI_GPU_GetFullName(NvPhysicalGpuHandle gpuHandle, out string name)
     {
         StringBuilder builder = new(SHORT_STRING_MAX);

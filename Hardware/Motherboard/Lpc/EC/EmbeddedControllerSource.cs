@@ -48,14 +48,6 @@ public class EmbeddedControllerSource
     public int Blank { get; }
 
     /// <summary>
-    /// Gets the reader.
-    /// </summary>
-    /// <value>
-    /// The reader.
-    /// </value>
-    public EmbeddedControllerReader Reader { get; }
-
-    /// <summary>
     /// Gets the type.
     /// </summary>
     /// <value>

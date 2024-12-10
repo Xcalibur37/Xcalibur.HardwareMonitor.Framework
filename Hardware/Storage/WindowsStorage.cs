@@ -16,29 +16,32 @@ internal static class WindowsStorage
     public static StorageInfo GetStorageInfo(string deviceId, uint driveIndex)
     {
         using SafeFileHandle handle = Kernel32.OpenDevice(deviceId);
+        if (handle?.IsInvalid != false) return null;
 
-        if (handle?.IsInvalid != false)
-            return null;
+        var query = new StoragePropertyQuery
+        {
+            PropertyId = StoragePropertyId.StorageDeviceProperty, 
+            QueryType = StorageQueryType.PropertyStandardQuery
+        };
 
-        var query = new StoragePropertyQuery { PropertyId = StoragePropertyId.StorageDeviceProperty, QueryType = StorageQueryType.PropertyStandardQuery };
-
-        if (!Kernel32.DeviceIoControl(handle,
-                                      IoCtl.IOCTL_STORAGE_QUERY_PROPERTY,
-                                      ref query,
-                                      Marshal.SizeOf(query),
-                                      out StorageDeviceDescriptorHeader header,
-                                      Marshal.SizeOf<StorageDeviceDescriptorHeader>(),
-                                      out _,
-                                      IntPtr.Zero))
+        if (!Kernel32.DeviceIoControl(
+                handle,
+                IoCtl.IoctlStorageQueryProperty,
+                ref query,
+                Marshal.SizeOf(query),
+                out StorageDeviceDescriptorHeader header,
+                Marshal.SizeOf<StorageDeviceDescriptorHeader>(),
+                out _,
+                IntPtr.Zero))
         {
             return null;
         }
 
-        IntPtr descriptorPtr = Marshal.AllocHGlobal((int)header.Size);
+        var descriptorPtr = Marshal.AllocHGlobal((int)header.Size);
 
         try
         {
-            return Kernel32.DeviceIoControl(handle, IoCtl.IOCTL_STORAGE_QUERY_PROPERTY, ref query, Marshal.SizeOf(query), descriptorPtr, header.Size, out uint bytesReturned, IntPtr.Zero)
+            return Kernel32.DeviceIoControl(handle, IoCtl.IoctlStorageQueryProperty, ref query, Marshal.SizeOf(query), descriptorPtr, header.Size, out uint bytesReturned, IntPtr.Zero)
                 ? new StorageInfo((int)driveIndex, descriptorPtr)
                 : null;
         }
